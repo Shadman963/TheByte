@@ -1,0 +1,125 @@
+from decimal import Decimal
+from django.conf import settings
+from .models import MenuItem, MenuItemAddon, KitchenSetting
+
+
+class Cart:
+    def __init__(self, request):
+        self.session = request.session
+        cart = self.session.get(settings.CART_SESSION_ID)
+        if not cart:
+            cart = self.session[settings.CART_SESSION_ID] = {}
+        self.cart = cart
+
+    def _generate_key(self, item_id, special_instructions='', addon_ids=None):
+        addons_part = "-".join(sorted(map(str, addon_ids or [])))
+        clean_instructions = special_instructions.strip().lower()
+        return f"{item_id}_{addons_part}_{clean_instructions}"
+
+    def add(self, item_id, quantity=1, special_instructions='', addon_ids=None):
+        try:
+            item = MenuItem.objects.get(id=item_id, is_available=True)
+        except MenuItem.DoesNotExist:
+            return False, "Item not found or unavailable."
+
+        addon_ids = addon_ids or []
+        addons = MenuItemAddon.objects.filter(id__in=addon_ids, is_available=True)
+        addons_total = sum(a.price for a in addons)
+        addons_names = [f"{a.name} (+৳{a.price})" for a in addons]
+
+        unit_price = item.final_price + addons_total
+        key = self._generate_key(item_id, special_instructions, addon_ids)
+
+        if key in self.cart:
+            self.cart[key]['quantity'] += int(quantity)
+        else:
+            self.cart[key] = {
+                'item_id': item.id,
+                'name': item.name,
+                'slug': item.slug,
+                'price': str(unit_price),
+                'quantity': int(quantity),
+                'special_instructions': special_instructions.strip(),
+                'addons': addons_names,
+                'image': item.image.url if item.image else (item.static_image or ''),
+                'portion_size': item.portion_size,
+            }
+
+        self.save()
+        return True, "Item added to cart."
+
+    def update(self, key, quantity):
+        quantity = int(quantity)
+        if key in self.cart:
+            if quantity > 0:
+                self.cart[key]['quantity'] = quantity
+            else:
+                del self.cart[key]
+            self.save()
+            return True
+        return False
+
+    def remove(self, key):
+        if key in self.cart:
+            del self.cart[key]
+            self.save()
+            return True
+        return False
+
+    def clear(self):
+        self.session[settings.CART_SESSION_ID] = {}
+        self.session.modified = True
+
+    def save(self):
+        self.session.modified = True
+
+    def __iter__(self):
+        for key, data in self.cart.items():
+            qty = data['quantity']
+            unit_price = Decimal(data['price'])
+            item_total = unit_price * qty
+            yield {
+                'key': key,
+                'item_id': data['item_id'],
+                'name': data['name'],
+                'slug': data.get('slug', ''),
+                'price': unit_price,
+                'quantity': qty,
+                'special_instructions': data.get('special_instructions', ''),
+                'addons': data.get('addons', []),
+                'image': data.get('image', ''),
+                'portion_size': data.get('portion_size', ''),
+                'total': item_total,
+            }
+
+    def __len__(self):
+        return sum(item['quantity'] for item in self.cart.values())
+
+    def get_subtotal(self):
+        return sum(Decimal(item['price']) * item['quantity'] for item in self.cart.values())
+
+    def get_delivery_fee(self, setting=None):
+        if not setting:
+            setting = KitchenSetting.objects.first()
+        subtotal = self.get_subtotal()
+        if subtotal == 0:
+            return Decimal('0.00')
+        if setting and setting.free_delivery_above and subtotal >= setting.free_delivery_above:
+            return Decimal('0.00')
+        return Decimal(setting.delivery_fee if setting else 40.00)
+
+    def get_total(self, setting=None):
+        return self.get_subtotal() + self.get_delivery_fee(setting)
+
+    def get_free_delivery_progress(self, setting=None):
+        if not setting:
+            setting = KitchenSetting.objects.first()
+        if not setting or not setting.free_delivery_above:
+            return 100, Decimal('0.00')
+        subtotal = self.get_subtotal()
+        threshold = setting.free_delivery_above
+        if subtotal >= threshold:
+            return 100, Decimal('0.00')
+        remaining = threshold - subtotal
+        percent = min(int((subtotal / threshold) * 100), 100)
+        return percent, remaining

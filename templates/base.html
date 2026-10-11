@@ -1,0 +1,664 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_setting.restaurant_name }} — {{ site_setting.tagline }}{% endblock %}</title>
+    <meta name="description" content="The BYTE - Fresh, tasty, and budget-friendly cloud kitchen meals cooked with responsibility for students, office workers, and daily hustlers.">
+    <link rel="icon" type="image/png" href="{% static 'images/byte_logo.png' %}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        byte: {
+                            maroon: '#6e0f2d',
+                            maroonDark: '#4a081d',
+                            maroonLight: '#8c1a3f',
+                            cream: '#f2f4ea',
+                            creamLight: '#fbfcf8',
+                            amber: '#ff8c42',
+                            amberDark: '#e06b1b',
+                            charcoal: '#1c1517'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['"Playfair Display"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fbfcf8;
+            color: #2b1f23;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f2f4ea;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6e0f2d;
+            border-radius: 4px;
+        }
+        /* Glass blur */
+        .glass-header {
+            background: rgba(110, 15, 45, 0.96);
+            backdrop-filter: blur(12px);
+        }
+        .canva-shadow {
+            box-shadow: 0 10px 25px -5px rgba(110, 15, 45, 0.12), 0 8px 10px -6px rgba(110, 15, 45, 0.08);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-byte-maroonDark text-byte-cream text-xs sm:text-sm py-2 px-4 border-b border-white/10">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <div class="flex items-center justify-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {% if site_setting.is_kitchen_open %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-rose-500/20 text-rose-300 border border-rose-500/30{% endif %}">
+                    <span class="w-2 h-2 rounded-full {% if site_setting.is_kitchen_open %}bg-emerald-400 animate-pulse{% else %}bg-rose-400{% endif %}"></span>
+                    {% if site_setting.is_kitchen_open %}Kitchen Open & Cooking{% else %}Kitchen Closed (Pre-orders Only){% endif %}
+                </span>
+                <span class="hidden md:inline text-white/60">|</span>
+                <span class="text-byte-cream/90 font-medium">
+                    <i class="fa-solid fa-clock text-byte-amber mr-1"></i> {{ site_setting.opening_time }} - {{ site_setting.closing_time }}
+                </span>
+                <span class="hidden md:inline text-white/60">|</span>
+                <span class="text-byte-amber font-semibold hidden lg:inline">
+                    <i class="fa-solid fa-bolt mr-1"></i> {{ site_setting.announcement_banner }}
+                </span>
+            </div>
+            <div class="flex items-center justify-center gap-4 text-xs font-medium">
+                <a href="tel:{{ site_setting.phone }}" class="hover:text-byte-amber transition flex items-center gap-1">
+                    <i class="fa-solid fa-phone text-byte-amber"></i> {{ site_setting.phone }}
+                </a>
+                <a href="{% url 'order_tracking_search' %}" class="hover:text-byte-amber transition flex items-center gap-1">
+                    <i class="fa-solid fa-map-pin text-byte-amber"></i> Track Order
+                </a>
+                <a href="{% url 'kitchen_dashboard' %}" class="bg-byte-amber hover:bg-byte-amberDark text-white px-2 py-0.5 rounded font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-kitchen-set"></i> Kitchen KDS
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="sticky top-0 z-40 glass-header text-white border-b border-white/10 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Brand Logo -->
+            <a href="{% url 'home' %}" class="flex items-center gap-3 group">
+                <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border border-byte-amber/30">
+                    <img src="{% static 'images/byte_logo.png' %}" alt="{{ site_setting.restaurant_name }} Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <span class="font-display text-2xl font-bold tracking-wider text-white uppercase block leading-none">
+                        {{ site_setting.restaurant_name }}
+                    </span>
+                    <span class="text-[10px] tracking-widest text-byte-cream/80 uppercase font-semibold">
+                        Cloud Kitchen
+                    </span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wide">
+                <a href="{% url 'home' %}" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Home
+                </a>
+                <a href="{% url 'menu' %}" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Menu
+                </a>
+                <a href="{% url 'home' %}#story" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Our Story
+                </a>
+                <a href="{% url 'home' %}#reviews" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Reviews
+                </a>
+                <a href="{% url 'home' %}#contact" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Contact
+                </a>
+            </nav>
+
+            <!-- Actions: Cart & CTA -->
+            <div class="flex items-center gap-3">
+                <button onclick="toggleCartDrawer()" class="relative p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition flex items-center justify-center border border-white/20" title="Shopping Cart">
+                    <i class="fa-solid fa-bag-shopping text-lg"></i>
+                    <span id="nav-cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-byte-amber text-white text-xs font-extrabold flex items-center justify-center shadow {% if cart_count == 0 %}hidden{% endif %}">
+                        {{ cart_count }}
+                    </span>
+                </button>
+
+                <a href="{% url 'menu' %}" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-sm shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
+                    <span>Order Now</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-byte-maroonDark border-t border-white/10 px-4 pt-3 pb-5 space-y-2">
+            <a href="{% url 'home' %}" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Home</a>
+            <a href="{% url 'menu' %}" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Full Menu</a>
+            <a href="{% url 'home' %}#story" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Our Story</a>
+            <a href="{% url 'home' %}#reviews" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Customer Reviews</a>
+            <a href="{% url 'order_tracking_search' %}" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Track Order</a>
+            <a href="{% url 'home' %}#contact" class="block px-3 py-2 rounded-md font-medium text-white hover:bg-white/10">Contact Us</a>
+            <a href="{% url 'kitchen_dashboard' %}" class="block px-3 py-2 rounded-md font-semibold text-byte-amber bg-white/5">Kitchen Management (KDS)</a>
+        </div>
+    </header>
+
+    <!-- Global Toast Flash Messages -->
+    {% if messages %}
+    <div class="fixed top-24 right-4 z-50 space-y-2 max-w-md w-full px-4">
+        {% for message in messages %}
+        <div class="p-4 rounded-xl shadow-xl flex items-start gap-3 transition transform duration-300 {% if message.tags == 'error' %}bg-rose-600 text-white{% elif message.tags == 'success' %}bg-emerald-600 text-white{% else %}bg-byte-maroon text-white{% endif %} animate-bounce">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-triangle-exclamation{% elif message.tags == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %} text-xl mt-0.5"></i>
+            <div class="flex-1 text-sm font-semibold">{{ message }}</div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Block -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Slide-Out Cart Drawer -->
+    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/60 z-50 transition-opacity opacity-0 pointer-events-none duration-300"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+        <!-- Header -->
+        <div class="p-5 bg-byte-maroon text-white flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bag-shopping text-byte-amber text-xl"></i>
+                <h3 class="font-display font-bold text-xl tracking-wide">Your Meal Cart</h3>
+            </div>
+            <button onclick="toggleCartDrawer()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Free Delivery Progress Bar -->
+        <div class="bg-byte-cream/70 p-3 border-b border-byte-maroon/10">
+            <div class="flex justify-between text-xs font-bold text-byte-maroon mb-1">
+                <span id="free-delivery-text">
+                    {% if cart_subtotal >= site_setting.free_delivery_above %}
+                    🎉 You qualify for FREE Delivery!
+                    {% else %}
+                    Add ৳<span id="free-delivery-diff">0</span> more for Free Delivery!
+                    {% endif %}
+                </span>
+                <span id="free-delivery-badge">৳{{ site_setting.free_delivery_above }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div id="free-delivery-progress" class="bg-byte-amber h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Cart Items List (Dynamic Container) -->
+        <div id="cart-drawer-items" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <div class="text-center py-12 text-gray-400">
+                <i class="fa-solid fa-utensils text-4xl mb-3 text-byte-maroon/20"></i>
+                <p class="font-medium text-sm">Your cart is currently empty.</p>
+                <a href="{% url 'menu' %}" onclick="toggleCartDrawer()" class="inline-block mt-3 px-4 py-2 rounded-full bg-byte-maroon text-white text-xs font-bold hover:bg-byte-maroonDark transition">
+                    Browse Daily Menu
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer / Checkout -->
+        <div class="p-5 bg-gray-50 border-t border-gray-200 space-y-3">
+            <div class="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span class="font-bold text-gray-900">৳<span id="drawer-subtotal">0.00</span></span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-600">
+                <span>Estimated Delivery</span>
+                <span class="font-semibold text-gray-900">৳<span id="drawer-delivery">40.00</span></span>
+            </div>
+            <div class="flex justify-between text-base font-bold text-byte-maroon pt-2 border-t border-gray-200">
+                <span>Estimated Total</span>
+                <span class="text-xl">৳<span id="drawer-total">0.00</span></span>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <a href="{% url 'cart' %}" class="flex-1 py-3 text-center rounded-xl border-2 border-byte-maroon text-byte-maroon font-bold text-sm hover:bg-byte-maroon hover:text-white transition">
+                    View Cart
+                </a>
+                <a href="{% url 'checkout' %}" class="flex-1 py-3 text-center rounded-xl bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-sm shadow-md hover:shadow-lg transition">
+                    Checkout Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add/Customization Modal -->
+    <div id="item-modal-backdrop" onclick="closeItemModal()" class="fixed inset-0 bg-black/60 z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="item-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 pointer-events-auto transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span id="modal-category" class="text-xs uppercase font-extrabold tracking-wider text-byte-amber block mb-1">Category</span>
+                    <h3 id="modal-title" class="font-display text-2xl font-bold text-byte-maroon">Item Name</h3>
+                    <p id="modal-tagline" class="text-xs text-gray-500 font-medium"></p>
+                </div>
+                <button onclick="closeItemModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="mb-4 rounded-xl overflow-hidden h-44 bg-gray-100 relative">
+                <img id="modal-image" src="" alt="" class="w-full h-full object-cover">
+                <span id="modal-portion" class="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-black/70 text-white text-xs font-medium"></span>
+            </div>
+
+            <p id="modal-description" class="text-gray-600 text-sm mb-4 leading-relaxed"></p>
+
+            <!-- Addons Checklist -->
+            <div id="modal-addons-section" class="mb-4">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                    Optional Add-ons & Sides
+                </label>
+                <div id="modal-addons-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Cooking Instructions -->
+            <div class="mb-5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                    Special Cooking Instructions
+                </label>
+                <input type="text" id="modal-instructions" placeholder="e.g. Less spicy, extra onions, separate gravy..." class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+            </div>
+
+            <!-- Quantity & Add to Cart -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                    <button type="button" onclick="adjustModalQty(-1)" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition flex items-center justify-center">-</button>
+                    <span id="modal-qty" class="w-12 text-center text-sm font-bold text-gray-900">1</span>
+                    <button type="button" onclick="adjustModalQty(1)" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition flex items-center justify-center">+</button>
+                </div>
+                <button type="button" onclick="submitModalAddToCart()" class="px-6 py-3 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-sm shadow-lg transition flex items-center gap-2">
+                    <span>Add to Cart</span>
+                    <span>•</span>
+                    <span>৳<span id="modal-total-price">0.00</span></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer matching Canva Design -->
+    <footer class="bg-byte-maroon text-byte-cream mt-auto border-t-4 border-byte-amber">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                
+                <!-- Col 1: Brand Info -->
+                <div class="md:col-span-2 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center">
+                            <img src="{% static 'images/byte_logo.png' %}" alt="{{ site_setting.restaurant_name }}" class="w-full h-full object-contain">
+                        </div>
+                        <h2 class="font-display text-2xl font-bold tracking-wider text-white uppercase">
+                            {{ site_setting.restaurant_name }}
+                        </h2>
+                    </div>
+                    <p class="text-sm font-semibold tracking-wide text-byte-amber uppercase">
+                        {{ site_setting.tagline }}
+                    </p>
+                    <p class="text-xs sm:text-sm text-byte-cream/80 max-w-lg leading-relaxed">
+                        {{ site_setting.mission_statement }}
+                    </p>
+                    <div class="pt-2 flex items-center gap-3">
+                        <span class="text-xs uppercase font-bold text-white/70">Follow us:</span>
+                        <a href="{{ site_setting.facebook_url }}" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-byte-amber hover:text-white flex items-center justify-center transition" title="Facebook">
+                            <i class="fa-brands fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="{{ site_setting.instagram_url }}" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-byte-amber hover:text-white flex items-center justify-center transition" title="Instagram">
+                            <i class="fa-brands fa-instagram text-sm"></i>
+                        </a>
+                        <a href="{{ site_setting.tiktok_url }}" target="_blank" class="w-9 h-9 rounded-full bg-white/10 hover:bg-byte-amber hover:text-white flex items-center justify-center transition" title="TikTok">
+                            <i class="fa-brands fa-tiktok text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="space-y-3">
+                    <h3 class="font-display text-lg font-bold text-white uppercase tracking-wider border-b border-white/20 pb-2">
+                        Quick Links
+                    </h3>
+                    <ul class="space-y-2 text-sm text-byte-cream/80 font-medium">
+                        <li><a href="{% url 'menu' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Menu</a></li>
+                        <li><a href="{% url 'home' %}#story" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Our Story</a></li>
+                        <li><a href="{% url 'order_tracking_search' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Track Order</a></li>
+                        <li><a href="{% url 'kitchen_dashboard' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Kitchen KDS</a></li>
+                        <li><a href="{% url 'admin:index' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Admin Portal</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Contact & Payments -->
+                <div class="space-y-3">
+                    <h3 class="font-display text-lg font-bold text-white uppercase tracking-wider border-b border-white/20 pb-2">
+                        Cloud Kitchen Hotline
+                    </h3>
+                    <ul class="space-y-2.5 text-sm text-byte-cream/90">
+                        <li class="flex items-center gap-2">
+                            <i class="fa-solid fa-phone text-byte-amber"></i>
+                            <a href="tel:{{ site_setting.phone }}" class="hover:text-white font-bold">{{ site_setting.phone }}</a>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fa-solid fa-envelope text-byte-amber"></i>
+                            <a href="mailto:{{ site_setting.email }}" class="hover:text-white">{{ site_setting.email }}</a>
+                        </li>
+                        <li class="flex items-start gap-2 text-xs text-byte-cream/70">
+                            <i class="fa-solid fa-location-dot text-byte-amber mt-1"></i>
+                            <span>{{ site_setting.address }}</span>
+                        </li>
+                    </ul>
+
+                    <div class="pt-3 border-t border-white/10">
+                        <span class="text-xs uppercase font-bold text-white/70 block mb-1.5">Payment Accepted:</span>
+                        <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                            <span class="px-2 py-1 rounded bg-white/10 text-white border border-white/10">Cash on Delivery</span>
+                            <span class="px-2 py-1 rounded bg-pink-700/60 text-pink-200 border border-pink-400/30">bKash</span>
+                            <span class="px-2 py-1 rounded bg-orange-700/60 text-orange-200 border border-orange-400/30">Nagad</span>
+                            <span class="px-2 py-1 rounded bg-white/10 text-white border border-white/10">Card</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Copyright -->
+            <div class="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-byte-cream/60 gap-3">
+                <p>© 2026 The BYTE — Fresh • Tasty • Budget-Friendly. All rights reserved.</p>
+                <p>Designed with care for daily hustlers, students, and food lovers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Cart Drawer & Modal Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Cart Drawer Functions
+        function toggleCartDrawer() {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-drawer-backdrop');
+            const isOpen = !drawer.classList.contains('translate-x-full');
+
+            if (isOpen) {
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                refreshCartDrawer();
+            }
+        }
+
+        // Active Modal Item State
+        let currentModalItem = null;
+        let currentModalQty = 1;
+
+        function openItemModal(itemId) {
+            fetch(`/api/item/${itemId}/`)
+                .then(res => res.json())
+                .then(item => {
+                    currentModalItem = item;
+                    currentModalQty = 1;
+
+                    document.getElementById('modal-category').innerText = item.category;
+                    document.getElementById('modal-title').innerText = item.name;
+                    document.getElementById('modal-tagline').innerText = item.tagline || '';
+                    document.getElementById('modal-description').innerText = item.description;
+                    document.getElementById('modal-portion').innerText = item.portion_size;
+                    document.getElementById('modal-image').src = item.image || '/static/images/hero_banner.png';
+                    document.getElementById('modal-qty').innerText = 1;
+                    document.getElementById('modal-instructions').value = '';
+
+                    // Addons
+                    const addonsContainer = document.getElementById('modal-addons-list');
+                    addonsContainer.innerHTML = '';
+                    if (item.addons && item.addons.length > 0) {
+                        document.getElementById('modal-addons-section').classList.remove('hidden');
+                        item.addons.forEach(a => {
+                            const label = document.createElement('label');
+                            label.className = 'flex items-center justify-between p-2 rounded-lg border border-gray-200 hover:bg-byte-cream/40 cursor-pointer transition text-xs font-semibold';
+                            label.innerHTML = `
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" name="modal_addons" value="${a.id}" data-price="${a.price}" onchange="recalcModalTotal()" class="rounded text-byte-maroon focus:ring-byte-maroon w-4 h-4">
+                                    <span>${a.name}</span>
+                                </div>
+                                <span class="text-byte-maroon font-bold">+৳${parseFloat(a.price).toFixed(2)}</span>
+                            `;
+                            addonsContainer.appendChild(label);
+                        });
+                    } else {
+                        document.getElementById('modal-addons-section').classList.add('hidden');
+                    }
+
+                    recalcModalTotal();
+
+                    // Show modal
+                    const modal = document.getElementById('item-modal');
+                    const backdrop = document.getElementById('item-modal-backdrop');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.querySelector('> div').classList.remove('scale-95', 'opacity-0');
+                    modal.querySelector('> div').classList.add('scale-100', 'opacity-100');
+                })
+                .catch(err => console.error(err));
+        }
+
+        function closeItemModal() {
+            const modal = document.getElementById('item-modal');
+            const backdrop = document.getElementById('item-modal-backdrop');
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('> div').classList.add('scale-95', 'opacity-0');
+            modal.querySelector('> div').classList.remove('scale-100', 'opacity-100');
+        }
+
+        function adjustModalQty(delta) {
+            currentModalQty = Math.max(1, currentModalQty + delta);
+            document.getElementById('modal-qty').innerText = currentModalQty;
+            recalcModalTotal();
+        }
+
+        function recalcModalTotal() {
+            if (!currentModalItem) return;
+            let unitPrice = currentModalItem.final_price;
+            const checkedAddons = document.querySelectorAll('input[name="modal_addons"]:checked');
+            checkedAddons.forEach(chk => {
+                unitPrice += parseFloat(chk.getAttribute('data-price') || 0);
+            });
+            const total = unitPrice * currentModalQty;
+            document.getElementById('modal-total-price').innerText = total.toFixed(2);
+        }
+
+        function submitModalAddToCart() {
+            if (!currentModalItem) return;
+            const instructions = document.getElementById('modal-instructions').value;
+            const addonCheckboxes = document.querySelectorAll('input[name="modal_addons"]:checked');
+            const addonIds = Array.from(addonCheckboxes).map(chk => parseInt(chk.value));
+
+            addToCart(currentModalItem.id, currentModalQty, instructions, addonIds);
+            closeItemModal();
+        }
+
+        // Global Add to Cart function via AJAX
+        function addToCart(itemId, quantity = 1, instructions = '', addonIds = []) {
+            fetch('/api/cart/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity: quantity,
+                    special_instructions: instructions,
+                    addon_ids: addonIds
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data);
+                    showToast(data.message, 'success');
+                    toggleCartDrawer();
+                } else {
+                    showToast(data.message || 'Error adding item', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Failed to add item to cart.', 'error');
+            });
+        }
+
+        function updateCartQty(key, quantity) {
+            fetch('/api/cart/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ key: key, quantity: quantity })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data);
+                    refreshCartDrawer();
+                }
+            });
+        }
+
+        function removeCartItem(key) {
+            fetch('/api/cart/remove/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ key: key })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data);
+                    refreshCartDrawer();
+                }
+            });
+        }
+
+        function updateCartUI(data) {
+            const badge = document.getElementById('nav-cart-badge');
+            if (badge) {
+                badge.innerText = data.cart_count;
+                if (data.cart_count > 0) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            if (document.getElementById('drawer-subtotal')) {
+                document.getElementById('drawer-subtotal').innerText = data.subtotal.toFixed(2);
+                document.getElementById('drawer-delivery').innerText = data.delivery_fee.toFixed(2);
+                document.getElementById('drawer-total').innerText = data.total.toFixed(2);
+
+                const progressBar = document.getElementById('free-delivery-progress');
+                if (progressBar) progressBar.style.width = data.free_delivery_percent + '%';
+
+                const diffSpan = document.getElementById('free-delivery-diff');
+                const textSpan = document.getElementById('free-delivery-text');
+                if (data.free_delivery_remaining <= 0) {
+                    textSpan.innerHTML = '🎉 You qualify for FREE Delivery!';
+                } else {
+                    textSpan.innerHTML = `Add ৳<span>${data.free_delivery_remaining.toFixed(0)}</span> more for Free Delivery!`;
+                }
+            }
+        }
+
+        function refreshCartDrawer() {
+            fetch('/cart/')
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const items = doc.getElementById('cart-items-container');
+                    const drawerContainer = document.getElementById('cart-drawer-items');
+                    if (items && drawerContainer) {
+                        drawerContainer.innerHTML = items.innerHTML;
+                    }
+                });
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-byte-maroon');
+            toast.className = `fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 transition-transform duration-300 ${bgClass} transform translate-y-20 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+            }, 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

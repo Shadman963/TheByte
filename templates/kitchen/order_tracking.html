@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Track Order — {{ setting.restaurant_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-byte-creamLight min-h-screen py-10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Search Bar Header -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-8">
+            <h1 class="font-display text-2xl sm:text-3xl font-bold text-byte-maroon mb-2">Live Order Tracker</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mb-4">Track the live preparation and delivery status of your meal.</p>
+            
+            <form method="GET" action="{% url 'order_tracking_search' %}" class="flex gap-2">
+                <input type="text" name="order_number" value="{{ search_num }}" placeholder="Enter Order Number (e.g. BYTE-82194)" required class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold uppercase focus:outline-none focus:border-byte-maroon">
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Track</span>
+                </button>
+            </form>
+        </div>
+
+        {% if order %}
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-8">
+            
+            <!-- Order Header Banner -->
+            <div class="p-6 sm:p-8 bg-byte-maroon text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-byte-amber block mb-1">Live Order Status</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-extrabold tracking-wide">
+                        Order #<span id="order-number-display">{{ order.order_number }}</span>
+                    </h2>
+                    <p class="text-xs text-byte-cream/80 mt-1">
+                        Placed on {{ order.created_at|date:"I:i A, d M Y" }} • Slot: {{ order.delivery_slot }}
+                    </p>
+                </div>
+
+                <!-- Current Live Status Badge -->
+                <div class="sm:text-right">
+                    <div id="live-status-badge" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold shadow-md {% if order.order_status == 'delivered' %}bg-emerald-600 text-white{% elif order.order_status == 'cancelled' %}bg-rose-600 text-white{% else %}bg-byte-amber text-white animate-pulse{% endif %}">
+                        <i class="fa-solid fa-circle-dot"></i>
+                        <span id="live-status-text">{{ order.get_order_status_display }}</span>
+                    </div>
+                    <span class="text-[11px] text-white/70 block mt-1.5" id="auto-refresh-indicator">
+                        <i class="fa-solid fa-rotate text-xs animate-spin mr-1"></i> Live updating every 8s
+                    </span>
+                </div>
+            </div>
+
+            <!-- Animated Status Stepper -->
+            <div class="p-6 sm:p-8 border-b border-gray-200 bg-gray-50/50">
+                <div class="relative">
+                    <!-- Progress Bar Track -->
+                    <div class="hidden sm:block absolute top-1/2 left-0 right-0 h-1.5 bg-gray-200 -translate-y-1/2 z-0">
+                        <div id="stepper-progress-bar" class="h-full bg-byte-maroon transition-all duration-700" style="width: {% if order.status_step_index == 0 %}10%{% elif order.status_step_index == 1 %}28%{% elif order.status_step_index == 2 %}48%{% elif order.status_step_index == 3 %}68%{% elif order.status_step_index == 4 %}85%{% elif order.status_step_index == 5 %}100%{% else %}0%{% endif %}"></div>
+                    </div>
+
+                    <!-- Steps Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-6 gap-4 relative z-10 text-center">
+                        
+                        <!-- Step 0: Received -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 0 %}bg-byte-maroon text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="0">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">Received</span>
+                            <span class="text-[10px] text-gray-400">Order logged</span>
+                        </div>
+
+                        <!-- Step 1: Confirmed -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 1 %}bg-byte-maroon text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="1">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">Confirmed</span>
+                            <span class="text-[10px] text-gray-400">Accepted</span>
+                        </div>
+
+                        <!-- Step 2: Preparing -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 2 %}bg-byte-maroon text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="2">
+                                <i class="fa-solid fa-kitchen-set"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">Cooking 🍳</span>
+                            <span class="text-[10px] text-gray-400">In the kitchen</span>
+                        </div>
+
+                        <!-- Step 3: Ready -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 3 %}bg-byte-maroon text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="3">
+                                <i class="fa-solid fa-box-open"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">Packed 📦</span>
+                            <span class="text-[10px] text-gray-400">Ready for pickup</span>
+                        </div>
+
+                        <!-- Step 4: Out for Delivery -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 4 %}bg-byte-maroon text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="4">
+                                <i class="fa-solid fa-motorcycle"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">On the Way 🛵</span>
+                            <span class="text-[10px] text-gray-400">With rider</span>
+                        </div>
+
+                        <!-- Step 5: Delivered -->
+                        <div class="step-item flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-2 shadow transition-all duration-300 {% if order.status_step_index >= 5 %}bg-emerald-600 text-white{% else %}bg-gray-200 text-gray-500{% endif %}" data-step="5">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-800 block">Delivered 🎉</span>
+                            <span class="text-[10px] text-gray-400">Enjoy your meal!</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details Breakdown -->
+            <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Left: Order Items List -->
+                <div>
+                    <h3 class="font-display font-bold text-lg text-byte-maroon border-b border-gray-100 pb-2 mb-4">
+                        Items in this Order
+                    </h3>
+                    <div class="space-y-3">
+                        {% for item in order.items.all %}
+                        <div class="flex items-start justify-between text-xs sm:text-sm p-3 rounded-xl bg-gray-50 border border-gray-100">
+                            <div>
+                                <span class="font-bold text-gray-900">{{ item.quantity }}x {{ item.item_name }}</span>
+                                {% if item.addons %}
+                                <span class="block text-[11px] text-byte-amber font-semibold">+ {{ item.addons }}</span>
+                                {% endif %}
+                                {% if item.special_instructions %}
+                                <span class="block text-[11px] text-gray-500 italic">Instruction: "{{ item.special_instructions }}"</span>
+                                {% endif %}
+                            </div>
+                            <span class="font-bold text-byte-maroon">৳{{ item.subtotal|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200 space-y-1.5 text-xs text-gray-600 mt-4">
+                        <div class="flex justify-between">
+                            <span>Subtotal</span>
+                            <span class="font-bold text-gray-900">৳{{ order.subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery Fee</span>
+                            <span class="font-bold text-gray-900">৳{{ order.delivery_fee|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-extrabold text-byte-maroon pt-2 border-t border-gray-100">
+                            <span>Total</span>
+                            <span class="text-lg">৳{{ order.total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Delivery & Customer Info -->
+                <div class="space-y-4">
+                    <h3 class="font-display font-bold text-lg text-byte-maroon border-b border-gray-100 pb-2 mb-4">
+                        Delivery Destination
+                    </h3>
+
+                    <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-2 text-xs text-gray-700">
+                        <div>
+                            <span class="text-gray-400 font-bold uppercase block text-[10px]">Customer Name:</span>
+                            <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 font-bold uppercase block text-[10px]">Phone Number:</span>
+                            <span class="font-bold text-gray-900">{{ order.customer_phone }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 font-bold uppercase block text-[10px]">Delivery Area:</span>
+                            <span class="font-bold text-byte-maroon">{{ order.delivery_area }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 font-bold uppercase block text-[10px]">Full Address:</span>
+                            <p class="font-medium text-gray-800 leading-relaxed">{{ order.delivery_address }}</p>
+                        </div>
+                        {% if order.customer_notes %}
+                        <div class="pt-2 border-t border-gray-200">
+                            <span class="text-gray-400 font-bold uppercase block text-[10px]">Cooking / Rider Notes:</span>
+                            <p class="font-medium text-amber-800 italic">{{ order.customer_notes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/20 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase text-byte-maroon block">Payment Method</span>
+                            <span class="font-bold text-sm text-gray-900">{{ order.get_payment_method_display }}</span>
+                            {% if order.transaction_id %}
+                            <span class="block text-[11px] text-gray-500 font-mono">TrxID: {{ order.transaction_id }}</span>
+                            {% endif %}
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold {% if order.payment_status == 'verified' %}bg-emerald-100 text-emerald-700 border border-emerald-300{% elif order.payment_status == 'submitted' %}bg-amber-100 text-amber-700 border border-amber-300{% else %}bg-gray-100 text-gray-700{% endif %}">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Kitchen Contact Assistance -->
+                    <div class="p-4 rounded-2xl bg-white border border-gray-200 flex items-center justify-between text-xs">
+                        <div>
+                            <span class="font-bold text-gray-900 block">Need help with your order?</span>
+                            <span class="text-gray-500">Call kitchen hotline directly</span>
+                        </div>
+                        <a href="tel:{{ setting.phone }}" class="px-4 py-2 rounded-xl bg-byte-maroon text-white font-bold hover:bg-byte-maroonDark transition">
+                            <i class="fa-solid fa-phone mr-1"></i> {{ setting.phone }}
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        {% elif search_num %}
+        <!-- Order Not Found -->
+        <div class="bg-white rounded-3xl p-12 text-center border border-gray-200 max-w-xl mx-auto shadow-sm">
+            <i class="fa-solid fa-triangle-exclamation text-5xl text-amber-500 mb-4"></i>
+            <h3 class="font-display text-2xl font-bold text-byte-maroon mb-2">Order Not Found</h3>
+            <p class="text-sm text-gray-500 mb-6">
+                We could not locate any order with the code <strong class="text-gray-900">#{{ search_num }}</strong>. Please check your confirmation SMS/receipt or contact our hotline.
+            </p>
+            <a href="tel:{{ setting.phone }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-byte-maroon text-white font-bold text-sm">
+                <i class="fa-solid fa-phone text-byte-amber"></i> Call {{ setting.phone }}
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if order %}
+<script>
+    const orderNumber = "{{ order.order_number }}";
+    const statusMap = {
+        'pending': { index: 0, label: 'Order Received', color: 'bg-byte-amber text-white' },
+        'confirmed': { index: 1, label: 'Order Confirmed', color: 'bg-byte-maroon text-white' },
+        'preparing': { index: 2, label: 'Kitchen Preparing 🍳', color: 'bg-byte-maroon text-white animate-pulse' },
+        'ready': { index: 3, label: 'Ready for Delivery 🛵', color: 'bg-byte-amber text-white' },
+        'out_for_delivery': { index: 4, label: 'Out for Delivery 🚀', color: 'bg-blue-600 text-white animate-pulse' },
+        'delivered': { index: 5, label: 'Delivered 🎉', color: 'bg-emerald-600 text-white' },
+        'cancelled': { index: -1, label: 'Cancelled ❌', color: 'bg-rose-600 text-white' }
+    };
+
+    function pollOrderStatus() {
+        fetch(`/api/order/${orderNumber}/status/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.found) {
+                    const st = statusMap[data.order_status] || { index: -1, label: data.status_display, color: 'bg-gray-600 text-white' };
+                    
+                    // Update badge
+                    const badge = document.getElementById('live-status-badge');
+                    const text = document.getElementById('live-status-text');
+                    if (badge && text) {
+                        badge.className = `inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold shadow-md ${st.color}`;
+                        text.innerText = st.label;
+                    }
+
+                    // Update Stepper
+                    const steps = document.querySelectorAll('.step-item > div');
+                    steps.forEach(s => {
+                        const stepIdx = parseInt(s.getAttribute('data-step'));
+                        if (stepIdx <= st.index) {
+                            s.classList.remove('bg-gray-200', 'text-gray-500');
+                            s.classList.add(stepIdx === 5 ? 'bg-emerald-600' : 'bg-byte-maroon', 'text-white');
+                        } else {
+                            s.classList.add('bg-gray-200', 'text-gray-500');
+                            s.classList.remove('bg-byte-maroon', 'bg-emerald-600', 'text-white');
+                        }
+                    });
+
+                    // Update Stepper Bar
+                    const bar = document.getElementById('stepper-progress-bar');
+                    if (bar) {
+                        const percentages = ['10%', '28%', '48%', '68%', '85%', '100%'];
+                        bar.style.width = st.index >= 0 ? percentages[st.index] : '0%';
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Poll every 8 seconds
+    setInterval(pollOrderStatus, 8000);
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,647 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ setting.restaurant_name }} — {{ setting.tagline }} | Cloud Kitchen{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="relative bg-byte-maroon text-white overflow-hidden py-16 lg:py-24 border-b-4 border-byte-amber">
+    <!-- Subtle Background Graphic Elements -->
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ff8c42_1px,transparent_1px)] [background-size:20px_20px]"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Text Content -->
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <!-- Status Tag -->
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-byte-cream text-xs sm:text-sm font-semibold tracking-wide">
+                    <span class="w-2.5 h-2.5 rounded-full bg-byte-amber animate-ping"></span>
+                    <span>Daily Fresh Cloud Kitchen • Dhaka</span>
+                </div>
+
+                <!-- Main Branding Heading -->
+                <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight uppercase leading-tight">
+                    <span class="text-byte-amber">{{ setting.restaurant_name }}</span>
+                    <span class="block text-white text-3xl sm:text-4xl lg:text-5xl mt-1">Fresh • Tasty • Budget-Friendly</span>
+                </h1>
+
+                <!-- Tagline from Canva reference -->
+                <p class="text-base sm:text-lg lg:text-xl text-byte-cream/90 font-medium max-w-2xl leading-relaxed italic border-l-4 border-byte-amber pl-4">
+                    “{{ setting.mission_statement }}”
+                </p>
+
+                <!-- Value Props Pills -->
+                <div class="flex flex-wrap gap-2 pt-2 justify-center lg:justify-start text-xs sm:text-sm font-bold">
+                    <span class="px-3.5 py-1.5 rounded-lg bg-white/10 text-byte-cream flex items-center gap-1.5 border border-white/10">
+                        <i class="fa-solid fa-fire-burner text-byte-amber"></i> Freshly Cooked Daily
+                    </span>
+                    <span class="px-3.5 py-1.5 rounded-lg bg-white/10 text-byte-cream flex items-center gap-1.5 border border-white/10">
+                        <i class="fa-solid fa-bowl-rice text-byte-amber"></i> Honest Portions
+                    </span>
+                    <span class="px-3.5 py-1.5 rounded-lg bg-white/10 text-byte-cream flex items-center gap-1.5 border border-white/10">
+                        <i class="fa-solid fa-wallet text-byte-amber"></i> Student & Hustler Rates
+                    </span>
+                    <span class="px-3.5 py-1.5 rounded-lg bg-white/10 text-byte-cream flex items-center gap-1.5 border border-white/10">
+                        <i class="fa-solid fa-truck-fast text-byte-amber"></i> 25-40 Min Hot Delivery
+                    </span>
+                </div>
+
+                <!-- CTA Action Buttons -->
+                <div class="pt-4 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                    <a href="#menu-catalog" class="w-full sm:w-auto px-8 py-4 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-base tracking-wide shadow-xl hover:shadow-2xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-utensils"></i>
+                        <span>Order Food Now</span>
+                    </a>
+                    <a href="#story" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 border-2 border-white/30 text-white font-bold text-base transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Our Story</span>
+                    </a>
+                    <a href="tel:{{ setting.phone }}" class="w-full sm:w-auto px-6 py-4 rounded-full bg-white/5 hover:bg-white/15 text-byte-cream font-semibold text-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-phone text-byte-amber"></i>
+                        <span>{{ setting.phone }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Hero Visual Collage -->
+            <div class="lg:col-span-5 relative">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                    <!-- Main Card -->
+                    <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 bg-byte-maroonDark relative group">
+                        <img src="{% static 'images/hero_banner.png' %}" alt="The Byte Meal Box" class="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4 text-white">
+                            <span class="px-2.5 py-1 rounded bg-byte-amber text-xs font-bold uppercase tracking-wider">Chef's Signature</span>
+                            <h3 class="font-display text-xl font-bold mt-1">Homestyle Chicken Curry & Jira Rice</h3>
+                            <p class="text-xs text-byte-cream/80">Cooked fresh each morning with genuine spices.</p>
+                        </div>
+                    </div>
+
+                    <!-- Floating Mini Badge -->
+                    <div class="absolute -top-6 -right-4 bg-byte-amber text-white p-3 sm:p-4 rounded-2xl shadow-xl flex items-center gap-3 border-2 border-white/40 transform rotate-2 animate-pulse">
+                        <i class="fa-solid fa-award text-2xl sm:text-3xl"></i>
+                        <div>
+                            <span class="text-xs font-bold block uppercase leading-tight">100% Guaranteed</span>
+                            <span class="text-sm font-extrabold">Clean & Fresh</span>
+                        </div>
+                    </div>
+
+                    <!-- Floating Kitchen Stats -->
+                    <div class="absolute -bottom-6 -left-4 bg-white text-byte-charcoal p-3 sm:p-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-gray-100 transform -rotate-1">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-gray-500 uppercase block">Delivery In</span>
+                            <span class="text-sm font-extrabold text-byte-maroon">{{ setting.estimated_delivery_time }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- LIVE ORDER TRACKING QUICK LOOKUP WIDGET -->
+<section class="bg-byte-cream py-6 border-b border-byte-maroon/10">
+    <div class="max-w-4xl mx-auto px-4">
+        <form action="{% url 'order_tracking_search' %}" method="GET" class="bg-white p-4 sm:p-5 rounded-2xl shadow-lg border border-byte-maroon/10 flex flex-col sm:flex-row items-center gap-3">
+            <div class="flex items-center gap-3 text-byte-maroon px-2">
+                <i class="fa-solid fa-location-crosshairs text-2xl text-byte-amber"></i>
+                <div>
+                    <h4 class="font-bold text-sm uppercase tracking-wide">Track Your Order</h4>
+                    <p class="text-xs text-gray-500">Live kitchen preparation & delivery updates</p>
+                </div>
+            </div>
+            <div class="flex-1 w-full">
+                <input type="text" name="order_number" placeholder="Enter Order Number (e.g. BYTE-82194)" required class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon font-semibold">
+            </div>
+            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-sm transition shadow flex items-center justify-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Track Now</span>
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- WHO WE ARE / OUR STORY (Matching Canva Slide 2) -->
+<section id="story" class="py-16 sm:py-24 bg-white relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Photo / Artwork -->
+            <div class="lg:col-span-5 relative">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                    <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-byte-cream bg-byte-maroon">
+                        <img src="{% static 'images/story_chef.jpg' %}" alt="The Byte Kitchen Story" class="w-full h-80 sm:h-96 object-cover">
+                    </div>
+                    <!-- Decorative Badge from Canva -->
+                    <div class="absolute -bottom-6 -right-4 bg-byte-maroon text-white p-5 rounded-2xl shadow-2xl border-2 border-byte-amber max-w-xs text-center hidden sm:block">
+                        <span class="text-byte-amber font-display text-2xl font-black block">100% FRESH</span>
+                        <span class="text-xs text-byte-cream font-medium">No artificial shortcuts. Honest portions every single day.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Text from Canva -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-block px-3 py-1 rounded-full bg-byte-maroon/10 text-byte-maroon text-xs font-extrabold uppercase tracking-widest">
+                    Who We Are
+                </div>
+
+                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-byte-maroon uppercase tracking-wide">
+                    Our Story
+                </h2>
+
+                <div class="text-gray-700 text-base sm:text-lg leading-relaxed space-y-4">
+                    <p class="font-medium text-byte-charcoal">
+                        {{ setting.story }}
+                    </p>
+                </div>
+
+                <!-- 3 Target Pillars -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                    <div class="p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h4 class="font-bold text-byte-maroon text-sm">For Students</h4>
+                        <p class="text-xs text-gray-600 mt-1">Pocket-friendly, fulfilling meal boxes between classes.</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <h4 class="font-bold text-byte-maroon text-sm">For Office Hustlers</h4>
+                        <p class="text-xs text-gray-600 mt-1">Reliable, on-time hot lunches that fuel productive workdays.</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-snowflake"></i>
+                        </div>
+                        <h4 class="font-bold text-byte-maroon text-sm">Ready-To-Fry</h4>
+                        <p class="text-xs text-gray-600 mt-1">Frozen snacks & wings to fry hot at home anytime.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- CANVA SHOWCASE BANNER SECTIONS (Curry, Rice, Fries) -->
+<section class="py-12 bg-byte-maroon text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-2">Canva Featured Highlights</span>
+            <h2 class="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-wide">
+                Specialties from Our Kitchen
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Curry Box -->
+            <div class="bg-white/5 rounded-3xl p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
+                <div>
+                    <div class="rounded-2xl overflow-hidden h-52 mb-5 relative">
+                        <img src="{% static 'images/curry_main.jpg' %}" alt="Curry Dishes" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 right-3 px-3 py-1 rounded-full bg-byte-amber text-white text-xs font-extrabold uppercase">Slow-Cooked</span>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold uppercase tracking-wider text-byte-amber mb-2">CURRY</h3>
+                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-4">
+                        Slow-cooked with onions and traditional spices—rich in flavor, comforting, and freshly prepared.
+                    </p>
+                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Chicken Curry (Homestyle)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Beef Curry (Tender & Hearty)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Vegetable Curry (Seasonal Garden)</li>
+                    </ul>
+                </div>
+                <a href="{% url 'menu' %}?category=curry" class="mt-6 w-full py-2.5 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition">
+                    Explore Curries
+                </a>
+            </div>
+
+            <!-- Rice Box -->
+            <div class="bg-white/5 rounded-3xl p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
+                <div>
+                    <div class="rounded-2xl overflow-hidden h-52 mb-5 relative">
+                        <img src="{% static 'images/rice_main.jpg' %}" alt="Rice Dishes" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 right-3 px-3 py-1 rounded-full bg-byte-amber text-white text-xs font-extrabold uppercase">Steamed Fresh</span>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold uppercase tracking-wider text-byte-amber mb-2">RICE</h3>
+                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-4">
+                        Steamed premium rice varieties cooked fresh to perfection—light, fluffy, and the ideal base.
+                    </p>
+                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Plain Rice (Light & Fluffy)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Fried Rice (Fresh Veggies)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Jira Rice (Cumin Aromatic)</li>
+                    </ul>
+                </div>
+                <a href="{% url 'menu' %}?category=rice" class="mt-6 w-full py-2.5 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition">
+                    Explore Rice
+                </a>
+            </div>
+
+            <!-- Fries Box -->
+            <div class="bg-white/5 rounded-3xl p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
+                <div>
+                    <div class="rounded-2xl overflow-hidden h-52 mb-5 relative">
+                        <img src="{% static 'images/fries_main.jpg' %}" alt="Fries and Sides" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 right-3 px-3 py-1 rounded-full bg-byte-amber text-white text-xs font-extrabold uppercase">Crispy Crunch</span>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold uppercase tracking-wider text-byte-amber mb-2">FRIES</h3>
+                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-4">
+                        Crispy and spicy chicken, golden potato sticks, and authentic spiced vegetable pakoras.
+                    </p>
+                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Chicken Fry (Spicy Crunch)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> French Fries (Golden Salted)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px]"></i> Pakora (Crispy Vegetable)</li>
+                    </ul>
+                </div>
+                <a href="{% url 'menu' %}?category=fries" class="mt-6 w-full py-2.5 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition">
+                    Explore Fries
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN INTERACTIVE MENU CATALOG -->
+<section id="menu-catalog" class="py-16 sm:py-24 bg-byte-creamLight">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-2">Cooked Daily with Responsibility</span>
+            <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-byte-maroon uppercase tracking-wide">
+                On The Menu
+            </h2>
+            <p class="text-sm sm:text-base text-gray-600 mt-2">
+                Order your favorites directly. All dishes are freshly cooked in small batches for peak flavor and hygiene.
+            </p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="flex flex-wrap justify-center items-center gap-2 mb-10">
+            <button onclick="filterCategory('all', this)" class="menu-tab-btn active px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-byte-maroon text-white">
+                All Items
+            </button>
+            {% for cat in categories %}
+            <button onclick="filterCategory('{{ cat.slug }}', this)" class="menu-tab-btn px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-white text-gray-700 hover:bg-byte-maroon hover:text-white border border-gray-200">
+                {{ cat.name }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Menu Grid -->
+        <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for cat in categories %}
+                {% for item in cat.items.all %}
+                <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col justify-between group" data-category="{{ cat.slug }}">
+                    
+                    <div>
+                        <!-- Food Photo -->
+                        <div class="relative h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% elif item.static_image %}
+                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% else %}
+                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% endif %}
+
+                            <!-- Top Badges -->
+                            <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
+                                {% if item.is_featured %}
+                                <span class="px-2 py-0.5 rounded-md bg-byte-amber text-white text-[10px] font-black uppercase tracking-wider shadow">
+                                    ★ Popular
+                                </span>
+                                {% endif %}
+                                {% if item.is_frozen %}
+                                <span class="px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[10px] font-black uppercase tracking-wider shadow">
+                                    <i class="fa-solid fa-snowflake"></i> Frozen
+                                </span>
+                                {% endif %}
+                                {% if item.is_vegetarian %}
+                                <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider shadow">
+                                    Veg
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            {% if item.has_discount %}
+                            <div class="absolute top-2.5 right-2.5 bg-rose-600 text-white text-[11px] font-black px-2 py-0.5 rounded-md shadow">
+                                Save {{ item.discount_percent }}%
+                            </div>
+                            {% endif %}
+
+                            <div class="absolute bottom-2 left-2.5 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2 py-0.5 rounded">
+                                <i class="fa-solid fa-scale-balanced mr-1"></i> {{ item.portion_size }}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-byte-amber font-extrabold uppercase tracking-wider">{{ cat.name }}</span>
+                                {% if item.spice_level == 'hot' %}
+                                <span class="text-rose-600 font-bold flex items-center gap-0.5" title="Hot & Spicy">
+                                    <i class="fa-solid fa-pepper-hot"></i><i class="fa-solid fa-pepper-hot"></i> Spicy
+                                </span>
+                                {% elif item.spice_level == 'medium' %}
+                                <span class="text-amber-600 font-bold flex items-center gap-0.5" title="Medium Spicy">
+                                    <i class="fa-solid fa-pepper-hot"></i> Medium
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="font-display font-bold text-lg text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer" onclick="openItemModal({{ item.id }})">
+                                {{ item.name }}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                {{ item.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer: Price & Add Button -->
+                    <div class="p-4 pt-0 border-t border-gray-100 flex items-center justify-between mt-2">
+                        <div>
+                            {% if item.has_discount %}
+                            <span class="text-xs text-gray-400 line-through block">৳{{ item.price|floatformat:0 }}</span>
+                            <span class="font-extrabold text-lg text-byte-maroon">৳{{ item.discount_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="font-extrabold text-lg text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options">
+                                <i class="fa-solid fa-sliders text-xs"></i>
+                            </button>
+                            <button onclick="addToCart({{ item.id }}, 1)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="{% url 'menu' %}" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 border-byte-maroon text-byte-maroon hover:bg-byte-maroon hover:text-white font-extrabold text-sm tracking-wide transition shadow-sm">
+                <span>View Full Menu with Filters & Search</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- FROZEN ITEMS HOME COOKING BANNER -->
+<section class="py-16 bg-byte-maroonDark text-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="bg-gradient-to-r from-byte-maroon to-byte-maroonLight rounded-3xl p-8 sm:p-12 border border-white/20 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-8 space-y-4">
+                <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-snowflake"></i> Ready To Fry at Home
+                </span>
+                <h3 class="font-display text-3xl sm:text-4xl font-bold uppercase text-white">
+                    Stock Your Freezer with The BYTE's Frozen Delights
+                </h3>
+                <p class="text-sm sm:text-base text-byte-cream/90 max-w-2xl leading-relaxed">
+                    Samosas, spring rolls, seasoned chicken fries, and our signature marinated wings. Ready in 5 minutes whenever hunger strikes or unexpected guests show up!
+                </p>
+                <div class="pt-2 flex flex-wrap gap-4">
+                    <a href="{% url 'menu' %}?frozen=true" class="px-6 py-3 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-sm transition shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-snowflake"></i>
+                        <span>Order Frozen Packs</span>
+                    </a>
+                </div>
+            </div>
+            <div class="lg:col-span-4 flex justify-center">
+                <div class="rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 max-w-xs">
+                    <img src="{% static 'images/frozen_items.jpg' %}" alt="Frozen Items" class="w-full h-64 object-cover">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CUSTOMER REVIEWS (Matching Canva Slide 4 / Reviews) -->
+<section id="reviews" class="py-16 sm:py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-2">Customer Feedback</span>
+                <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-byte-maroon uppercase tracking-wide">
+                    What Our Daily Hustlers Say
+                </h2>
+            </div>
+            <button onclick="document.getElementById('review-modal').classList.remove('hidden')" class="px-5 py-2.5 rounded-full bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs tracking-wide transition shadow flex items-center gap-2">
+                <i class="fa-solid fa-star text-byte-amber"></i>
+                <span>Write a Review</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for r in reviews %}
+            <div class="p-6 rounded-2xl bg-byte-cream/50 border border-byte-maroon/10 hover:border-byte-maroon/30 transition shadow-sm flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="flex items-center text-amber-500 text-sm">
+                        {% for i in "12345" %}
+                        <i class="fa-solid fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-700 italic leading-relaxed">
+                        “{{ r.comment }}”
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-byte-maroon/10 mt-4 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-byte-maroon text-white flex items-center justify-center font-bold text-xs">
+                        {{ r.name|slice:":1" }}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-byte-maroon">{{ r.name }}</h4>
+                        <span class="text-[11px] text-gray-500 font-medium block">{{ r.role }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+
+<!-- CONTACT & LOCATION SECTION -->
+<section id="contact" class="py-16 sm:py-24 bg-byte-cream">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            <!-- Kitchen Information -->
+            <div class="lg:col-span-5 space-y-6">
+                <div>
+                    <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-1">Get In Touch</span>
+                    <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-byte-maroon uppercase tracking-wide">
+                        The BYTE Cloud Kitchen
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Questions about bulk orders, university event catering, or delivery areas? Reach out to us directly!
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white shadow-sm border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-byte-amber flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase block">Hotline / WhatsApp</span>
+                            <a href="tel:{{ setting.phone }}" class="text-base font-extrabold text-byte-maroon hover:text-byte-amber transition">{{ setting.phone }}</a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white shadow-sm border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-byte-amber flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase block">Official Email</span>
+                            <a href="mailto:{{ setting.email }}" class="text-base font-extrabold text-byte-maroon hover:text-byte-amber transition">{{ setting.email }}</a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white shadow-sm border border-byte-maroon/10">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-byte-amber flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500 font-bold uppercase block">Delivery Coverage</span>
+                            <p class="text-xs text-gray-700 font-medium leading-relaxed">{{ setting.delivery_areas }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Form -->
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-byte-maroon/10">
+                    <h3 class="font-display text-2xl font-bold text-byte-maroon mb-2">Send Us a Direct Message</h3>
+                    <p class="text-xs text-gray-500 mb-6">We read every message and respond as quickly as possible.</p>
+
+                    <form action="{% url 'contact_submit' %}" method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Name *</label>
+                                <input type="text" name="name" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Phone Number</label>
+                                <input type="text" name="phone" placeholder="017xxxxxxxx" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Address *</label>
+                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Subject</label>
+                            <input type="text" name="subject" value="Meal Inquiry / Catering" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Message *</label>
+                            <textarea name="message" rows="4" required placeholder="Tell us how we can help you..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-sm tracking-wide transition shadow-lg flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Send Message</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- REVIEW SUBMISSION MODAL -->
+<div id="review-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+        <button onclick="document.getElementById('review-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <h3 class="font-display text-xl font-bold text-byte-maroon mb-1">Write a Review</h3>
+        <p class="text-xs text-gray-500 mb-4">Share your experience with The BYTE kitchen.</p>
+
+        <form action="{% url 'review_submit' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Name *</label>
+                <input type="text" name="name" required class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Role / Designation</label>
+                <input type="text" name="role" placeholder="e.g. Student, Banker, Daily Hustler" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rating</label>
+                <select name="rating" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon font-bold text-amber-500">
+                    <option value="5">★★★★★ (5 Stars - Exceptional)</option>
+                    <option value="4">★★★★☆ (4 Stars - Very Good)</option>
+                    <option value="3">★★★☆☆ (3 Stars - Average)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Your Review *</label>
+                <textarea name="comment" rows="3" required placeholder="How was the taste, portion, and delivery?" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-sm transition">
+                Submit Review
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterCategory(slug, btn) {
+        // Tab styling
+        document.querySelectorAll('.menu-tab-btn').forEach(b => {
+            b.classList.remove('bg-byte-maroon', 'text-white', 'active');
+            b.classList.add('bg-white', 'text-gray-700');
+        });
+        btn.classList.add('bg-byte-maroon', 'text-white', 'active');
+        btn.classList.remove('bg-white', 'text-gray-700');
+
+        // Cards visibility
+        const cards = document.querySelectorAll('.menu-card');
+        cards.forEach(card => {
+            if (slug === 'all' || card.getAttribute('data-category') === slug) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

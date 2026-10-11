@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Kitchen Operations Dashboard (KDS) — {{ setting.restaurant_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header & Kitchen Controls -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
+                    <h1 class="font-display text-2xl sm:text-3xl font-bold text-byte-maroon">Kitchen Display System (KDS)</h1>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                    Live operational cockpit for chefs, packers, and dispatch riders.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Toggle Open/Closed -->
+                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span id="kitchen-status-toggle-text">{% if setting.is_kitchen_open %}Kitchen is OPEN{% else %}Kitchen is CLOSED{% endif %}</span>
+                </button>
+
+                <button onclick="window.location.reload()" class="px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Refresh</span>
+                </button>
+
+                <a href="{% url 'admin:index' %}" class="px-4 py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Admin Portal</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-fire-burner"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Orders in Kitchen</span>
+                    <h3 class="text-2xl font-black text-byte-maroon">{{ pending_prep_count }} Active</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Today's Total Orders</span>
+                    <h3 class="text-2xl font-black text-gray-900">{{ today_count }} Orders</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-bangladeshi-taka-sign"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">Today's Revenue</span>
+                    <h3 class="text-2xl font-black text-emerald-700">৳{{ today_revenue|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Orders Kanban Stream -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-display text-xl font-bold text-byte-maroon flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-list text-byte-amber"></i>
+                    <span>Live Active Orders ({{ active_orders|length }})</span>
+                </h2>
+                <span class="text-xs text-gray-500">Auto-refreshes every 10 seconds</span>
+            </div>
+
+            {% if active_orders %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for order in active_orders %}
+                <div class="bg-white rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between" id="order-card-{{ order.id }}">
+                    
+                    <div>
+                        <!-- Card Header -->
+                        <div class="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <span class="font-mono font-black text-base text-byte-maroon">#{{ order.order_number }}</span>
+                                <span class="text-[11px] text-gray-500 block">{{ order.created_at|timesince }} ago</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ order.get_order_status_display }}
+                            </span>
+                        </div>
+
+                        <!-- Customer Details -->
+                        <div class="p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
+                            <div class="flex justify-between">
+                                <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
+                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1">
+                                    <i class="fa-solid fa-phone"></i> {{ order.customer_phone }}
+                                </a>
+                            </div>
+                            <p class="text-gray-600"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> {{ order.delivery_area }} • {{ order.delivery_address }}</p>
+                            <div class="flex items-center justify-between text-[11px] pt-1 text-gray-500">
+                                <span>Slot: <strong>{{ order.delivery_slot }}</strong></span>
+                                <span class="font-bold uppercase text-byte-maroon">{{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})</span>
+                            </div>
+                            {% if order.customer_notes %}
+                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2">
+                                ⚠️ Notes: {{ order.customer_notes }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Items in Ticket (KOT) -->
+                        <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kitchen Ticket Items</span>
+                            {% for item in order.items.all %}
+                            <div class="flex items-start justify-between text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                <div>
+                                    <span class="font-extrabold text-gray-900 text-sm">{{ item.quantity }}x</span>
+                                    <span class="font-bold text-gray-800">{{ item.item_name }}</span>
+                                    {% if item.addons %}
+                                    <span class="block text-[10px] text-byte-amber font-semibold">+ {{ item.addons }}</span>
+                                    {% endif %}
+                                    {% if item.special_instructions %}
+                                    <span class="block text-[10px] text-rose-600 font-bold">👉 {{ item.special_instructions }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="font-semibold text-gray-600">৳{{ item.subtotal|floatformat:0 }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-gray-700 pb-1">
+                            <span>Total Bill:</span>
+                            <span class="text-base text-byte-maroon font-black">৳{{ order.total|floatformat:2 }}</span>
+                        </div>
+
+                        <!-- Transition Buttons -->
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                            {% if order.order_status == 'pending' %}
+                            <button onclick="changeOrderStatus({{ order.id }}, 'confirmed')" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                                Confirm Order
+                            </button>
+                            <button onclick="changeOrderStatus({{ order.id }}, 'preparing')" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                                Start Cooking 🍳
+                            </button>
+                            {% elif order.order_status == 'confirmed' %}
+                            <button onclick="changeOrderStatus({{ order.id }}, 'preparing')" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                                Start Cooking 🍳
+                            </button>
+                            {% elif order.order_status == 'preparing' %}
+                            <button onclick="changeOrderStatus({{ order.id }}, 'ready')" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
+                                Mark Packed & Ready 📦
+                            </button>
+                            {% elif order.order_status == 'ready' %}
+                            <button onclick="changeOrderStatus({{ order.id }}, 'out_for_delivery')" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                                Hand to Rider 🛵
+                            </button>
+                            {% elif order.order_status == 'out_for_delivery' %}
+                            <button onclick="changeOrderStatus({{ order.id }}, 'delivered')" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                                Mark Delivered 🎉
+                            </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex justify-between items-center pt-1 text-[11px]">
+                            <a href="{% url 'order_tracking' order.order_number %}" target="_blank" class="text-gray-500 hover:text-byte-maroon font-semibold">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer View
+                            </a>
+                            <button onclick="if(confirm('Cancel this order?')) changeOrderStatus({{ order.id }}, 'cancelled')" class="text-rose-600 hover:underline font-semibold">
+                                Cancel Order
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-white rounded-3xl p-12 text-center border border-gray-200">
+                <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-3"></i>
+                <h3 class="font-display text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
+                <p class="text-xs text-gray-500">There are no pending or in-progress orders right now.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Completed Orders Table -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+            <h3 class="font-display text-lg font-bold text-byte-maroon mb-4">Recently Delivered Orders</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                        <tr>
+                            <th class="p-3">Order #</th>
+                            <th class="p-3">Customer</th>
+                            <th class="p-3">Phone</th>
+                            <th class="p-3">Area</th>
+                            <th class="p-3">Total</th>
+                            <th class="p-3">Payment</th>
+                            <th class="p-3">Delivered Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for order in delivered_orders %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-mono font-bold text-byte-maroon">#{{ order.order_number }}</td>
+                            <td class="p-3 font-semibold text-gray-900">{{ order.customer_name }}</td>
+                            <td class="p-3 text-gray-600">{{ order.customer_phone }}</td>
+                            <td class="p-3 text-gray-600">{{ order.delivery_area }}</td>
+                            <td class="p-3 font-bold text-gray-900">৳{{ order.total|floatformat:2 }}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">
+                                    {{ order.get_payment_method_display }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-gray-500">{{ order.updated_at|date:"I:i A, d M" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="p-4 text-center text-gray-400">No delivered orders yet today.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function changeOrderStatus(orderId, newStatus) {
+        fetch(`/api/kitchen/order/${orderId}/update-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Order #${data.order_number} marked as ${data.status_display}!`, 'success');
+                setTimeout(() => window.location.reload(), 600);
+            } else {
+                showToast(data.message || 'Error updating order', 'error');
+            }
+        });
+    }
+
+    function toggleKitchenStatus() {
+        fetch('/api/kitchen/toggle-open/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.status_text, 'info');
+                setTimeout(() => window.location.reload(), 500);
+            }
+        });
+    }
+
+    // Auto-refresh KDS dashboard every 15 seconds
+    setTimeout(() => {
+        window.location.reload();
+    }, 15000);
+</script>
+{% endblock %}
