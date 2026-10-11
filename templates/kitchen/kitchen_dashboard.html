@@ -76,9 +76,19 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-display text-xl font-bold text-byte-maroon flex items-center gap-2">
                     <i class="fa-solid fa-clipboard-list text-byte-amber"></i>
-                    <span>Live Active Orders ({{ active_orders|length }})</span>
+                    <span>Live Active Orders (<span id="active-orders-count-badge">{{ active_orders|length }}</span>)</span>
                 </h2>
-                <span class="text-xs text-gray-500">Auto-refreshes every 10 seconds</span>
+                <span class="text-xs text-gray-500">Auto-syncs live in background</span>
+            </div>
+
+            <div id="new-order-alert-banner" class="hidden mb-6 p-4 rounded-2xl bg-amber-500 text-white font-bold text-sm flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-bell animate-bounce text-base"></i>
+                    <span>New customer order received!</span>
+                </div>
+                <button onclick="window.location.reload()" class="px-4 py-1.5 rounded-xl bg-white text-byte-maroon font-extrabold text-xs shadow hover:bg-gray-100 transition">
+                    Sync Orders Now
+                </button>
             </div>
 
             {% if active_orders %}
@@ -93,7 +103,7 @@
                                 <span class="font-mono font-black text-base text-byte-maroon">#{{ order.order_number }}</span>
                                 <span class="text-[11px] text-gray-500 block">{{ order.created_at|timesince }} ago</span>
                             </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            <span data-order-status-badge class="px-3 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
                                 {{ order.get_order_status_display }}
                             </span>
                         </div>
@@ -140,7 +150,7 @@
                     </div>
 
                     <!-- Card Actions -->
-                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2" data-order-actions>
                         <div class="flex items-center justify-between text-xs font-bold text-gray-700 pb-1">
                             <span>Total Bill:</span>
                             <span class="text-base text-byte-maroon font-black">৳{{ order.total|floatformat:2 }}</span>
@@ -242,76 +252,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function changeOrderStatus(orderId, newStatus, btnElem) {
-        if (btnElem) {
-            btnElem.disabled = true;
-            btnElem.classList.add('opacity-60', 'cursor-not-allowed');
-        }
-        fetch(`/api/kitchen/order/${orderId}/update-status/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Failed with status ' + res.status);
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(`Order #${data.order_number} marked as ${data.status_display}!`, 'success');
-                setTimeout(() => window.location.reload(), 500);
-            } else {
-                showToast(data.message || 'Error updating order', 'error');
-                if (btnElem) {
-                    btnElem.disabled = false;
-                    btnElem.classList.remove('opacity-60', 'cursor-not-allowed');
-                }
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('Failed to update order status.', 'error');
-            if (btnElem) {
-                btnElem.disabled = false;
-                btnElem.classList.remove('opacity-60', 'cursor-not-allowed');
-            }
-        });
-    }
-
-    function toggleKitchenStatus() {
-        const btn = document.getElementById('kitchen-status-toggle-btn');
-        if (btn) btn.disabled = true;
-        fetch('/api/kitchen/toggle-open/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            }
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Failed with status ' + res.status);
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showToast(data.status_text, 'info');
-                setTimeout(() => window.location.reload(), 400);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('Failed to toggle kitchen status.', 'error');
-            if (btn) btn.disabled = false;
-        });
-    }
-
-    // Auto-refresh KDS dashboard every 15 seconds
-    setTimeout(() => {
-        window.location.reload();
-    }, 15000);
-</script>
+<script src="{% static 'js/kitchen_dashboard.js' %}"></script>
 {% endblock %}

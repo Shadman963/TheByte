@@ -370,3 +370,254 @@ class KitchenTests(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['is_open'], not initial_state)
+
+    def test_cart_invalid_quantity_rejected(self):
+        # 1. Negative quantity
+        res_neg = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': -5}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_neg.status_code, 400)
+        self.assertFalse(res_neg.json()['success'])
+
+        # 2. Zero quantity
+        res_zero = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 0}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_zero.status_code, 400)
+
+        # 3. Excessive quantity (> 50)
+        res_excess = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 500}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_excess.status_code, 400)
+
+        # 4. Non-numeric quantity
+        res_str = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 'abc'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_str.status_code, 400)
+
+    def test_cart_unavailable_product_rejected(self):
+        unavailable_item = MenuItem.objects.create(
+            category=self.cat_curry,
+            name="Beef Bhuna (Sold Out)",
+            slug="beef-bhuna-sold-out",
+            description="Sold out item test",
+            price=200.00,
+            is_available=False
+        )
+        res = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': unavailable_item.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(res.json()['success'])
+
+    def test_cart_form_fallback_non_ajax(self):
+        form_client = Client()
+        # 1. Standard HTML form submit to add to cart
+        res_add = form_client.post(reverse('cart_add_api'), data={
+            'item_id': self.item_chicken.id,
+            'quantity': 1
+        })
+        self.assertEqual(res_add.status_code, 302)
+
+        # Cart should now contain the item
+        res_cart = form_client.get(reverse('cart'))
+        self.assertEqual(res_cart.status_code, 200)
+        self.assertContains(res_cart, "Chicken Curry")
+
+    def test_checkout_unavailable_item_and_price_recalculation(self):
+        self.client.login(username='customer1', password='password123')
+
+        # Add available item
+        self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+
+        # Now simulate item being marked sold out before checkout
+        self.item_chicken.is_available = False
+        self.item_chicken.save()
+
+        checkout_data = {
+            'customer_name': 'Tanvir Ahmed',
+            'customer_phone': '01711111111',
+            'customer_email': 'customer1@example.com',
+            'delivery_address': 'House 12, Road 4, Sector 11, Uttara',
+            'delivery_area': 'Uttara',
+            'payment_method': 'cod'
+        }
+        res_fail = self.client.post(reverse('checkout'), data=checkout_data)
+        self.assertEqual(res_fail.status_code, 302)
+        self.assertIn(reverse('cart'), res_fail.url)
+
+        # Restore availability and test server price calculation
+        self.item_chicken.is_available = True
+        self.item_chicken.price = 180.00
+        self.item_chicken.save()
+
+        # Checkout should reflect DB price 180, not old price
+        res_ok = self.client.post(reverse('checkout'), data=checkout_data, follow=True)
+        self.assertEqual(res_ok.status_code, 200)
+        created_order = Order.objects.filter(customer_name='Tanvir Ahmed').first()
+        self.assertIsNotNone(created_order)
+        self.assertEqual(created_order.subtotal, Decimal('180.00'))
+
+    def test_checkout_duplicate_submission_protection(self):
+        self.client.login(username='customer1', password='password123')
+        self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+
+        checkout_data = {
+            'customer_name': 'Tanvir Duplicate Test',
+            'customer_phone': '01799999999',
+            'delivery_address': 'House 5, Mirpur',
+            'delivery_area': 'Mirpur',
+            'payment_method': 'cod'
+        }
+        # First submission
+        res1 = self.client.post(reverse('checkout'), data=checkout_data)
+        self.assertEqual(res1.status_code, 302)
+        initial_order_count = Order.objects.filter(customer_name='Tanvir Duplicate Test').count()
+        self.assertEqual(initial_order_count, 1)
+
+        # Immediate rapid second submission (same details within 10 seconds)
+        res2 = self.client.post(reverse('checkout'), data=checkout_data)
+        self.assertEqual(res2.status_code, 302)
+        second_order_count = Order.objects.filter(customer_name='Tanvir Duplicate Test').count()
+        # Must not create a duplicate order
+        self.assertEqual(second_order_count, 1)
+
+    def test_order_tracking_ownership_and_unauthorized_access(self):
+        # Create user 2
+        user2 = User.objects.create_user(
+            username='customer2',
+            password='password123'
+        )
+
+        # Order belongs to customer1
+        order = Order.objects.create(
+            user=self.customer_user,
+            customer_name="Tanvir",
+            customer_phone="01711111111",
+            delivery_address="Mirpur 10",
+            delivery_area="Mirpur",
+            subtotal=150.00,
+            total=190.00,
+            order_status='pending'
+        )
+
+        # 1. Customer 2 tries to access customer 1's order status API -> 403 Forbidden
+        self.client.login(username='customer2', password='password123')
+        res_api_denied = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
+        self.assertEqual(res_api_denied.status_code, 403)
+
+        # 2. Customer 2 tries to access customer 1's tracking page -> redirected
+        res_page_denied = self.client.get(reverse('order_tracking', kwargs={'order_number': order.order_number}))
+        self.assertEqual(res_page_denied.status_code, 302)
+
+        # 3. Customer 1 (owner) accesses own order -> 200 OK
+        self.client.login(username='customer1', password='password123')
+        res_api_allowed = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
+        self.assertEqual(res_api_allowed.status_code, 200)
+
+        # 4. Staff user accesses customer 1's order -> 200 OK
+        self.client.login(username='staff1', password='password123')
+        res_staff_allowed = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
+        self.assertEqual(res_staff_allowed.status_code, 200)
+
+    def test_kitchen_status_staff_only_permission(self):
+        order = Order.objects.create(
+            user=self.customer_user,
+            customer_name="Tanvir",
+            customer_phone="01711111111",
+            delivery_address="Mirpur 10",
+            delivery_area="Mirpur",
+            subtotal=150.00,
+            total=190.00,
+            order_status='pending'
+        )
+
+        # 1. Anonymous user cannot update status
+        anon_client = Client()
+        res_anon = anon_client.post(
+            reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'status': 'confirmed'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_anon.status_code, 403)
+
+        # 2. Regular customer cannot update status
+        self.client.login(username='customer1', password='password123')
+        res_cust = self.client.post(
+            reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'status': 'confirmed'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_cust.status_code, 403)
+
+        # 3. Staff user can update status
+        self.client.login(username='staff1', password='password123')
+        res_staff = self.client.post(
+            reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'status': 'confirmed'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_staff.status_code, 200)
+
+    def test_kitchen_status_transition_rules(self):
+        self.client.login(username='staff1', password='password123')
+
+        order = Order.objects.create(
+            user=self.customer_user,
+            customer_name="Tanvir",
+            customer_phone="01711111111",
+            delivery_address="Mirpur 10",
+            delivery_area="Mirpur",
+            subtotal=150.00,
+            total=190.00,
+            order_status='pending'
+        )
+
+        # Invalid jump: pending -> delivered (not allowed)
+        res_invalid = self.client.post(
+            reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'status': 'delivered'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_invalid.status_code, 400)
+        self.assertIn("Cannot transition", res_invalid.json()['message'])
+
+        # Valid transitions sequence: pending -> confirmed -> preparing -> ready -> out_for_delivery -> delivered
+        transitions = ['confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered']
+        for target_status in transitions:
+            res_step = self.client.post(
+                reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+                data=json.dumps({'status': target_status}),
+                content_type='application/json'
+            )
+            self.assertEqual(res_step.status_code, 200)
+            order.refresh_from_db()
+            self.assertEqual(order.order_status, target_status)
+
+        # Delivered is terminal state: cannot transition to anything
+        res_terminal = self.client.post(
+            reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'status': 'preparing'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_terminal.status_code, 400)

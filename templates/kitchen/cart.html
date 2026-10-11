@@ -27,7 +27,7 @@
                 <!-- Left: Items List -->
                 <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-4">
                     {% for item in cart %}
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100 gap-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100 gap-4" data-cart-item-key="{{ item.key }}">
                         
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-xl bg-gray-200 overflow-hidden flex-shrink-0">
@@ -54,21 +54,27 @@
                             </div>
                         </div>
 
-                        <!-- Quantity & Item Total -->
+                        <!-- Quantity & Item Total with Form Fallback -->
                         <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
-                            <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
-                                <button type="button" onclick="changeCartQty('{{ item.key|escapejs }}', -1)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">-</button>
-                                <span class="w-8 text-center text-xs font-bold text-gray-900">{{ item.quantity }}</span>
-                                <button type="button" onclick="changeCartQty('{{ item.key|escapejs }}', 1)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">+</button>
-                            </div>
+                            <form method="POST" action="{% url 'cart_update_api' %}" class="ajax-cart-update-form inline-flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
+                                {% csrf_token %}
+                                <input type="hidden" name="key" value="{{ item.key }}">
+                                <button type="submit" name="delta" value="-1" onclick="event.preventDefault(); changeCartQty('{{ item.key|escapejs }}', -1, this)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center" aria-label="Decrease quantity">-</button>
+                                <span class="w-8 text-center text-xs font-bold text-gray-900" data-cart-qty>{{ item.quantity }}</span>
+                                <button type="submit" name="delta" value="1" onclick="event.preventDefault(); changeCartQty('{{ item.key|escapejs }}', 1, this)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center" aria-label="Increase quantity">+</button>
+                            </form>
 
-                            <span class="font-extrabold text-sm sm:text-base text-byte-maroon min-w-[70px] text-right">
+                            <span class="font-extrabold text-sm sm:text-base text-byte-maroon min-w-[70px] text-right" data-cart-item-total>
                                 ৳{{ item.total|floatformat:2 }}
                             </span>
 
-                            <button type="button" onclick="removeCartItem('{{ item.key|escapejs }}')" class="p-2 text-gray-400 hover:text-rose-600 transition" title="Remove item">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
+                            <form method="POST" action="{% url 'cart_remove_api' %}" class="ajax-cart-remove-form inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="key" value="{{ item.key }}">
+                                <button type="submit" onclick="event.preventDefault(); removeCartItem('{{ item.key|escapejs }}', this)" class="p-2 text-gray-400 hover:text-rose-600 transition" title="Remove item" aria-label="Remove {{ item.name }} from cart">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                            </form>
                         </div>
 
                     </div>
@@ -78,7 +84,7 @@
                         <a href="{% url 'menu' %}" class="font-bold text-byte-maroon hover:underline flex items-center gap-1.5">
                             <i class="fa-solid fa-plus"></i> Add More Items
                         </a>
-                        <span>{{ cart|length }} meal portion(s) in cart</span>
+                        <span id="cart-page-items-count">{{ cart|length }} meal portion(s) in cart</span>
                     </div>
                 </div>
 

@@ -20,8 +20,15 @@ class Cart:
 
     def add(self, item_id, quantity=1, special_instructions='', addon_ids=None):
         try:
+            quantity = int(quantity)
+            if quantity <= 0 or quantity > 50:
+                return False, "Quantity must be between 1 and 50."
+        except (ValueError, TypeError):
+            return False, "Invalid quantity."
+
+        try:
             item = MenuItem.objects.get(id=item_id, is_available=True)
-        except MenuItem.DoesNotExist:
+        except (MenuItem.DoesNotExist, ValueError, TypeError):
             return False, "Item not found or unavailable."
 
         addon_ids = addon_ids or []
@@ -33,7 +40,10 @@ class Cart:
         key = self._generate_key(item_id, special_instructions, addon_ids)
 
         if key in self.cart:
-            self.cart[key]['quantity'] += int(quantity)
+            new_qty = self.cart[key]['quantity'] + int(quantity)
+            if new_qty > 100:
+                return False, "Maximum 100 portions allowed per item."
+            self.cart[key]['quantity'] = new_qty
         else:
             self.cart[key] = {
                 'item_id': item.id,
@@ -51,9 +61,14 @@ class Cart:
         return True, "Item added to cart."
 
     def update(self, key, quantity):
-        quantity = int(quantity)
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            return False
         if key in self.cart:
-            if quantity > 0:
+            if quantity > 100:
+                return False
+            elif quantity > 0:
                 self.cart[key]['quantity'] = quantity
             else:
                 del self.cart[key]
@@ -62,10 +77,15 @@ class Cart:
         return False
 
     def update_delta(self, key, delta):
-        delta = int(delta)
+        try:
+            delta = int(delta)
+        except (ValueError, TypeError):
+            return False
         if key in self.cart:
             new_qty = self.cart[key]['quantity'] + delta
-            if new_qty > 0:
+            if new_qty > 100:
+                return False
+            elif new_qty > 0:
                 self.cart[key]['quantity'] = new_qty
             else:
                 del self.cart[key]

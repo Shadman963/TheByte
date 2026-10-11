@@ -1,4 +1,5 @@
 import json
+import uuid
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -33,6 +34,14 @@ from .forms import (
 
 def is_kitchen_staff(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+def is_ajax_request(request):
+    return (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        or request.content_type == 'application/json'
+        or 'application/json' in request.headers.get('Accept', '')
+    )
 
 
 
@@ -207,10 +216,20 @@ def cart_add_api(request):
         success, message = cart.add(item_id, quantity=quantity, special_instructions=instructions, addon_ids=addon_ids)
 
         if not success:
+            if not is_ajax_request(request):
+                messages.error(request, message)
+                return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('cart'))
             return JsonResponse({'success': False, 'message': message}, status=400)
+
+        if not is_ajax_request(request):
+            messages.success(request, message)
+            return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('cart'))
 
         return JsonResponse(get_cart_response_data(cart, setting, message=message))
     except Exception as e:
+        if not is_ajax_request(request):
+            messages.error(request, "Failed to add item to cart.")
+            return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
@@ -226,15 +245,31 @@ def cart_update_api(request):
         delta = payload.get('delta')
 
         if not key or (quantity is None and delta is None):
+            if not is_ajax_request(request):
+                messages.error(request, "Missing cart item details.")
+                return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
             return JsonResponse({'success': False, 'message': 'Missing key, quantity, or delta'}, status=400)
 
         if delta is not None:
-            cart.update_delta(key, delta)
+            updated = cart.update_delta(key, delta)
         else:
-            cart.update(key, quantity)
+            updated = cart.update(key, quantity)
 
-        return JsonResponse(get_cart_response_data(cart, setting))
+        if not updated:
+            if not is_ajax_request(request):
+                messages.error(request, "Could not update item quantity.")
+                return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
+            return JsonResponse({'success': False, 'message': 'Invalid update parameters or item not found.'}, status=400)
+
+        if not is_ajax_request(request):
+            messages.success(request, "Cart updated.")
+            return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
+
+        return JsonResponse(get_cart_response_data(cart, setting, message="Cart updated."))
     except Exception as e:
+        if not is_ajax_request(request):
+            messages.error(request, "Error updating cart.")
+            return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
@@ -247,11 +282,27 @@ def cart_remove_api(request):
         payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         key = payload.get('key')
         if not key:
+            if not is_ajax_request(request):
+                messages.error(request, "Missing item key.")
+                return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
             return JsonResponse({'success': False, 'message': 'Missing key'}, status=400)
 
-        cart.remove(key)
+        removed = cart.remove(key)
+        if not removed:
+            if not is_ajax_request(request):
+                messages.error(request, "Item not found in cart.")
+                return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
+            return JsonResponse({'success': False, 'message': 'Item not found in cart.'}, status=404)
+
+        if not is_ajax_request(request):
+            messages.info(request, "Item removed from cart.")
+            return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
+
         return JsonResponse(get_cart_response_data(cart, setting, message="Item removed from cart."))
     except Exception as e:
+        if not is_ajax_request(request):
+            messages.error(request, "Error removing item from cart.")
+            return redirect(request.META.get('HTTP_REFERER') or reverse('cart'))
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
@@ -268,16 +319,76 @@ def checkout_view(request):
         messages.warning(request, "Your cart is empty! Please choose something delicious to order.")
         return redirect('menu')
 
-    subtotal = cart.get_subtotal()
-    if setting.minimum_order_amount and subtotal < setting.minimum_order_amount:
+    # Re-verify each item from the database and recalculate prices
+    unavailable_items = []
+    validated_order_items = []
+    recalculated_subtotal = Decimal('0.00')
+
+    for item_data in cart:
+        try:
+            item = MenuItem.objects.get(id=item_data['item_id'], is_available=True)
+        except MenuItem.DoesNotExist:
+            unavailable_items.append(item_data.get('name', 'An item'))
+            continue
+
+        try:
+            qty = int(item_data.get('quantity', 1))
+        except (ValueError, TypeError):
+            qty = 1
+
+        if qty <= 0:
+            continue
+
+        addon_names = item_data.get('addons', [])
+        addons_total = Decimal('0.00')
+        for aname in addon_names:
+            base_addon_name = aname.split(' (+')[0].strip()
+            addon_obj = MenuItemAddon.objects.filter(
+                Q(item=item) | Q(item=None),
+                is_available=True,
+                name__iexact=base_addon_name
+            ).first()
+            if addon_obj:
+                addons_total += addon_obj.price
+
+        item_unit_price = item.final_price + addons_total
+        item_subtotal = item_unit_price * qty
+        recalculated_subtotal += item_subtotal
+
+        validated_order_items.append({
+            'menu_item': item,
+            'item_name': item.name,
+            'unit_price': item_unit_price,
+            'quantity': qty,
+            'subtotal': item_subtotal,
+            'special_instructions': item_data.get('special_instructions', '').strip(),
+            'addons': ", ".join(addon_names) if addon_names else "",
+        })
+
+    if unavailable_items:
         messages.error(
             request,
-            f"Minimum order amount is ৳{setting.minimum_order_amount}. Your current subtotal is ৳{subtotal}."
+            f"The following item(s) are currently sold out or unavailable: {', '.join(unavailable_items)}. Please remove them from your cart to proceed."
         )
         return redirect('cart')
 
-    delivery_fee = cart.get_delivery_fee(setting)
-    total = cart.get_total(setting)
+    if not validated_order_items:
+        messages.warning(request, "Your cart does not contain any valid available items.")
+        return redirect('menu')
+
+    if setting.minimum_order_amount and recalculated_subtotal < setting.minimum_order_amount:
+        messages.error(
+            request,
+            f"Minimum order amount is ৳{setting.minimum_order_amount}. Your current subtotal is ৳{recalculated_subtotal}."
+        )
+        return redirect('cart')
+
+    if setting.free_delivery_above and recalculated_subtotal >= setting.free_delivery_above:
+        delivery_fee = Decimal('0.00')
+    else:
+        delivery_fee = Decimal(setting.delivery_fee if setting else 40.00)
+    total = recalculated_subtotal + delivery_fee
+
     delivery_areas = setting.get_delivery_areas_list()
     profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
 
@@ -296,7 +407,19 @@ def checkout_view(request):
             messages.error(request, "Please fill in all required delivery details (Name, Phone, Address, and Area).")
             return redirect('checkout')
 
-        # Auto-update profile default address & phone if empty
+        # Prevent duplicate rapid submissions (within 10s with same total/user)
+        recent_order = Order.objects.filter(
+            user=request.user,
+            customer_phone=phone,
+            total=total,
+            created_at__gte=timezone.now() - timezone.timedelta(seconds=10)
+        ).first()
+        if recent_order:
+            cart.clear()
+            messages.info(request, f"Your order #{recent_order.order_number} has already been placed!")
+            return redirect('order_tracking', order_number=recent_order.order_number)
+
+        # Auto-update profile default address & phone if empty or updated
         updated_profile = False
         if not profile.phone or profile.phone != phone:
             profile.phone = phone
@@ -317,7 +440,7 @@ def checkout_view(request):
             else:
                 messages.warning(request, "Please enter your bKash/Nagad Transaction ID for quick order verification.")
 
-        # Create Order with user
+        # Create Order with user and verified server-calculated totals
         order = Order.objects.create(
             user=request.user,
             customer_name=name,
@@ -331,35 +454,34 @@ def checkout_view(request):
             payment_status=payment_status,
             transaction_id=trx_id,
             order_status='pending',
-            subtotal=subtotal,
+            subtotal=recalculated_subtotal,
             delivery_fee=delivery_fee,
             discount=Decimal('0.00'),
             total=total
         )
 
-        # Create Order Items
-        for item_data in cart:
-            try:
-                menu_item = MenuItem.objects.get(id=item_data['item_id'])
-            except MenuItem.DoesNotExist:
-                menu_item = None
-
-            addons_str = ", ".join(item_data['addons']) if item_data['addons'] else ""
+        # Create Order Items from verified items
+        for vi in validated_order_items:
             OrderItem.objects.create(
                 order=order,
-                menu_item=menu_item,
-                item_name=item_data['name'],
-                unit_price=item_data['price'],
-                quantity=item_data['quantity'],
-                subtotal=item_data['total'],
-                special_instructions=item_data['special_instructions'],
-                addons=addons_str
+                menu_item=vi['menu_item'],
+                item_name=vi['item_name'],
+                unit_price=vi['unit_price'],
+                quantity=vi['quantity'],
+                subtotal=vi['subtotal'],
+                special_instructions=vi['special_instructions'],
+                addons=vi['addons']
             )
 
-        # Clear cart
+        # Invalidate checkout token & clear cart
+        request.session.pop('checkout_token', None)
         cart.clear()
         messages.success(request, f"🎉 Order #{order.order_number} placed successfully! The kitchen has received your order.")
         return redirect('order_tracking', order_number=order.order_number)
+
+    # GET request - generate checkout token
+    checkout_token = uuid.uuid4().hex
+    request.session['checkout_token'] = checkout_token
 
     initial_name = request.user.get_full_name() or request.user.username
     initial_phone = profile.phone or ""
@@ -370,7 +492,7 @@ def checkout_view(request):
     context = {
         'setting': setting,
         'cart': cart,
-        'subtotal': subtotal,
+        'subtotal': recalculated_subtotal,
         'delivery_fee': delivery_fee,
         'total': total,
         'delivery_areas': delivery_areas,
@@ -379,6 +501,7 @@ def checkout_view(request):
         'initial_email': initial_email,
         'initial_address': initial_address,
         'initial_area': initial_area,
+        'checkout_token': checkout_token,
     }
     return render(request, 'kitchen/checkout.html', context)
 
@@ -393,6 +516,11 @@ def order_tracking_view(request, order_number=None):
         order = Order.objects.filter(order_number__iexact=search_num).first()
         if not order:
             messages.error(request, f"No order found with number: '{search_num}'. Please check and try again.")
+        elif order.user:
+            # Check ownership: only order owner or staff can view private order details
+            if not request.user.is_authenticated or (request.user != order.user and not is_kitchen_staff(request.user)):
+                messages.error(request, "You do not have permission to view details for this order.")
+                return redirect('home')
 
     context = {
         'setting': setting,
@@ -403,9 +531,17 @@ def order_tracking_view(request, order_number=None):
 
 
 def order_status_api(request, order_number):
+    if not order_number or len(order_number) > 40:
+        return JsonResponse({'found': False, 'message': 'Invalid order identifier.'}, status=400)
+
     order = Order.objects.filter(order_number__iexact=order_number).first()
     if not order:
-        return JsonResponse({'found': False}, status=404)
+        return JsonResponse({'found': False, 'message': 'Order not found.'}, status=404)
+
+    # Check ownership
+    if order.user:
+        if not request.user.is_authenticated or (request.user != order.user and not is_kitchen_staff(request.user)):
+            return JsonResponse({'found': False, 'message': 'Access forbidden.'}, status=403)
 
     return JsonResponse({
         'found': True,
@@ -414,6 +550,7 @@ def order_status_api(request, order_number):
         'status_display': order.get_order_status_display(),
         'step_index': order.status_step_index,
         'payment_status': order.get_payment_status_display(),
+        'is_terminal': order.is_terminal_status,
         'updated_at': order.updated_at.strftime('%I:%M %p, %d %b'),
     })
 
@@ -422,10 +559,13 @@ def order_status_api(request, order_number):
 def kitchen_dashboard_view(request):
     """
     Live Kitchen Display System (KDS) for staff / chef.
-    Accessible without complicated hurdles so the owner can manage in real time.
     """
     setting = get_site_setting()
-    active_orders = Order.objects.exclude(order_status__in=['delivered', 'cancelled']).order_by('created_at')
+    active_orders = (
+        Order.objects.exclude(order_status__in=['delivered', 'cancelled'])
+        .prefetch_related('items', 'items__menu_item')
+        .order_by('created_at')
+    )
     delivered_orders = Order.objects.filter(order_status='delivered').order_by('-updated_at')[:10]
     
     today = timezone.now().date()
@@ -447,13 +587,30 @@ def kitchen_dashboard_view(request):
 
 @require_POST
 def kitchen_update_status_api(request, order_id):
+    if not is_kitchen_staff(request.user):
+        if is_ajax_request(request):
+            return JsonResponse({'success': False, 'message': 'Staff authorization required.'}, status=403)
+        messages.error(request, "Staff authorization required.")
+        return redirect('staff_login')
+
     order = get_object_or_404(Order, id=order_id)
     try:
         payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         new_status = payload.get('status')
         valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
         if new_status not in valid_statuses:
-            return JsonResponse({'success': False, 'message': 'Invalid status'}, status=400)
+            if not is_ajax_request(request):
+                messages.error(request, "Invalid status choice.")
+                return redirect(request.META.get('HTTP_REFERER') or 'kitchen_dashboard')
+            return JsonResponse({'success': False, 'message': 'Invalid status choice.'}, status=400)
+
+        # Validate status transitions
+        if not order.can_transition_to(new_status) and order.order_status != new_status:
+            msg = f"Cannot transition order from '{order.get_order_status_display()}' to '{dict(Order.STATUS_CHOICES).get(new_status, new_status)}'."
+            if not is_ajax_request(request):
+                messages.error(request, msg)
+                return redirect(request.META.get('HTTP_REFERER') or 'kitchen_dashboard')
+            return JsonResponse({'success': False, 'message': msg}, status=400)
 
         order.order_status = new_status
         # If marked delivered, update payment if COD
@@ -461,13 +618,23 @@ def kitchen_update_status_api(request, order_id):
             order.payment_status = 'verified'
         order.save()
 
+        if not is_ajax_request(request):
+            messages.success(request, f"Order #{order.order_number} marked as {order.get_order_status_display()}.")
+            return redirect(request.META.get('HTTP_REFERER') or 'kitchen_dashboard')
+
         return JsonResponse({
             'success': True,
+            'order_id': order.id,
             'order_number': order.order_number,
             'new_status': order.order_status,
-            'status_display': order.get_order_status_display()
+            'status_display': order.get_order_status_display(),
+            'step_index': order.status_step_index,
+            'is_terminal': order.is_terminal_status,
         })
     except Exception as e:
+        if not is_ajax_request(request):
+            messages.error(request, f"Error updating order status: {e}")
+            return redirect(request.META.get('HTTP_REFERER') or 'kitchen_dashboard')
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
@@ -476,6 +643,12 @@ def kitchen_toggle_open_api(request):
     setting = get_site_setting()
     setting.is_kitchen_open = not setting.is_kitchen_open
     setting.save()
+
+    if not is_ajax_request(request):
+        status_msg = "Kitchen is now OPEN" if setting.is_kitchen_open else "Kitchen is now CLOSED"
+        messages.info(request, status_msg)
+        return redirect(request.META.get('HTTP_REFERER') or 'kitchen_dashboard')
+
     return JsonResponse({
         'success': True,
         'is_open': setting.is_kitchen_open,

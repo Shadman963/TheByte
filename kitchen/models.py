@@ -226,6 +226,26 @@ class Order(models.Model):
             return steps.index(self.order_status)
         return -1
 
+    VALID_TRANSITIONS = {
+        'pending': {'confirmed', 'preparing', 'cancelled'},
+        'confirmed': {'preparing', 'cancelled'},
+        'preparing': {'ready', 'cancelled'},
+        'ready': {'out_for_delivery', 'cancelled'},
+        'out_for_delivery': {'delivered', 'cancelled'},
+        'delivered': set(),
+        'cancelled': set(),
+    }
+
+    def can_transition_to(self, new_status):
+        if new_status == self.order_status:
+            return True
+        allowed = self.VALID_TRANSITIONS.get(self.order_status, set())
+        return new_status in allowed
+
+    @property
+    def is_terminal_status(self):
+        return self.order_status in ('delivered', 'cancelled')
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

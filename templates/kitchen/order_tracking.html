@@ -22,7 +22,7 @@
         </div>
 
         {% if order %}
-        <div class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-8">
+        <div id="order-tracking-active" data-order-number="{{ order.order_number }}" data-initial-status="{{ order.order_status }}" class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mb-8">
             
             <!-- Order Header Banner -->
             <div class="p-6 sm:p-8 bg-byte-maroon text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -238,107 +238,6 @@
 
 {% block extra_js %}
 {% if order %}
-<script>
-    const orderNumber = "{{ order.order_number }}";
-    let currentKnownStatus = "{{ order.order_status }}";
-    let currentKnownPayment = "{{ order.payment_status }}";
-
-    const statusMap = {
-        'pending': { index: 0, label: 'Order Received', color: 'bg-byte-amber text-white' },
-        'confirmed': { index: 1, label: 'Order Confirmed', color: 'bg-byte-maroon text-white' },
-        'preparing': { index: 2, label: 'Kitchen Preparing 🍳', color: 'bg-byte-maroon text-white animate-pulse' },
-        'ready': { index: 3, label: 'Ready for Delivery 🛵', color: 'bg-byte-amber text-white' },
-        'out_for_delivery': { index: 4, label: 'Out for Delivery 🚀', color: 'bg-blue-600 text-white animate-pulse' },
-        'delivered': { index: 5, label: 'Delivered 🎉', color: 'bg-emerald-600 text-white' },
-        'cancelled': { index: -1, label: 'Cancelled ❌', color: 'bg-rose-600 text-white' }
-    };
-
-    function playStatusChime() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15); // E5
-            osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3); // G5
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.7);
-        } catch (e) {
-            console.warn('Audio context unavailable', e);
-        }
-    }
-
-    function pollOrderStatus() {
-        fetch(`/api/order/${orderNumber}/status/`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.found) {
-                    const st = statusMap[data.order_status] || { index: -1, label: data.status_display, color: 'bg-gray-600 text-white' };
-                    
-                    // Detect status transition
-                    if (data.order_status !== currentKnownStatus) {
-                        currentKnownStatus = data.order_status;
-                        playStatusChime();
-                        if (typeof showToast === 'function') {
-                            showToast(`Status updated: ${st.label}!`, data.order_status === 'delivered' ? 'success' : 'info');
-                        }
-
-                        // Flash update indicator
-                        const indicator = document.getElementById('auto-refresh-indicator');
-                        if (indicator) {
-                            indicator.innerHTML = '<span class="text-emerald-300 font-bold">✓ Just updated!</span>';
-                            setTimeout(() => {
-                                indicator.innerHTML = '<i class="fa-solid fa-rotate text-xs animate-spin mr-1"></i> Live updating every 5s';
-                            }, 3000);
-                        }
-                    }
-
-                    // Update badge
-                    const badge = document.getElementById('live-status-badge');
-                    const text = document.getElementById('live-status-text');
-                    if (badge && text) {
-                        badge.className = `inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold shadow-md ${st.color}`;
-                        text.innerText = st.label;
-                    }
-
-                    // Update Stepper
-                    const steps = document.querySelectorAll('.step-item > div');
-                    steps.forEach(s => {
-                        const stepIdx = parseInt(s.getAttribute('data-step'));
-                        if (stepIdx <= st.index) {
-                            s.classList.remove('bg-gray-200', 'text-gray-500');
-                            s.classList.add(stepIdx === 5 ? 'bg-emerald-600' : 'bg-byte-maroon', 'text-white');
-                        } else {
-                            s.classList.add('bg-gray-200', 'text-gray-500');
-                            s.classList.remove('bg-byte-maroon', 'bg-emerald-600', 'text-white');
-                        }
-                    });
-
-                    // Update Stepper Bar
-                    const bar = document.getElementById('stepper-progress-bar');
-                    if (bar) {
-                        const percentages = ['10%', '28%', '48%', '68%', '85%', '100%'];
-                        bar.style.width = st.index >= 0 ? percentages[st.index] : '0%';
-                    }
-
-                    // If delivered or cancelled, slow down polling
-                    if (data.order_status === 'delivered' || data.order_status === 'cancelled') {
-                        clearInterval(pollingInterval);
-                        const indicator = document.getElementById('auto-refresh-indicator');
-                        if (indicator) indicator.innerHTML = '<span>Final order status reached</span>';
-                    }
-                }
-            })
-            .catch(err => console.error('Tracking poll error:', err));
-    }
-
-    // Poll every 5 seconds for real-time responsiveness
-    const pollingInterval = setInterval(pollOrderStatus, 5000);
-</script>
+<script src="{% static 'js/order_tracking.js' %}"></script>
 {% endif %}
 {% endblock %}

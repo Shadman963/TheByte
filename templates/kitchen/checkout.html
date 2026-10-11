@@ -21,6 +21,9 @@
 
         <form method="POST" action="{% url 'checkout' %}" id="checkout-form">
             {% csrf_token %}
+            {% if checkout_token %}
+            <input type="hidden" name="checkout_token" value="{{ checkout_token }}">
+            {% endif %}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 <!-- Left Column: Delivery & Payment Details -->
