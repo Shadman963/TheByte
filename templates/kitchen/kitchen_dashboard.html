@@ -149,26 +149,26 @@
                         <!-- Transition Buttons -->
                         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
                             {% if order.order_status == 'pending' %}
-                            <button onclick="changeOrderStatus({{ order.id }}, 'confirmed')" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'confirmed', this)" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
                                 Confirm Order
                             </button>
-                            <button onclick="changeOrderStatus({{ order.id }}, 'preparing')" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'confirmed' %}
-                            <button onclick="changeOrderStatus({{ order.id }}, 'preparing')" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'preparing' %}
-                            <button onclick="changeOrderStatus({{ order.id }}, 'ready')" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'ready', this)" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
                                 Mark Packed & Ready 📦
                             </button>
                             {% elif order.order_status == 'ready' %}
-                            <button onclick="changeOrderStatus({{ order.id }}, 'out_for_delivery')" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'out_for_delivery', this)" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
                                 Hand to Rider 🛵
                             </button>
                             {% elif order.order_status == 'out_for_delivery' %}
-                            <button onclick="changeOrderStatus({{ order.id }}, 'delivered')" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'delivered', this)" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
                                 Mark Delivered 🎉
                             </button>
                             {% endif %}
@@ -178,7 +178,7 @@
                             <a href="{% url 'order_tracking' order.order_number %}" target="_blank" class="text-gray-500 hover:text-byte-maroon font-semibold">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer View
                             </a>
-                            <button onclick="if(confirm('Cancel this order?')) changeOrderStatus({{ order.id }}, 'cancelled')" class="text-rose-600 hover:underline font-semibold">
+                            <button type="button" onclick="if(confirm('Cancel this order?')) changeOrderStatus({{ order.id }}, 'cancelled', this)" class="text-rose-600 hover:underline font-semibold">
                                 Cancel Order
                             </button>
                         </div>
@@ -243,40 +243,69 @@
 
 {% block extra_js %}
 <script>
-    function changeOrderStatus(orderId, newStatus) {
+    function changeOrderStatus(orderId, newStatus, btnElem) {
+        if (btnElem) {
+            btnElem.disabled = true;
+            btnElem.classList.add('opacity-60', 'cursor-not-allowed');
+        }
         fetch(`/api/kitchen/order/${orderId}/update-status/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCsrfToken()
             },
             body: JSON.stringify({ status: newStatus })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Failed with status ' + res.status);
+            return res.json();
+        })
         .then(data => {
             if (data.success) {
                 showToast(`Order #${data.order_number} marked as ${data.status_display}!`, 'success');
-                setTimeout(() => window.location.reload(), 600);
+                setTimeout(() => window.location.reload(), 500);
             } else {
                 showToast(data.message || 'Error updating order', 'error');
+                if (btnElem) {
+                    btnElem.disabled = false;
+                    btnElem.classList.remove('opacity-60', 'cursor-not-allowed');
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Failed to update order status.', 'error');
+            if (btnElem) {
+                btnElem.disabled = false;
+                btnElem.classList.remove('opacity-60', 'cursor-not-allowed');
             }
         });
     }
 
     function toggleKitchenStatus() {
+        const btn = document.getElementById('kitchen-status-toggle-btn');
+        if (btn) btn.disabled = true;
         fetch('/api/kitchen/toggle-open/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCsrfToken()
             }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Failed with status ' + res.status);
+            return res.json();
+        })
         .then(data => {
             if (data.success) {
                 showToast(data.status_text, 'info');
-                setTimeout(() => window.location.reload(), 500);
+                setTimeout(() => window.location.reload(), 400);
             }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Failed to toggle kitchen status.', 'error');
+            if (btn) btn.disabled = false;
         });
     }
 

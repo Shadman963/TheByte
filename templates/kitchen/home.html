@@ -291,11 +291,11 @@
 
         <!-- Category Filters -->
         <div class="flex flex-wrap justify-center items-center gap-2 mb-10">
-            <button onclick="filterCategory('all', this)" class="menu-tab-btn active px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-byte-maroon text-white">
+            <button type="button" onclick="filterCategory('all', this)" class="menu-tab-btn active px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-byte-maroon text-white">
                 All Items
             </button>
             {% for cat in categories %}
-            <button onclick="filterCategory('{{ cat.slug }}', this)" class="menu-tab-btn px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-white text-gray-700 hover:bg-byte-maroon hover:text-white border border-gray-200">
+            <button type="button" onclick="filterCategory('{{ cat.slug }}', this)" class="menu-tab-btn px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition shadow-sm bg-white text-gray-700 hover:bg-byte-maroon hover:text-white border border-gray-200">
                 {{ cat.name }}
             </button>
             {% endfor %}
@@ -385,10 +385,10 @@
                         </div>
 
                         <div class="flex items-center gap-1.5">
-                            <button onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options">
                                 <i class="fa-solid fa-sliders text-xs"></i>
                             </button>
-                            <button onclick="addToCart({{ item.id }}, 1)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                            <button type="button" onclick="addToCart({{ item.id }}, 1)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span>Add</span>
                             </button>
@@ -583,9 +583,9 @@
 </section>
 
 <!-- REVIEW SUBMISSION MODAL -->
-<div id="review-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+<div id="review-modal" onclick="if(event.target === this) this.classList.add('hidden')" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-        <button onclick="document.getElementById('review-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+        <button type="button" onclick="document.getElementById('review-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
         <h3 class="font-display text-xl font-bold text-byte-maroon mb-1">Write a Review</h3>
@@ -630,8 +630,10 @@
             b.classList.remove('bg-byte-maroon', 'text-white', 'active');
             b.classList.add('bg-white', 'text-gray-700');
         });
-        btn.classList.add('bg-byte-maroon', 'text-white', 'active');
-        btn.classList.remove('bg-white', 'text-gray-700');
+        if (btn) {
+            btn.classList.add('bg-byte-maroon', 'text-white', 'active');
+            btn.classList.remove('bg-white', 'text-gray-700');
+        }
 
         // Cards visibility
         const cards = document.querySelectorAll('.menu-card');

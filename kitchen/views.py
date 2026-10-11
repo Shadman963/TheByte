@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
@@ -26,6 +27,7 @@ def get_site_setting():
     return setting
 
 
+@ensure_csrf_cookie
 def home_view(request):
     setting = get_site_setting()
     categories = Category.objects.filter(is_active=True).prefetch_related('items')
@@ -48,6 +50,7 @@ def home_view(request):
     return render(request, 'kitchen/home.html', context)
 
 
+@ensure_csrf_cookie
 def menu_view(request):
     setting = get_site_setting()
     categories = Category.objects.filter(is_active=True).prefetch_related('items')
@@ -115,6 +118,7 @@ def item_detail_api(request, item_id):
     return JsonResponse(data)
 
 
+@ensure_csrf_cookie
 def cart_detail_view(request):
     setting = get_site_setting()
     cart = Cart(request)
@@ -133,6 +137,36 @@ def cart_detail_view(request):
         'free_delivery_remaining': free_delivery_remaining,
     }
     return render(request, 'kitchen/cart.html', context)
+
+
+def get_cart_response_data(cart, setting, message=""):
+    subtotal = float(cart.get_subtotal())
+    delivery_fee = float(cart.get_delivery_fee(setting))
+    total = float(cart.get_total(setting))
+    count = len(cart)
+    percent, remaining = cart.get_free_delivery_progress(setting)
+    min_order = float(setting.minimum_order_amount) if setting.minimum_order_amount else 0.0
+
+    return {
+        'success': True,
+        'message': message,
+        'cart_count': count,
+        'subtotal': subtotal,
+        'delivery_fee': delivery_fee,
+        'total': total,
+        'free_delivery_percent': percent,
+        'free_delivery_remaining': float(remaining),
+        'minimum_order_amount': min_order,
+        'can_checkout': subtotal >= min_order if min_order else True,
+        'items': cart.get_items_list(),
+    }
+
+
+@require_GET
+def cart_items_api(request):
+    cart = Cart(request)
+    setting = get_site_setting()
+    return JsonResponse(get_cart_response_data(cart, setting))
 
 
 @require_POST
@@ -159,22 +193,7 @@ def cart_add_api(request):
         if not success:
             return JsonResponse({'success': False, 'message': message}, status=400)
 
-        subtotal = float(cart.get_subtotal())
-        delivery_fee = float(cart.get_delivery_fee(setting))
-        total = float(cart.get_total(setting))
-        count = len(cart)
-        percent, remaining = cart.get_free_delivery_progress(setting)
-
-        return JsonResponse({
-            'success': True,
-            'message': message,
-            'cart_count': count,
-            'subtotal': subtotal,
-            'delivery_fee': delivery_fee,
-            'total': total,
-            'free_delivery_percent': percent,
-            'free_delivery_remaining': float(remaining),
-        })
+        return JsonResponse(get_cart_response_data(cart, setting, message=message))
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
@@ -188,26 +207,17 @@ def cart_update_api(request):
         payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         key = payload.get('key')
         quantity = payload.get('quantity')
-        if not key or quantity is None:
-            return JsonResponse({'success': False, 'message': 'Missing key or quantity'}, status=400)
+        delta = payload.get('delta')
 
-        cart.update(key, quantity)
+        if not key or (quantity is None and delta is None):
+            return JsonResponse({'success': False, 'message': 'Missing key, quantity, or delta'}, status=400)
 
-        subtotal = float(cart.get_subtotal())
-        delivery_fee = float(cart.get_delivery_fee(setting))
-        total = float(cart.get_total(setting))
-        count = len(cart)
-        percent, remaining = cart.get_free_delivery_progress(setting)
+        if delta is not None:
+            cart.update_delta(key, delta)
+        else:
+            cart.update(key, quantity)
 
-        return JsonResponse({
-            'success': True,
-            'cart_count': count,
-            'subtotal': subtotal,
-            'delivery_fee': delivery_fee,
-            'total': total,
-            'free_delivery_percent': percent,
-            'free_delivery_remaining': float(remaining),
-        })
+        return JsonResponse(get_cart_response_data(cart, setting))
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
@@ -224,26 +234,12 @@ def cart_remove_api(request):
             return JsonResponse({'success': False, 'message': 'Missing key'}, status=400)
 
         cart.remove(key)
-
-        subtotal = float(cart.get_subtotal())
-        delivery_fee = float(cart.get_delivery_fee(setting))
-        total = float(cart.get_total(setting))
-        count = len(cart)
-        percent, remaining = cart.get_free_delivery_progress(setting)
-
-        return JsonResponse({
-            'success': True,
-            'cart_count': count,
-            'subtotal': subtotal,
-            'delivery_fee': delivery_fee,
-            'total': total,
-            'free_delivery_percent': percent,
-            'free_delivery_remaining': float(remaining),
-        })
+        return JsonResponse(get_cart_response_data(cart, setting, message="Item removed from cart."))
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
+@ensure_csrf_cookie
 def checkout_view(request):
     setting = get_site_setting()
     cart = Cart(request)
@@ -340,6 +336,7 @@ def checkout_view(request):
     return render(request, 'kitchen/checkout.html', context)
 
 
+@ensure_csrf_cookie
 def order_tracking_view(request, order_number=None):
     setting = get_site_setting()
     order = None
@@ -374,6 +371,7 @@ def order_status_api(request, order_number):
     })
 
 
+@ensure_csrf_cookie
 def kitchen_dashboard_view(request):
     """
     Live Kitchen Display System (KDS) for staff / chef.

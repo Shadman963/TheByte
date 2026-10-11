@@ -6,6 +6,7 @@ urlpatterns = [
     path('menu/', views.menu_view, name='menu'),
     path('api/item/<int:item_id>/', views.item_detail_api, name='item_detail_api'),
     path('cart/', views.cart_detail_view, name='cart'),
+    path('api/cart/items/', views.cart_items_api, name='cart_items_api'),
     path('api/cart/add/', views.cart_add_api, name='cart_add_api'),
     path('api/cart/update/', views.cart_update_api, name='cart_update_api'),
     path('api/cart/remove/', views.cart_remove_api, name='cart_remove_api'),

@@ -57,16 +57,16 @@
                         <!-- Quantity & Item Total -->
                         <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                             <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
-                                <button onclick="updateCartQty('{{ item.key }}', {{ item.quantity|add:'-1' }})" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">-</button>
+                                <button type="button" onclick="changeCartQty('{{ item.key|escapejs }}', -1)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">-</button>
                                 <span class="w-8 text-center text-xs font-bold text-gray-900">{{ item.quantity }}</span>
-                                <button onclick="updateCartQty('{{ item.key }}', {{ item.quantity|add:'1' }})" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">+</button>
+                                <button type="button" onclick="changeCartQty('{{ item.key|escapejs }}', 1)" class="w-8 h-8 hover:bg-gray-100 text-gray-700 font-bold transition flex items-center justify-center">+</button>
                             </div>
 
                             <span class="font-extrabold text-sm sm:text-base text-byte-maroon min-w-[70px] text-right">
                                 ৳{{ item.total|floatformat:2 }}
                             </span>
 
-                            <button onclick="removeCartItem('{{ item.key }}')" class="p-2 text-gray-400 hover:text-rose-600 transition" title="Remove item">
+                            <button type="button" onclick="removeCartItem('{{ item.key|escapejs }}')" class="p-2 text-gray-400 hover:text-rose-600 transition" title="Remove item">
                                 <i class="fa-solid fa-trash-can text-sm"></i>
                             </button>
                         </div>

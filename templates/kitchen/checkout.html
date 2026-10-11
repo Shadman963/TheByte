@@ -90,9 +90,9 @@
                             <h2 class="font-display text-xl font-bold text-byte-maroon">Select Payment Method</h2>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-3" id="payment-options-group">
                             <!-- COD -->
-                            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-byte-maroon/20 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('cod')">
+                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-byte-maroon bg-byte-cream/20 cursor-pointer transition" onclick="handlePaymentChoice('cod', this)">
                                 <input type="radio" name="payment_method" value="cod" checked class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
@@ -104,7 +104,7 @@
                             </label>
 
                             <!-- bKash -->
-                            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('bkash')">
+                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('bkash', this)">
                                 <input type="radio" name="payment_method" value="bkash" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
@@ -118,7 +118,7 @@
                             </label>
 
                             <!-- Nagad -->
-                            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('nagad')">
+                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('nagad', this)">
                                 <input type="radio" name="payment_method" value="nagad" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
@@ -132,7 +132,7 @@
                             </label>
 
                             <!-- Card on Delivery -->
-                            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('card')">
+                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('card', this)">
                                 <input type="radio" name="payment_method" value="card" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
@@ -197,7 +197,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full py-4 rounded-2xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-extrabold text-base tracking-wide shadow-xl hover:shadow-2xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <button type="submit" id="checkout-submit-btn" class="w-full py-4 rounded-2xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-extrabold text-base tracking-wide shadow-xl hover:shadow-2xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                         <i class="fa-solid fa-circle-check text-byte-amber"></i>
                         <span>Confirm & Place Order</span>
                     </button>
@@ -217,7 +217,19 @@
 
 {% block extra_js %}
 <script>
-    function handlePaymentChoice(method) {
+    function handlePaymentChoice(method, labelElem) {
+        // Highlight active card
+        document.querySelectorAll('.payment-option-card').forEach(c => {
+            c.classList.remove('border-byte-maroon', 'bg-byte-cream/20');
+            c.classList.add('border-gray-200', 'bg-white');
+        });
+        if (labelElem) {
+            labelElem.classList.remove('border-gray-200', 'bg-white');
+            labelElem.classList.add('border-byte-maroon', 'bg-byte-cream/20');
+            const radio = labelElem.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        }
+
         const trxContainer = document.getElementById('trx-id-container');
         const trxInput = document.getElementById('transaction_id_input');
         if (method === 'bkash' || method === 'nagad') {
@@ -228,5 +240,15 @@
             trxInput.value = '';
         }
     }
+
+    // Submit loading state to prevent double clicks
+    document.getElementById('checkout-form')?.addEventListener('submit', function() {
+        const btn = document.getElementById('checkout-submit-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-byte-amber"></i><span>Placing Your Order...</span>`;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+        }
+    });
 </script>
 {% endblock %}

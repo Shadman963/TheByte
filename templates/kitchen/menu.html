@@ -162,10 +162,10 @@
                     </div>
 
                     <div class="flex items-center gap-1.5">
-                        <button onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options">
+                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options">
                             <i class="fa-solid fa-sliders text-xs"></i>
                         </button>
-                        <button onclick="addToCart({{ item.id }}, 1)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                        <button type="button" onclick="addToCart({{ item.id }}, 1)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
                             <i class="fa-solid fa-plus text-[10px]"></i>
                             <span>Add</span>
                         </button>

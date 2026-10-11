@@ -149,3 +149,88 @@ class KitchenTests(TestCase):
         }, follow=True)
         self.assertEqual(res.status_code, 200)
         self.assertTrue(ContactMessage.objects.filter(name='Inquirer').exists())
+
+    def test_csrf_cookie_delivered_on_views(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        for url_name in ['menu', 'cart', 'kitchen_dashboard']:
+            res = csrf_client.get(reverse(url_name))
+            self.assertEqual(res.status_code, 200)
+            self.assertIn('csrftoken', csrf_client.cookies, f"CSRF cookie missing for {url_name}")
+
+    def test_cart_delta_and_safe_keys_with_csrf(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.get(reverse('menu'))
+        csrf_token = csrf_client.cookies['csrftoken'].value
+
+        # Test adding with special characters/quotes in instructions
+        payload = {
+            'item_id': self.item_chicken.id,
+            'quantity': 1,
+            'special_instructions': "Don't add extra oil; it's 'very' spicy!",
+            'addon_ids': []
+        }
+        res = csrf_client.post(
+            reverse('cart_add_api'),
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data['success'])
+        item_key = data['items'][0]['key']
+        # Key must not contain quotes or spaces
+        self.assertNotIn("'", item_key)
+        self.assertNotIn('"', item_key)
+        self.assertNotIn(' ', item_key)
+
+        # Test delta +1
+        res_inc = csrf_client.post(
+            reverse('cart_update_api'),
+            data=json.dumps({'key': item_key, 'delta': 1}),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token
+        )
+        self.assertEqual(res_inc.status_code, 200)
+        self.assertEqual(res_inc.json()['items'][0]['quantity'], 2)
+
+        # Test delta -1
+        res_dec = csrf_client.post(
+            reverse('cart_update_api'),
+            data=json.dumps({'key': item_key, 'delta': -1}),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token
+        )
+        self.assertEqual(res_dec.status_code, 200)
+        self.assertEqual(res_dec.json()['items'][0]['quantity'], 1)
+
+        # Test cart_items_api
+        res_items = csrf_client.get(reverse('cart_items_api'))
+        self.assertEqual(res_items.status_code, 200)
+        self.assertEqual(len(res_items.json()['items']), 1)
+
+        # Test remove
+        res_rem = csrf_client.post(
+            reverse('cart_remove_api'),
+            data=json.dumps({'key': item_key}),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token
+        )
+        self.assertEqual(res_rem.status_code, 200)
+        self.assertEqual(res_rem.json()['cart_count'], 0)
+
+    def test_kitchen_toggle_open_with_csrf(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.get(reverse('kitchen_dashboard'))
+        csrf_token = csrf_client.cookies['csrftoken'].value
+
+        initial_state = self.setting.is_kitchen_open
+        res = csrf_client.post(
+            reverse('kitchen_toggle_open_api'),
+            data=json.dumps({}),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['is_open'], not initial_state)
+

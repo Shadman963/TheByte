@@ -1,3 +1,4 @@
+import hashlib
 from decimal import Decimal
 from django.conf import settings
 from .models import MenuItem, MenuItemAddon, KitchenSetting
@@ -12,9 +13,10 @@ class Cart:
         self.cart = cart
 
     def _generate_key(self, item_id, special_instructions='', addon_ids=None):
-        addons_part = "-".join(sorted(map(str, addon_ids or [])))
+        addons_part = "-".join(sorted(map(str, addon_ids or []))) if addon_ids else "base"
         clean_instructions = special_instructions.strip().lower()
-        return f"{item_id}_{addons_part}_{clean_instructions}"
+        inst_hash = hashlib.md5(clean_instructions.encode('utf-8')).hexdigest()[:8] if clean_instructions else 'none'
+        return f"{item_id}_{addons_part}_{inst_hash}"
 
     def add(self, item_id, quantity=1, special_instructions='', addon_ids=None):
         try:
@@ -53,6 +55,18 @@ class Cart:
         if key in self.cart:
             if quantity > 0:
                 self.cart[key]['quantity'] = quantity
+            else:
+                del self.cart[key]
+            self.save()
+            return True
+        return False
+
+    def update_delta(self, key, delta):
+        delta = int(delta)
+        if key in self.cart:
+            new_qty = self.cart[key]['quantity'] + delta
+            if new_qty > 0:
+                self.cart[key]['quantity'] = new_qty
             else:
                 del self.cart[key]
             self.save()
@@ -123,3 +137,22 @@ class Cart:
         remaining = threshold - subtotal
         percent = min(int((subtotal / threshold) * 100), 100)
         return percent, remaining
+
+    def get_items_list(self):
+        items = []
+        for item in self:
+            items.append({
+                'key': item['key'],
+                'item_id': item['item_id'],
+                'name': item['name'],
+                'slug': item.get('slug', ''),
+                'price': float(item['price']),
+                'quantity': item['quantity'],
+                'special_instructions': item.get('special_instructions', ''),
+                'addons': item.get('addons', []),
+                'image': item.get('image', ''),
+                'portion_size': item.get('portion_size', ''),
+                'total': float(item['total']),
+            })
+        return items
+
