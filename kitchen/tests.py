@@ -1,7 +1,10 @@
 import json
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import KitchenSetting, Category, MenuItem, Order, OrderItem, CustomerReview, ContactMessage
+from django.contrib.auth.models import User
+from .models import KitchenSetting, Category, MenuItem, Order, OrderItem, CustomerReview, ContactMessage, CustomerProfile
+from .cart import Cart
 
 
 class KitchenTests(TestCase):
@@ -43,6 +46,28 @@ class KitchenTests(TestCase):
             spice_level="none"
         )
 
+        # Create customer user
+        self.customer_user = User.objects.create_user(
+            username='customer1',
+            email='customer1@example.com',
+            password='password123',
+            first_name='Tanvir',
+            last_name='Ahmed'
+        )
+        self.customer_profile, _ = CustomerProfile.objects.get_or_create(user=self.customer_user)
+        self.customer_profile.phone = '01711111111'
+        self.customer_profile.default_area = 'Mirpur'
+        self.customer_profile.default_address = 'House 10, Road 2, Mirpur'
+        self.customer_profile.save()
+
+        # Create staff user
+        self.staff_user = User.objects.create_user(
+            username='staff1',
+            email='staff1@thebyte.com',
+            password='password123',
+            is_staff=True
+        )
+
     def test_home_view(self):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
@@ -61,7 +86,6 @@ class KitchenTests(TestCase):
         self.assertContains(response_search, "Chicken Curry")
 
     def test_cart_workflow(self):
-        # 1. Add to cart
         payload = {
             'item_id': self.item_chicken.id,
             'quantity': 2,
@@ -79,13 +103,27 @@ class KitchenTests(TestCase):
         self.assertEqual(data['cart_count'], 2)
         self.assertEqual(data['subtotal'], 300.0)
 
-        # 2. View cart page
+        # View cart page
         res_cart = self.client.get(reverse('cart'))
         self.assertEqual(res_cart.status_code, 200)
         self.assertContains(res_cart, "Chicken Curry")
 
-    def test_checkout_and_order_tracking(self):
-        # Add item to cart first
+    def test_mandatory_customer_login_for_checkout(self):
+        # 1. Anonymous user trying to access checkout must be redirected to login
+        res_anon_get = self.client.get(reverse('checkout'))
+        self.assertEqual(res_anon_get.status_code, 302)
+        self.assertIn(reverse('customer_login'), res_anon_get.url)
+
+        # 2. Anonymous user trying to post checkout must be redirected to login
+        res_anon_post = self.client.post(reverse('checkout'), data={'customer_name': 'Anon'})
+        self.assertEqual(res_anon_post.status_code, 302)
+        self.assertIn(reverse('customer_login'), res_anon_post.url)
+
+    def test_checkout_and_order_tracking_authenticated(self):
+        # Log in as customer
+        self.client.login(username='customer1', password='password123')
+
+        # Add item to cart
         self.client.post(
             reverse('cart_add_api'),
             data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 1}),
@@ -93,9 +131,9 @@ class KitchenTests(TestCase):
         )
 
         checkout_data = {
-            'customer_name': 'Sadman Kabir',
-            'customer_phone': '01718244371',
-            'customer_email': 'sadman@example.com',
+            'customer_name': 'Tanvir Ahmed',
+            'customer_phone': '01711111111',
+            'customer_email': 'customer1@example.com',
             'delivery_address': 'House 12, Road 4, Sector 11, Uttara',
             'delivery_area': 'Uttara',
             'delivery_slot': 'Immediate Delivery (25-40 mins)',
@@ -107,9 +145,10 @@ class KitchenTests(TestCase):
         res = self.client.post(reverse('checkout'), data=checkout_data, follow=True)
         self.assertEqual(res.status_code, 200)
 
-        # Verify order in DB
-        order = Order.objects.filter(customer_name='Sadman Kabir').first()
+        # Verify order in DB linked to customer user
+        order = Order.objects.filter(customer_name='Tanvir Ahmed').first()
         self.assertIsNotNone(order)
+        self.assertEqual(order.user, self.customer_user)
         self.assertEqual(order.items.count(), 1)
         self.assertEqual(order.items.first().item_name, "Chicken Curry")
 
@@ -118,26 +157,124 @@ class KitchenTests(TestCase):
         self.assertEqual(res_track.status_code, 200)
         self.assertEqual(res_track.json()['order_status'], 'pending')
 
-    def test_kitchen_kds_update(self):
+    def test_customer_registration_and_portal(self):
+        reg_data = {
+            'username': 'newcustomer',
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'new@example.com',
+            'phone': '01722222222',
+            'default_area': 'Dhanmondi',
+            'default_address': 'Road 27, Dhanmondi',
+            'password': 'password12345',
+            'confirm_password': 'password12345'
+        }
+        res = self.client.post(reverse('customer_register'), data=reg_data, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+        # Verify user created
+        new_user = User.objects.filter(username='newcustomer').first()
+        self.assertIsNotNone(new_user)
+        self.assertEqual(new_user.profile.phone, '01722222222')
+
+        # Test customer dashboard access
+        res_dash = self.client.get(reverse('customer_dashboard'))
+        self.assertEqual(res_dash.status_code, 200)
+        self.assertContains(res_dash, "Welcome, New")
+
+        # Test customer orders api
+        res_api = self.client.get(reverse('customer_orders_api'))
+        self.assertEqual(res_api.status_code, 200)
+        self.assertIn('orders', res_api.json())
+
+        # Test logout
+        res_logout = self.client.get(reverse('customer_logout'))
+        self.assertEqual(res_logout.status_code, 302)
+
+    def test_staff_portal_permissions_and_management(self):
+        # 1. Non-staff user should be denied / redirected
+        self.client.login(username='customer1', password='password123')
+        res_denied = self.client.get(reverse('staff_dashboard'))
+        self.assertEqual(res_denied.status_code, 302)
+
+        # 2. Staff user login and access
+        self.client.login(username='staff1', password='password123')
+        res_staff = self.client.get(reverse('staff_dashboard'))
+        self.assertEqual(res_staff.status_code, 200)
+        self.assertContains(res_staff, "Kitchen Operations & Staff Portal")
+
+        # Create an order
         order = Order.objects.create(
-            customer_name="Test Chef",
-            customer_phone="01700000000",
-            delivery_address="Test Kitchen",
+            user=self.customer_user,
+            customer_name="Tanvir",
+            customer_phone="01711111111",
+            delivery_address="Mirpur 10",
             delivery_area="Mirpur",
             subtotal=150.00,
             total=190.00,
             order_status='pending'
         )
 
-        # Update order status to 'preparing'
-        res = self.client.post(
+        # 3. Staff updates order status
+        res_update = self.client.post(
             reverse('kitchen_update_status_api', kwargs={'order_id': order.id}),
             data=json.dumps({'status': 'preparing'}),
             content_type='application/json'
         )
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res_update.status_code, 200)
         order.refresh_from_db()
         self.assertEqual(order.order_status, 'preparing')
+
+        # 4. Staff updates payment status
+        res_pay = self.client.post(
+            reverse('staff_update_payment_status_api', kwargs={'order_id': order.id}),
+            data=json.dumps({'payment_status': 'verified'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_pay.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, 'verified')
+
+        # 5. Staff toggles item availability
+        res_item_toggle = self.client.post(
+            reverse('staff_toggle_item_api', kwargs={'item_id': self.item_chicken.id}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_item_toggle.status_code, 200)
+        self.item_chicken.refresh_from_db()
+        self.assertFalse(self.item_chicken.is_available)
+
+        # 6. Staff prints KOT
+        res_kot = self.client.get(reverse('staff_kot', kwargs={'order_number': order.order_number}))
+        self.assertEqual(res_kot.status_code, 200)
+        self.assertContains(res_kot, f"ORDER #{order.order_number}")
+
+    def test_free_delivery_progress_calculation(self):
+        cart_client = Client()
+        # Item price 150, free delivery above 500
+        # 1 item: subtotal 150 -> 30% progress, remaining 350
+        cart_client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+        res1 = cart_client.get(reverse('cart_items_api'))
+        data1 = res1.json()
+        self.assertEqual(data1['free_delivery_percent'], 30)
+        self.assertEqual(data1['free_delivery_remaining'], 350.0)
+        self.assertEqual(data1['delivery_fee'], 40.0)
+
+        # Add 3 more items: total 4 items -> subtotal 600 -> 100% progress, 0 remaining, 0 delivery fee
+        cart_client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': self.item_chicken.id, 'quantity': 3}),
+            content_type='application/json'
+        )
+        res2 = cart_client.get(reverse('cart_items_api'))
+        data2 = res2.json()
+        self.assertEqual(data2['free_delivery_percent'], 100)
+        self.assertEqual(data2['free_delivery_remaining'], 0.0)
+        self.assertEqual(data2['delivery_fee'], 0.0)
 
     def test_contact_submission(self):
         res = self.client.post(reverse('contact_submit'), data={
@@ -152,7 +289,7 @@ class KitchenTests(TestCase):
 
     def test_csrf_cookie_delivered_on_views(self):
         csrf_client = Client(enforce_csrf_checks=True)
-        for url_name in ['menu', 'cart', 'kitchen_dashboard']:
+        for url_name in ['menu', 'cart', 'kitchen_dashboard', 'customer_login', 'customer_register']:
             res = csrf_client.get(reverse(url_name))
             self.assertEqual(res.status_code, 200)
             self.assertIn('csrftoken', csrf_client.cookies, f"CSRF cookie missing for {url_name}")
@@ -233,4 +370,3 @@ class KitchenTests(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['is_open'], not initial_state)
-

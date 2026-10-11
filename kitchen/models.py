@@ -2,6 +2,10 @@ import random
 import string
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 
 def generate_order_number():
@@ -140,6 +144,28 @@ class MenuItemAddon(models.Model):
         return f"{self.name} (+৳{self.price}) [{target}]"
 
 
+class CustomerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField(max_length=25, blank=True)
+    default_address = models.TextField(blank=True)
+    default_area = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Customer Profile"
+        verbose_name_plural = "Customer Profiles"
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username} ({self.phone or 'No Phone'})"
+
+
+@receiver(post_save, sender=User)
+def create_customer_profile_on_signup(sender, instance, created, **kwargs):
+    if created:
+        CustomerProfile.objects.get_or_create(user=instance)
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Order Received'),
@@ -164,6 +190,7 @@ class Order(models.Model):
         ('verified', 'Payment Verified'),
     ]
 
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     order_number = models.CharField(max_length=30, unique=True, default=generate_order_number)
     customer_name = models.CharField(max_length=100)
     customer_phone = models.CharField(max_length=25)

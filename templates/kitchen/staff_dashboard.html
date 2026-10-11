@@ -1,0 +1,796 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Cloud Kitchen Operations & Staff Portal — {{ setting.restaurant_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Tab Transitions */
+    .portal-tab-content { display: none; }
+    .portal-tab-content.active { display: block; }
+    .portal-tab-btn.active {
+        background-color: #6e0f2d;
+        color: #ffffff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Top Operations Bar -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
+                    <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-byte-maroon">
+                        Kitchen Operations & Staff Portal
+                    </h1>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                    Logged in as <strong>{{ request.user.username }}</strong> ({{ request.user.get_full_name|default:"Staff" }}) • Live order processing & cloud kitchen management
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Kitchen Open/Closed Toggle -->
+                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span id="kitchen-status-toggle-text">{% if setting.is_kitchen_open %}Kitchen: OPEN{% else %}Kitchen: CLOSED{% endif %}</span>
+                </button>
+
+                <!-- Sound Notifications Toggle -->
+                <button onclick="toggleSoundAlert()" id="sound-toggle-btn" class="px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Toggle audio chime on new orders">
+                    <i id="sound-icon" class="fa-solid fa-bell text-byte-amber"></i>
+                    <span id="sound-text">Sound: ON</span>
+                </button>
+
+                <!-- Refresh -->
+                <button onclick="window.location.reload()" class="px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Refresh</span>
+                </button>
+
+                <!-- Django Admin -->
+                <a href="{% url 'admin:index' %}" class="px-4 py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Django Admin</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-fire-burner"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-gray-400 uppercase">Cooking Tickets</span>
+                    <h3 class="text-xl font-black text-byte-maroon" id="kpi-cooking-count">{{ pending_prep_count }} Active</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-gray-400 uppercase">Ready / En Route</span>
+                    <h3 class="text-xl font-black text-purple-700">{{ ready_count|add:out_for_delivery_count }} Orders</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-gray-400 uppercase">Today's Orders</span>
+                    <h3 class="text-xl font-black text-gray-900" id="kpi-today-count">{{ today_count }} Orders</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-bangladeshi-taka-sign"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-gray-400 uppercase">Today's Revenue</span>
+                    <h3 class="text-xl font-black text-emerald-700" id="kpi-today-revenue">৳{{ today_revenue|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabbed Navigation -->
+        <div class="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-200 pb-3">
+            <button onclick="switchTab('tab-orders')" id="btn-tab-orders" class="portal-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-fire-burner"></i>
+                <span>Order Processing Pipeline ({{ active_orders|length }})</span>
+            </button>
+            <button onclick="switchTab('tab-menu')" id="btn-tab-menu" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Menu & Stock Control</span>
+            </button>
+            <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-gear"></i>
+                <span>Kitchen Settings</span>
+            </button>
+            <button onclick="switchTab('tab-history')" id="btn-tab-history" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Order Archive</span>
+            </button>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: ORDER PROCESSING PIPELINE (LIVE KDS) -->
+        <!-- ========================================================= -->
+        <div id="tab-orders" class="portal-tab-content active space-y-6">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase mr-1">Filter View:</span>
+                    <button onclick="filterOrderCards('all')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-byte-maroon text-white">All Active ({{ active_orders|length }})</button>
+                    <button onclick="filterOrderCards('pending')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Pending</button>
+                    <button onclick="filterOrderCards('preparing')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Cooking</button>
+                    <button onclick="filterOrderCards('ready')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Ready</button>
+                    <button onclick="filterOrderCards('out_for_delivery')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">En Route</button>
+                </div>
+                <span class="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
+                    <i class="fa-solid fa-rotate text-xs animate-spin text-byte-amber"></i> Live auto-syncing every 8s
+                </span>
+            </div>
+
+            <!-- Orders Grid -->
+            <div id="orders-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for order in active_orders %}
+                <div class="order-pipeline-card bg-white rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between transition-all" data-order-status="{{ order.order_status }}" data-order-id="{{ order.id }}">
+                    
+                    <div>
+                        <!-- Header -->
+                        <div class="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-black text-base text-byte-maroon">#{{ order.order_number }}</span>
+                                    <span class="text-[11px] text-gray-500 block">{{ order.created_at|timesince }} ago</span>
+                                </div>
+                                <span class="text-[11px] text-gray-500 font-medium">Slot: <strong>{{ order.delivery_slot }}</strong></span>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ order.get_order_status_display }}
+                            </span>
+                        </div>
+
+                        <!-- Customer Details -->
+                        <div class="p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
+                            <div class="flex justify-between">
+                                <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
+                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1">
+                                    <i class="fa-solid fa-phone"></i> {{ order.customer_phone }}
+                                </a>
+                            </div>
+                            <p class="text-gray-600"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> <strong>{{ order.delivery_area }}</strong> • {{ order.delivery_address }}</p>
+                            
+                            <!-- Payment Status row -->
+                            <div class="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100 mt-2">
+                                <span class="font-bold text-gray-700">{{ order.get_payment_method_display }}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if order.payment_status == 'verified' %}bg-emerald-100 text-emerald-800{% elif order.payment_status == 'submitted' %}bg-amber-100 text-amber-800{% else %}bg-gray-200 text-gray-700{% endif %}">
+                                        {{ order.get_payment_status_display }}
+                                    </span>
+                                    {% if order.payment_status != 'verified' %}
+                                    <button type="button" onclick="updatePaymentStatus({{ order.id }}, 'verified')" class="text-[10px] text-emerald-700 hover:underline font-bold" title="Mark payment as verified">
+                                        [Verify]
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if order.transaction_id %}
+                            <div class="text-[10px] font-mono text-gray-500">TrxID: <strong>{{ order.transaction_id }}</strong></div>
+                            {% endif %}
+
+                            {% if order.customer_notes %}
+                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2">
+                                ⚠️ Notes: {{ order.customer_notes }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Ticket Items -->
+                        <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kitchen Items</span>
+                            {% for item in order.items.all %}
+                            <div class="flex items-start justify-between text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                <div>
+                                    <span class="font-extrabold text-gray-900 text-sm">{{ item.quantity }}x</span>
+                                    <span class="font-bold text-gray-800">{{ item.item_name }}</span>
+                                    {% if item.addons %}
+                                    <span class="block text-[10px] text-byte-amber font-semibold">+ {{ item.addons }}</span>
+                                    {% endif %}
+                                    {% if item.special_instructions %}
+                                    <span class="block text-[10px] text-rose-600 font-bold">👉 {{ item.special_instructions }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="font-semibold text-gray-600">৳{{ item.subtotal|floatformat:0 }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-gray-700 pb-1">
+                            <span>Bill:</span>
+                            <span class="text-base text-byte-maroon font-black">৳{{ order.total|floatformat:2 }}</span>
+                        </div>
+
+                        <!-- Workflow buttons -->
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                            {% if order.order_status == 'pending' %}
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'confirmed')" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                                Confirm
+                            </button>
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                                Start Cooking 🍳
+                            </button>
+                            {% elif order.order_status == 'confirmed' %}
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                                Start Cooking 🍳
+                            </button>
+                            {% elif order.order_status == 'preparing' %}
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'ready')" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
+                                Mark Packed & Ready 📦
+                            </button>
+                            {% elif order.order_status == 'ready' %}
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'out_for_delivery')" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                                Hand to Rider 🛵
+                            </button>
+                            {% elif order.order_status == 'out_for_delivery' %}
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'delivered')" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                                Mark Delivered 🎉
+                            </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Secondary utility links -->
+                        <div class="flex justify-between items-center pt-2 text-[11px] border-t border-gray-200">
+                            <a href="{% url 'staff_kot' order.order_number %}" target="_blank" class="text-byte-maroon hover:underline font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i> Print KOT
+                            </a>
+                            <a href="{% url 'order_tracking' order.order_number %}" target="_blank" class="text-gray-500 hover:text-byte-maroon font-semibold">
+                                Live Tracker <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                            <button type="button" onclick="if(confirm('Cancel order #{{ order.order_number }}?')) updateOrderStatus({{ order.id }}, 'cancelled')" class="text-rose-600 hover:underline font-semibold">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <div class="col-span-3 bg-white rounded-3xl p-12 text-center border border-gray-200 shadow-sm">
+                    <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-3"></i>
+                    <h3 class="font-display text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
+                    <p class="text-xs text-gray-500">There are no pending or active kitchen tickets right now.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: MENU & INVENTORY MANAGEMENT -->
+        <!-- ========================================================= -->
+        <div id="tab-menu" class="portal-tab-content space-y-6">
+            
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="font-display text-xl font-bold text-byte-maroon">Menu Items & Real-Time Stock</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Toggle availability instantly when dishes run out of stock or update selling prices.</p>
+                </div>
+                <button onclick="document.getElementById('add-item-modal').classList.remove('hidden')" class="px-5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add New Menu Item</span>
+                </button>
+            </div>
+
+            <!-- Items Table -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                            <tr>
+                                <th class="p-3">Dish / Item</th>
+                                <th class="p-3">Category</th>
+                                <th class="p-3">Portion Size</th>
+                                <th class="p-3">Regular Price</th>
+                                <th class="p-3">Discount Price</th>
+                                <th class="p-3">Stock Availability</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for item in menu_items %}
+                            <tr class="hover:bg-gray-50 transition" id="menu-row-{{ item.id }}">
+                                <td class="p-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                                            {% if item.image %}
+                                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                            {% elif item.static_image %}
+                                            <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                            {% else %}
+                                            <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-gray-900 block">{{ item.name }}</span>
+                                            <span class="text-[10px] text-gray-400">
+                                                {% if item.is_featured %}★ Featured {% endif %}
+                                                {% if item.is_frozen %}❄️ Frozen {% endif %}
+                                                {% if item.is_vegetarian %}🌱 Veg{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-3 font-semibold text-gray-700">{{ item.category.name }}</td>
+                                <td class="p-3 text-gray-500">{{ item.portion_size }}</td>
+                                <td class="p-3">
+                                    <input type="number" step="0.01" value="{{ item.price }}" id="price-input-{{ item.id }}" class="w-20 px-2 py-1 rounded border border-gray-300 text-xs font-bold text-gray-900">
+                                </td>
+                                <td class="p-3">
+                                    <input type="number" step="0.01" value="{{ item.discount_price|default:'' }}" id="discount-input-{{ item.id }}" placeholder="None" class="w-20 px-2 py-1 rounded border border-gray-300 text-xs text-gray-900">
+                                </td>
+                                <td class="p-3">
+                                    <button type="button" onclick="toggleItemStock({{ item.id }})" id="stock-btn-{{ item.id }}" class="px-3 py-1 rounded-full text-[11px] font-bold transition {% if item.is_available %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
+                                        {% if item.is_available %}In Stock{% else %}Sold Out{% endif %}
+                                    </button>
+                                </td>
+                                <td class="p-3 text-right">
+                                    <button type="button" onclick="saveItemPrices({{ item.id }})" class="px-3 py-1 rounded-lg bg-byte-maroon text-white font-bold text-[11px] hover:bg-byte-maroonDark transition shadow-sm">
+                                        Save
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Add Item Modal -->
+        <div id="add-item-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-display font-bold text-lg text-byte-maroon">Add New Menu Item</h3>
+                    <button onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <form method="POST" action="{% url 'staff_create_item' %}" class="space-y-3">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Category</label>
+                        {{ item_form.category }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Name</label>
+                        {{ item_form.name }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Tagline</label>
+                        {{ item_form.tagline }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Description</label>
+                        {{ item_form.description }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Price (৳)</label>
+                            {{ item_form.price }}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Discount Price (৳)</label>
+                            {{ item_form.discount_price }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Portion Size</label>
+                            {{ item_form.portion_size }}
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Spice Level</label>
+                            {{ item_form.spice_level }}
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-4 pt-2 text-xs font-bold text-gray-700">
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ item_form.is_available }} <span>Available</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ item_form.is_featured }} <span>Featured</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ item_form.is_vegetarian }} <span>Vegetarian</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ item_form.is_frozen }} <span>Frozen</span>
+                        </label>
+                    </div>
+                    <div class="pt-3 border-t border-gray-100 flex justify-end gap-2">
+                        <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">Cancel</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-byte-maroon text-white font-bold text-xs shadow">Save Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: KITCHEN OPERATIONS & SETTINGS -->
+        <!-- ========================================================= -->
+        <div id="tab-settings" class="portal-tab-content space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 max-w-3xl">
+                <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+                    <i class="fa-solid fa-sliders text-byte-amber text-xl"></i>
+                    <h2 class="font-display text-xl font-bold text-byte-maroon">Cloud Kitchen Operational Settings</h2>
+                </div>
+
+                <form method="POST" action="{% url 'staff_update_settings' %}" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Restaurant / Kitchen Name</label>
+                            {{ settings_form.restaurant_name }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Hotline Phone</label>
+                            {{ settings_form.phone }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Kitchen Open Time</label>
+                            {{ settings_form.opening_time }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Kitchen Close Time</label>
+                            {{ settings_form.closing_time }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Min Order (৳)</label>
+                            {{ settings_form.minimum_order_amount }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Delivery Fee (৳)</label>
+                            {{ settings_form.delivery_fee }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Free Delivery Above (৳)</label>
+                            {{ settings_form.free_delivery_above }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Estimated Delivery Time</label>
+                            {{ settings_form.estimated_delivery_time }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Official Email</label>
+                            {{ settings_form.email }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Top Announcement Banner</label>
+                        {{ settings_form.announcement_banner }}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Kitchen Physical Address</label>
+                        {{ settings_form.address }}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Delivery Coverage Areas (comma-separated)</label>
+                        {{ settings_form.delivery_areas }}
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-gray-800">
+                            {{ settings_form.is_kitchen_open }}
+                            <span>Kitchen is Currently Open for Orders</span>
+                        </label>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs shadow-md transition">
+                            Save Operational Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: RECENT DELIVERED & CANCELLED ORDERS ARCHIVE -->
+        <!-- ========================================================= -->
+        <div id="tab-history" class="portal-tab-content space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+                <h2 class="font-display text-lg font-bold text-byte-maroon mb-4">Complete Recent Orders Archive</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                            <tr>
+                                <th class="p-3">Order #</th>
+                                <th class="p-3">Customer</th>
+                                <th class="p-3">Phone</th>
+                                <th class="p-3">Area</th>
+                                <th class="p-3">Total</th>
+                                <th class="p-3">Payment</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Date</th>
+                                <th class="p-3 text-right">Ticket</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for o in all_recent_orders %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="p-3 font-mono font-bold text-byte-maroon">#{{ o.order_number }}</td>
+                                <td class="p-3 font-semibold text-gray-900">{{ o.customer_name }}</td>
+                                <td class="p-3 text-gray-600">{{ o.customer_phone }}</td>
+                                <td class="p-3 text-gray-600">{{ o.delivery_area }}</td>
+                                <td class="p-3 font-black text-gray-900">৳{{ o.total|floatformat:2 }}</td>
+                                <td class="p-3">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if o.payment_status == 'verified' %}bg-emerald-100 text-emerald-800{% else %}bg-gray-100 text-gray-700{% endif %}">
+                                        {{ o.get_payment_method_display }}
+                                    </span>
+                                </td>
+                                <td class="p-3">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {% if o.order_status == 'delivered' %}bg-emerald-100 text-emerald-800{% elif o.order_status == 'cancelled' %}bg-rose-100 text-rose-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ o.get_order_status_display }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-gray-500">{{ o.created_at|date:"d M, I:i A" }}</td>
+                                <td class="p-3 text-right">
+                                    <a href="{% url 'staff_kot' o.order_number %}" target="_blank" class="text-byte-maroon hover:underline font-bold">
+                                        KOT <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="9" class="p-6 text-center text-gray-400">No recent orders found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let soundEnabled = true;
+    let knownOrderIds = new Set([
+        {% for order in active_orders %}{{ order.id }},{% endfor %}
+    ]);
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.portal-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.portal-tab-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-byte-maroon', 'text-white');
+            btn.classList.add('bg-white', 'text-gray-700');
+        });
+
+        const target = document.getElementById(tabId);
+        if (target) target.classList.add('active');
+
+        const activeBtn = document.getElementById('btn-' + tabId);
+        if (activeBtn) {
+            activeBtn.classList.add('active', 'bg-byte-maroon', 'text-white');
+            activeBtn.classList.remove('bg-white', 'text-gray-700');
+        }
+    }
+
+    function filterOrderCards(status) {
+        document.querySelectorAll('.status-filter-btn').forEach(b => {
+            b.classList.remove('bg-byte-maroon', 'text-white');
+            b.classList.add('bg-white', 'text-gray-700');
+        });
+        event.target.classList.add('bg-byte-maroon', 'text-white');
+        event.target.classList.remove('bg-white', 'text-gray-700');
+
+        const cards = document.querySelectorAll('.order-pipeline-card');
+        cards.forEach(card => {
+            if (status === 'all' || card.getAttribute('data-order-status') === status) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Play synthesized bell chime using Web Audio API
+    function playKitchenChime() {
+        if (!soundEnabled) return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.8);
+        } catch (e) {
+            console.warn('Audio not available', e);
+        }
+    }
+
+    function toggleSoundAlert() {
+        soundEnabled = !soundEnabled;
+        const icon = document.getElementById('sound-icon');
+        const text = document.getElementById('sound-text');
+        if (soundEnabled) {
+            icon.className = 'fa-solid fa-bell text-byte-amber';
+            text.innerText = 'Sound: ON';
+            playKitchenChime();
+        } else {
+            icon.className = 'fa-solid fa-bell-slash text-gray-400';
+            text.innerText = 'Sound: OFF';
+        }
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+        fetch(`/api/kitchen/order/${orderId}/update-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Order #${data.order_number} marked as ${data.status_display}!`, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                showToast(data.message || 'Error updating order status', 'error');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function updatePaymentStatus(orderId, paymentStatus) {
+        fetch(`/api/staff/order/${orderId}/payment-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ payment_status: paymentStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Order #${data.order_number} payment marked as ${data.payment_status_display}!`, 'success');
+                setTimeout(() => window.location.reload(), 400);
+            } else {
+                showToast(data.message || 'Error updating payment', 'error');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function toggleKitchenStatus() {
+        fetch('/api/kitchen/toggle-open/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.status_text, 'info');
+                setTimeout(() => window.location.reload(), 400);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function toggleItemStock(itemId) {
+        fetch(`/api/staff/item/${itemId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const btn = document.getElementById(`stock-btn-${itemId}`);
+                if (btn) {
+                    btn.innerText = data.status_text;
+                    if (data.is_available) {
+                        btn.className = 'px-3 py-1 rounded-full text-[11px] font-bold transition bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200';
+                    } else {
+                        btn.className = 'px-3 py-1 rounded-full text-[11px] font-bold transition bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200';
+                    }
+                }
+                showToast(`${data.name} is now marked ${data.status_text}!`, 'info');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function saveItemPrices(itemId) {
+        const price = document.getElementById(`price-input-${itemId}`).value;
+        const discount = document.getElementById(`discount-input-${itemId}`).value;
+
+        fetch(`/api/staff/item/${itemId}/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                price: price,
+                discount_price: discount
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Saved prices for ${data.name}!`, 'success');
+            } else {
+                showToast(data.message || 'Error saving prices', 'error');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Auto-poll active orders stream every 8 seconds
+    function pollStaffOrders() {
+        fetch('/api/staff/orders/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Check if new order arrived
+                    let hasNew = false;
+                    data.orders.forEach(o => {
+                        if (!knownOrderIds.has(o.id)) {
+                            knownOrderIds.add(o.id);
+                            hasNew = true;
+                        }
+                    });
+
+                    if (hasNew) {
+                        playKitchenChime();
+                        showToast("🔔 New customer order received!", "info");
+                        // Refresh to sync ticket cards
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    setInterval(pollStaffOrders, 8000);
+</script>
+{% endblock %}

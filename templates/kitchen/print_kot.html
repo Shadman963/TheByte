@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOT — Order #{{ order.order_number }}</title>
+    <style>
+        @media print {
+            body { margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 320px;
+            margin: 20px auto;
+            padding: 12px;
+            background: #fff;
+            color: #000;
+            border: 1px dashed #ccc;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .order-title {
+            font-size: 20px;
+            font-weight: 900;
+            margin: 4px 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        .instruction {
+            font-size: 11px;
+            font-style: italic;
+            padding-left: 10px;
+            margin-bottom: 3px;
+        }
+        .btn-print {
+            display: block;
+            width: 100%;
+            background: #6e0f2d;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()" class="btn-print">🖨️ Print Kitchen Ticket (KOT)</button>
+    </div>
+
+    <div class="text-center">
+        <div class="header-title">{{ setting.restaurant_name }}</div>
+        <div style="font-size: 12px;">CLOUD KITCHEN ORDER TICKET (KOT)</div>
+        <div style="font-size: 11px;">Hotline: {{ setting.phone }}</div>
+        <div class="divider"></div>
+        <div class="order-title">ORDER #{{ order.order_number }}</div>
+        <div style="font-size: 11px;">{{ order.created_at|date:"d M Y • I:i A" }}</div>
+        <div style="font-size: 12px; font-weight: bold;">SLOT: {{ order.delivery_slot }}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Customer & Destination -->
+    <div style="font-size: 12px;">
+        <div><strong>CUSTOMER:</strong> {{ order.customer_name }}</div>
+        <div><strong>PHONE:</strong> {{ order.customer_phone }}</div>
+        <div><strong>AREA:</strong> {{ order.delivery_area }}</div>
+        <div><strong>ADDRESS:</strong> {{ order.delivery_address }}</div>
+        {% if order.customer_notes %}
+        <div style="margin-top: 4px; background: #eee; padding: 4px;">
+            <strong>NOTE:</strong> {{ order.customer_notes }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Items -->
+    <div style="font-size: 12px; font-weight: bold; margin-bottom: 6px;">
+        <span>ITEMS ORDERED:</span>
+    </div>
+
+    {% for item in order.items.all %}
+    <div class="item-row">
+        <div>
+            <span class="font-bold">[{{ item.quantity }}x]</span> {{ item.item_name }}
+        </div>
+        <div class="font-bold">৳{{ item.subtotal|floatformat:0 }}</div>
+    </div>
+    {% if item.addons %}
+    <div class="instruction">+ {{ item.addons }}</div>
+    {% endif %}
+    {% if item.special_instructions %}
+    <div class="instruction">*** {{ item.special_instructions }} ***</div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="divider"></div>
+
+    <!-- Financials -->
+    <div style="font-size: 12px;">
+        <div class="item-row">
+            <span>Subtotal:</span>
+            <span>৳{{ order.subtotal|floatformat:2 }}</span>
+        </div>
+        <div class="item-row">
+            <span>Delivery Fee:</span>
+            <span>৳{{ order.delivery_fee|floatformat:2 }}</span>
+        </div>
+        <div class="item-row font-bold" style="font-size: 14px; margin-top: 4px;">
+            <span>TOTAL:</span>
+            <span>৳{{ order.total|floatformat:2 }}</span>
+        </div>
+        <div class="item-row" style="margin-top: 4px;">
+            <span>PAYMENT:</span>
+            <span>{{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})</span>
+        </div>
+        {% if order.transaction_id %}
+        <div class="item-row" style="font-size: 11px;">
+            <span>TrxID:</span>
+            <span>{{ order.transaction_id }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="divider"></div>
+    <div class="text-center" style="font-size: 11px;">
+        <div>Freshly Cooked With Responsibility</div>
+        <div>Thank You For Choosing The BYTE!</div>
+    </div>
+</body>
+</html>

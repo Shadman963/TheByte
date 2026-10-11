@@ -5,6 +5,9 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.urls import reverse
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from .models import (
@@ -15,9 +18,22 @@ from .models import (
     Order,
     OrderItem,
     CustomerReview,
-    ContactMessage
+    ContactMessage,
+    CustomerProfile
 )
 from .cart import Cart
+from .forms import (
+    CustomerRegistrationForm,
+    CustomerLoginForm,
+    CustomerProfileUpdateForm,
+    MenuItemQuickForm,
+    KitchenSettingForm
+)
+
+
+def is_kitchen_staff(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
 
 
 def get_site_setting():
@@ -241,6 +257,10 @@ def cart_remove_api(request):
 
 @ensure_csrf_cookie
 def checkout_view(request):
+    if not request.user.is_authenticated:
+        messages.info(request, "Please log in or create an account to proceed with your order.")
+        return redirect(f"{reverse('customer_login')}?next={reverse('checkout')}")
+
     setting = get_site_setting()
     cart = Cart(request)
 
@@ -259,11 +279,12 @@ def checkout_view(request):
     delivery_fee = cart.get_delivery_fee(setting)
     total = cart.get_total(setting)
     delivery_areas = setting.get_delivery_areas_list()
+    profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         name = request.POST.get('customer_name', '').strip()
         phone = request.POST.get('customer_phone', '').strip()
-        email = request.POST.get('customer_email', '').strip()
+        email = request.POST.get('customer_email', '').strip() or request.user.email
         address = request.POST.get('delivery_address', '').strip()
         area = request.POST.get('delivery_area', '').strip()
         slot = request.POST.get('delivery_slot', 'Earliest Available (30-45 mins)').strip()
@@ -275,6 +296,20 @@ def checkout_view(request):
             messages.error(request, "Please fill in all required delivery details (Name, Phone, Address, and Area).")
             return redirect('checkout')
 
+        # Auto-update profile default address & phone if empty
+        updated_profile = False
+        if not profile.phone or profile.phone != phone:
+            profile.phone = phone
+            updated_profile = True
+        if not profile.default_address:
+            profile.default_address = address
+            updated_profile = True
+        if not profile.default_area:
+            profile.default_area = area
+            updated_profile = True
+        if updated_profile:
+            profile.save()
+
         payment_status = 'unpaid'
         if payment_method in ['bkash', 'nagad']:
             if trx_id:
@@ -282,8 +317,9 @@ def checkout_view(request):
             else:
                 messages.warning(request, "Please enter your bKash/Nagad Transaction ID for quick order verification.")
 
-        # Create Order
+        # Create Order with user
         order = Order.objects.create(
+            user=request.user,
             customer_name=name,
             customer_phone=phone,
             customer_email=email or None,
@@ -325,6 +361,12 @@ def checkout_view(request):
         messages.success(request, f"🎉 Order #{order.order_number} placed successfully! The kitchen has received your order.")
         return redirect('order_tracking', order_number=order.order_number)
 
+    initial_name = request.user.get_full_name() or request.user.username
+    initial_phone = profile.phone or ""
+    initial_email = request.user.email or ""
+    initial_address = profile.default_address or ""
+    initial_area = profile.default_area or ""
+
     context = {
         'setting': setting,
         'cart': cart,
@@ -332,6 +374,11 @@ def checkout_view(request):
         'delivery_fee': delivery_fee,
         'total': total,
         'delivery_areas': delivery_areas,
+        'initial_name': initial_name,
+        'initial_phone': initial_phone,
+        'initial_email': initial_email,
+        'initial_address': initial_address,
+        'initial_area': initial_area,
     }
     return render(request, 'kitchen/checkout.html', context)
 
@@ -485,3 +532,352 @@ def review_submit_view(request):
     )
     messages.success(request, "⭐ Thank you for your review! Your feedback helps us serve even better.")
     return redirect('home')
+
+
+# ====================================================================
+# CUSTOMER AUTHENTICATION & PORTAL
+# ====================================================================
+
+@ensure_csrf_cookie
+def customer_register_view(request):
+    if request.user.is_authenticated:
+        return redirect('customer_dashboard')
+
+    next_url = request.GET.get('next') or request.POST.get('next') or 'customer_dashboard'
+    setting = get_site_setting()
+
+    if request.method == 'POST':
+        form = CustomerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f"Welcome to The BYTE, {user.first_name or user.username}! Your account has been registered.")
+            return redirect(next_url)
+    else:
+        form = CustomerRegistrationForm()
+
+    return render(request, 'kitchen/customer_register.html', {
+        'form': form,
+        'setting': setting,
+        'next': next_url,
+    })
+
+
+@ensure_csrf_cookie
+def customer_login_view(request):
+    if request.user.is_authenticated:
+        return redirect('customer_dashboard')
+
+    next_url = request.GET.get('next') or request.POST.get('next') or 'customer_dashboard'
+    setting = get_site_setting()
+
+    if request.method == 'POST':
+        form = CustomerLoginForm(request.POST)
+        if form.is_valid():
+            user = form.user
+            login(request, user)
+            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+            return redirect(next_url)
+    else:
+        form = CustomerLoginForm()
+
+    return render(request, 'kitchen/customer_login.html', {
+        'form': form,
+        'setting': setting,
+        'next': next_url,
+    })
+
+
+def customer_logout_view(request):
+    logout(request)
+    messages.info(request, "You have been logged out. Come back hungry!")
+    return redirect('home')
+
+
+@login_required(login_url='customer_login')
+@ensure_csrf_cookie
+def customer_dashboard_view(request):
+    setting = get_site_setting()
+    profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        default_area = request.POST.get('default_area', '').strip()
+        default_address = request.POST.get('default_address', '').strip()
+
+        request.user.first_name = first_name
+        request.user.last_name = last_name
+        if email:
+            request.user.email = email
+        request.user.save()
+
+        profile.phone = phone
+        profile.default_area = default_area
+        profile.default_address = default_address
+        profile.save()
+
+        messages.success(request, "Your account details have been updated successfully.")
+        return redirect('customer_dashboard')
+
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    active_orders = orders.exclude(order_status__in=['delivered', 'cancelled'])
+    past_orders = orders.filter(order_status__in=['delivered', 'cancelled'])
+    delivery_areas = setting.get_delivery_areas_list()
+
+    context = {
+        'setting': setting,
+        'profile': profile,
+        'orders': orders,
+        'active_orders': active_orders,
+        'past_orders': past_orders,
+        'delivery_areas': delivery_areas,
+    }
+    return render(request, 'kitchen/customer_dashboard.html', context)
+
+
+@login_required(login_url='customer_login')
+def customer_orders_api(request):
+    """
+    Returns active orders for current user for automatic live status tracking.
+    """
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')[:10]
+    data = []
+    for o in orders:
+        data.append({
+            'order_number': o.order_number,
+            'status': o.order_status,
+            'status_display': o.get_order_status_display(),
+            'total': float(o.total),
+            'items_count': o.items.count(),
+            'created_at': o.created_at.strftime('%I:%M %p, %d %b %Y'),
+            'is_active': o.order_status not in ['delivered', 'cancelled'],
+            'step_index': o.status_step_index,
+        })
+    return JsonResponse({'orders': data})
+
+
+# ====================================================================
+# STAFF & ADMIN CLOUD KITCHEN MANAGEMENT PORTAL
+# ====================================================================
+
+@ensure_csrf_cookie
+def staff_login_view(request):
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        return redirect('staff_dashboard')
+
+    setting = get_site_setting()
+    if request.method == 'POST':
+        form = CustomerLoginForm(request.POST)
+        if form.is_valid():
+            user = form.user
+            if user.is_staff or user.is_superuser:
+                login(request, user)
+                messages.success(request, f"Logged into Staff Portal as {user.username}")
+                return redirect('staff_dashboard')
+            else:
+                messages.error(request, "Access denied. Only kitchen staff and administrators can access this portal.")
+    else:
+        form = CustomerLoginForm()
+
+    return render(request, 'kitchen/staff_login.html', {'form': form, 'setting': setting})
+
+
+@user_passes_test(is_kitchen_staff, login_url='/staff/login/')
+@ensure_csrf_cookie
+def staff_dashboard_view(request):
+    setting = get_site_setting()
+    active_orders = Order.objects.exclude(order_status__in=['delivered', 'cancelled']).order_by('created_at')
+    delivered_orders = Order.objects.filter(order_status='delivered').order_by('-updated_at')[:15]
+    all_recent_orders = Order.objects.all().order_by('-created_at')[:30]
+
+    today = timezone.now().date()
+    today_orders = Order.objects.filter(created_at__date=today)
+    today_count = today_orders.count()
+    today_revenue = today_orders.exclude(order_status='cancelled').aggregate(Sum('total'))['total__sum'] or Decimal('0.00')
+    pending_prep_count = Order.objects.filter(order_status__in=['pending', 'confirmed', 'preparing']).count()
+    ready_count = Order.objects.filter(order_status='ready').count()
+    out_for_delivery_count = Order.objects.filter(order_status='out_for_delivery').count()
+
+    categories = Category.objects.all().prefetch_related('items')
+    menu_items = MenuItem.objects.all().select_related('category').order_by('category', 'order', 'name')
+    settings_form = KitchenSettingForm(instance=setting)
+    item_form = MenuItemQuickForm()
+
+    context = {
+        'setting': setting,
+        'active_orders': active_orders,
+        'delivered_orders': delivered_orders,
+        'all_recent_orders': all_recent_orders,
+        'today_count': today_count,
+        'today_revenue': today_revenue,
+        'pending_prep_count': pending_prep_count,
+        'ready_count': ready_count,
+        'out_for_delivery_count': out_for_delivery_count,
+        'categories': categories,
+        'menu_items': menu_items,
+        'settings_form': settings_form,
+        'item_form': item_form,
+    }
+    return render(request, 'kitchen/staff_dashboard.html', context)
+
+
+@user_passes_test(is_kitchen_staff)
+def staff_orders_api(request):
+    """
+    Live stream API for staff portal to get orders and notify of newly placed orders.
+    """
+    active_orders = Order.objects.exclude(order_status__in=['delivered', 'cancelled']).order_by('created_at')
+    orders_data = []
+    for order in active_orders:
+        items = [{
+            'name': i.item_name,
+            'qty': i.quantity,
+            'subtotal': float(i.subtotal),
+            'special_instructions': i.special_instructions,
+            'addons': i.addons
+        } for i in order.items.all()]
+
+        orders_data.append({
+            'id': order.id,
+            'order_number': order.order_number,
+            'customer_name': order.customer_name,
+            'customer_phone': order.customer_phone,
+            'delivery_address': order.delivery_address,
+            'delivery_area': order.delivery_area,
+            'delivery_slot': order.delivery_slot,
+            'customer_notes': order.customer_notes,
+            'payment_method': order.get_payment_method_display(),
+            'payment_status': order.payment_status,
+            'payment_status_display': order.get_payment_status_display(),
+            'transaction_id': order.transaction_id or '',
+            'order_status': order.order_status,
+            'status_display': order.get_order_status_display(),
+            'subtotal': float(order.subtotal),
+            'delivery_fee': float(order.delivery_fee),
+            'total': float(order.total),
+            'created_at_time': order.created_at.strftime('%I:%M %p'),
+            'created_at_timestamp': order.created_at.timestamp(),
+            'items': items,
+        })
+
+    today = timezone.now().date()
+    today_orders = Order.objects.filter(created_at__date=today)
+    today_revenue = today_orders.exclude(order_status='cancelled').aggregate(Sum('total'))['total__sum'] or Decimal('0.00')
+
+    return JsonResponse({
+        'success': True,
+        'orders': orders_data,
+        'active_count': len(orders_data),
+        'today_count': today_orders.count(),
+        'today_revenue': float(today_revenue),
+    })
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_update_payment_status_api(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    try:
+        payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+        new_status = payload.get('payment_status')
+        valid_statuses = [choice[0] for choice in Order.PAYMENT_STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return JsonResponse({'success': False, 'message': 'Invalid payment status'}, status=400)
+
+        order.payment_status = new_status
+        order.save()
+        return JsonResponse({
+            'success': True,
+            'order_number': order.order_number,
+            'new_payment_status': order.payment_status,
+            'payment_status_display': order.get_payment_status_display()
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_toggle_item_api(request, item_id):
+    item = get_object_or_404(MenuItem, id=item_id)
+    item.is_available = not item.is_available
+    item.save()
+    return JsonResponse({
+        'success': True,
+        'item_id': item.id,
+        'name': item.name,
+        'is_available': item.is_available,
+        'status_text': "In Stock" if item.is_available else "Sold Out"
+    })
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_update_item_api(request, item_id):
+    item = get_object_or_404(MenuItem, id=item_id)
+    try:
+        payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+        price = payload.get('price')
+        discount_price = payload.get('discount_price')
+        is_available = payload.get('is_available')
+
+        if price is not None:
+            item.price = Decimal(str(price))
+        if discount_price is not None:
+            if str(discount_price).strip() in ['', 'null', '0']:
+                item.discount_price = None
+            else:
+                item.discount_price = Decimal(str(discount_price))
+        if is_available is not None:
+            item.is_available = bool(is_available)
+
+        item.save()
+        return JsonResponse({
+            'success': True,
+            'item_id': item.id,
+            'name': item.name,
+            'price': float(item.price),
+            'discount_price': float(item.discount_price) if item.discount_price else None,
+            'is_available': item.is_available
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_create_item_view(request):
+    form = MenuItemQuickForm(request.POST)
+    if form.is_valid():
+        item = form.save()
+        messages.success(request, f"New menu item '{item.name}' added successfully!")
+    else:
+        messages.error(request, "Failed to create item. Please check the form data.")
+    return redirect('staff_dashboard')
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_update_settings_view(request):
+    setting = get_site_setting()
+    form = KitchenSettingForm(request.POST, instance=setting)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Kitchen operations settings updated successfully!")
+    else:
+        messages.error(request, "Error saving settings. Please check values.")
+    return redirect('staff_dashboard')
+
+
+@user_passes_test(is_kitchen_staff)
+def staff_kot_view(request, order_number):
+    setting = get_site_setting()
+    order = get_object_or_404(Order, order_number__iexact=order_number)
+    return render(request, 'kitchen/print_kot.html', {
+        'setting': setting,
+        'order': order,
+    })
+

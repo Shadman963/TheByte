@@ -8,7 +8,8 @@ from .models import (
     Order,
     OrderItem,
     CustomerReview,
-    ContactMessage
+    ContactMessage,
+    CustomerProfile
 )
 
 admin.site.site_header = "The BYTE — Cloud Kitchen Management"
@@ -74,11 +75,17 @@ class MenuItemAddonAdmin(admin.ModelAdmin):
     list_filter = ('is_available',)
 
 
+@admin.register(CustomerProfile)
+class CustomerProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'phone', 'default_area', 'created_at')
+    search_fields = ('user__username', 'user__email', 'phone', 'default_address', 'default_area')
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_number', 'customer_name', 'customer_phone', 'delivery_area', 'total_display', 'payment_info', 'status_badge', 'created_at')
+    list_display = ('order_number', 'user', 'customer_name', 'customer_phone', 'delivery_area', 'total_display', 'payment_info', 'status_badge', 'created_at')
     list_filter = ('order_status', 'payment_method', 'payment_status', 'created_at')
-    search_fields = ('order_number', 'customer_name', 'customer_phone', 'transaction_id')
+    search_fields = ('order_number', 'customer_name', 'customer_phone', 'transaction_id', 'user__username')
     readonly_fields = ('order_number', 'created_at', 'updated_at', 'subtotal', 'delivery_fee', 'discount', 'total')
     inlines = [OrderItemInline]
 

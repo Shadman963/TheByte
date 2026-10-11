@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Customer Account — {{ setting.restaurant_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-byte-creamLight min-h-[85vh] py-12 flex items-center justify-center">
+    <div class="max-w-xl w-full mx-auto px-4 sm:px-6">
+        
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-2xl bg-white p-2 mx-auto mb-3 shadow-md border border-byte-amber/30 flex items-center justify-center">
+                <img src="{% static 'images/byte_logo.png' %}" alt="{{ setting.restaurant_name }}" class="w-full h-full object-contain">
+            </div>
+            <h1 class="font-display text-3xl font-extrabold text-byte-maroon uppercase tracking-wide">
+                Join The BYTE Family
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1">
+                Create your account to unlock quick checkout, track live meal preparation, and save your delivery addresses.
+            </p>
+
+            {% if 'checkout' in next %}
+            <div class="mt-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-center gap-2">
+                <i class="fa-solid fa-lock text-byte-amber"></i>
+                <span>Account required to complete your order. Register below in 30 seconds!</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-200">
+            <form method="POST" action="{% url 'customer_register' %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+
+                {% if form.non_field_errors %}
+                <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold space-y-1">
+                    {% for error in form.non_field_errors %}
+                    <p><i class="fa-solid fa-circle-exclamation mr-1"></i> {{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">First Name *</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.username.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Phone Number (Active) *</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.phone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Delivery Area / Zone *</label>
+                        {{ form.default_area }}
+                        {% if form.default_area.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.default_area.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Detailed Street Address / Road / Flat *</label>
+                    {{ form.default_address }}
+                    {% if form.default_address.errors %}
+                    <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.default_address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-700 mb-1">Confirm Password *</label>
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}
+                        <p class="text-[11px] text-rose-600 mt-1 font-semibold">{{ form.confirm_password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-3.5 rounded-2xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-extrabold text-sm uppercase tracking-wider transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Register & Continue</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-gray-100 text-center text-xs text-gray-600">
+                <span>Already have an account?</span>
+                <a href="{% url 'customer_login' %}?next={{ next|urlencode }}" class="font-bold text-byte-maroon hover:underline ml-1">
+                    Log in here
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

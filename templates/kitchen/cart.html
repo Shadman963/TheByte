@@ -91,7 +91,7 @@
                     <!-- Free delivery progress meter -->
                     <div class="bg-byte-cream/70 p-3.5 rounded-xl border border-byte-maroon/10">
                         <div class="flex justify-between text-xs font-bold text-byte-maroon mb-1.5">
-                            <span>
+                            <span id="cart-page-fd-text">
                                 {% if subtotal >= setting.free_delivery_above %}
                                 🎉 Free Delivery Unlocked!
                                 {% else %}
@@ -101,39 +101,41 @@
                             <span>৳{{ setting.free_delivery_above|floatformat:0 }}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                            <div class="bg-byte-amber h-2 rounded-full transition-all duration-500" style="width: {{ free_delivery_percent }}%"></div>
+                            <div id="cart-page-fd-progress" class="{% if subtotal >= setting.free_delivery_above %}bg-emerald-500{% else %}bg-byte-amber{% endif %} h-2 rounded-full transition-all duration-500" style="width: {{ free_delivery_percent }}%"></div>
                         </div>
                     </div>
 
                     <div class="space-y-2.5 text-sm text-gray-600">
                         <div class="flex justify-between">
                             <span>Items Subtotal</span>
-                            <span class="font-bold text-gray-900">৳{{ subtotal|floatformat:2 }}</span>
+                            <span class="font-bold text-gray-900">৳<span id="cart-page-subtotal">{{ subtotal|floatformat:2 }}</span></span>
                         </div>
                         <div class="flex justify-between">
                             <span>Estimated Delivery Fee</span>
-                            <span class="font-bold text-gray-900">৳{{ delivery_fee|floatformat:2 }}</span>
+                            <span class="font-bold text-gray-900">৳<span id="cart-page-delivery">{{ delivery_fee|floatformat:2 }}</span></span>
                         </div>
                         <div class="flex justify-between text-base font-extrabold text-byte-maroon pt-3 border-t border-gray-100">
                             <span>Estimated Total</span>
-                            <span class="text-xl">৳{{ total|floatformat:2 }}</span>
+                            <span class="text-xl">৳<span id="cart-page-total">{{ total|floatformat:2 }}</span></span>
                         </div>
                     </div>
 
-                    <!-- Minimum Order Notice -->
-                    {% if subtotal < setting.minimum_order_amount %}
-                    <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                        <span>Minimum order requirement is ৳{{ setting.minimum_order_amount|floatformat:0 }}. Please add more items.</span>
+                    <!-- Minimum Order & Checkout Button Container -->
+                    <div id="cart-page-checkout-container">
+                        {% if subtotal < setting.minimum_order_amount %}
+                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                            <span>Minimum order requirement is ৳{{ setting.minimum_order_amount|floatformat:0 }}. Please add more items.</span>
+                        </div>
+                        <button disabled class="w-full py-3.5 rounded-2xl bg-gray-300 text-gray-500 font-bold text-sm cursor-not-allowed">
+                            Proceed to Checkout
+                        </button>
+                        {% else %}
+                        <a href="{% url 'checkout' %}" class="block w-full py-4 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm text-center shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
+                            Proceed to Checkout (৳<span id="cart-page-checkout-total">{{ total|floatformat:2 }}</span>)
+                        </a>
+                        {% endif %}
                     </div>
-                    <button disabled class="w-full py-3.5 rounded-2xl bg-gray-300 text-gray-500 font-bold text-sm cursor-not-allowed">
-                        Proceed to Checkout
-                    </button>
-                    {% else %}
-                    <a href="{% url 'checkout' %}" class="block w-full py-4 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm text-center shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
-                        Proceed to Checkout (৳{{ total|floatformat:2 }})
-                    </a>
-                    {% endif %}
 
                     <div class="pt-2 text-center text-xs text-gray-400">
                         <i class="fa-solid fa-shield-halved mr-1"></i> Cash on Delivery & bKash / Nagad accepted
