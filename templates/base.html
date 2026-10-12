@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_setting.restaurant_name }} — {{ site_setting.tagline }}{% endblock %}</title>
     <meta name="description" content="The BYTE - Fresh, tasty, and budget-friendly cloud kitchen meals cooked with responsibility for students, office workers, and daily hustlers.">
-    <link rel="icon" type="image/png" href="{% static 'images/byte_logo.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/TheByte.png' %}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -119,18 +119,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
             <!-- Brand Logo -->
-            <a href="{% url 'home' %}" class="flex items-center gap-3 group">
-                <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border border-byte-amber/30">
-                    <img src="{% static 'images/TheByte.png' %}" alt="{{ site_setting.restaurant_name }} Logo" class="w-full h-full object-contain">
-                </div>
-                <div>
-                    <span class="font-display text-2xl font-bold tracking-wider text-white uppercase block leading-none">
-                        {{ site_setting.restaurant_name }}
-                    </span>
-                    <span class="text-[10px] tracking-widest text-byte-cream/80 uppercase font-semibold">
-                        Cloud Kitchen
-                    </span>
-                </div>
+            <a href="{% url 'home' %}" class="flex items-center group py-1" title="{{ site_setting.restaurant_name }}">
+                <img src="{% static 'images/TheByte.png' %}" alt="{{ site_setting.restaurant_name }}" class="h-14 sm:h-16 w-auto object-contain transition-transform group-hover:scale-105 drop-shadow-md">
             </a>
 
             <!-- Desktop Nav Links -->
@@ -370,9 +360,7 @@
                 <!-- Col 1: Brand Info -->
                 <div class="md:col-span-2 space-y-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center">
-                            <img src="{% static 'images/byte_logo.png' %}" alt="{{ site_setting.restaurant_name }}" class="w-full h-full object-contain">
-                        </div>
+                        <img src="{% static 'images/TheByte.png' %}" alt="{{ site_setting.restaurant_name }}" class="h-12 w-auto object-contain">
                         <h2 class="font-display text-2xl font-bold tracking-wider text-white uppercase">
                             {{ site_setting.restaurant_name }}
                         </h2>
