@@ -78,8 +78,8 @@
 
     <!-- Top Announcement Bar -->
     <div class="bg-byte-maroonDark text-byte-cream text-xs sm:text-sm py-2 px-4 border-b border-white/10">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-            <div class="flex items-center justify-center gap-2">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-2 text-center lg:text-left">
+            <div class="flex items-center justify-center lg:justify-start gap-2 shrink-0">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {% if site_setting.is_kitchen_open %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-rose-500/20 text-rose-300 border border-rose-500/30{% endif %}">
                     <span class="w-2 h-2 rounded-full {% if site_setting.is_kitchen_open %}bg-emerald-400 animate-pulse{% else %}bg-rose-400{% endif %}"></span>
                     {% if site_setting.is_kitchen_open %}Kitchen Open & Cooking{% else %}Kitchen Closed (Pre-orders Only){% endif %}
@@ -88,12 +88,13 @@
                 <span class="text-byte-cream/90 font-medium">
                     <i class="fa-solid fa-clock text-byte-amber mr-1"></i> {{ site_setting.opening_time }} - {{ site_setting.closing_time }}
                 </span>
-                <span class="hidden md:inline text-white/60">|</span>
-                <span class="text-byte-amber font-semibold hidden lg:inline">
-                    <i class="fa-solid fa-bolt mr-1"></i> {{ site_setting.announcement_banner }}
-                </span>
             </div>
-            <div class="flex items-center justify-center gap-4 text-xs font-medium">
+            {% if site_setting.announcement_banner %}
+            <div class="flex-1 min-w-0 text-center px-2 py-0.5 text-byte-amber font-semibold truncate" title="{{ site_setting.announcement_banner }}">
+                <i class="fa-solid fa-bolt mr-1"></i> {{ site_setting.announcement_banner }}
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-center lg:justify-end gap-4 text-xs font-medium shrink-0">
                 <a href="tel:{{ site_setting.phone }}" class="hover:text-byte-amber transition flex items-center gap-1">
                     <i class="fa-solid fa-phone text-byte-amber"></i> {{ site_setting.phone }}
                 </a>
@@ -120,7 +121,7 @@
             <!-- Brand Logo -->
             <a href="{% url 'home' %}" class="flex items-center gap-3 group">
                 <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 border border-byte-amber/30">
-                    <img src="{% static 'images/byte_logo.png' %}" alt="{{ site_setting.restaurant_name }} Logo" class="w-full h-full object-contain">
+                    <img src="{% static 'images/TheByte.png' %}" alt="{{ site_setting.restaurant_name }} Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <span class="font-display text-2xl font-bold tracking-wider text-white uppercase block leading-none">
