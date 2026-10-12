@@ -43,7 +43,7 @@
         existingToasts.forEach(t => t.remove());
 
         const toast = document.createElement('div');
-        toast.className = 'byte-toast fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0';
+        toast.className = 'byte-toast fixed bottom-24 right-5 sm:bottom-24 sm:right-6 z-50 p-4 rounded-2xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0';
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'polite');
 
@@ -324,6 +324,13 @@
                         badge.classList.add('scale-125');
                         setTimeout(() => badge.classList.remove('scale-125'), 250);
                     }
+
+                    // Animate floating cart button
+                    const floatingBtn = document.getElementById('floating-cart-btn');
+                    if (floatingBtn) {
+                        floatingBtn.classList.add('scale-105', 'ring-4', 'ring-byte-amber/50');
+                        setTimeout(() => floatingBtn.classList.remove('scale-105', 'ring-4', 'ring-byte-amber/50'), 300);
+                    }
                 } else {
                     showToast(body.message || 'Could not add item to cart.', 'error');
                 }
@@ -545,6 +552,42 @@
                 container.classList.add('hidden');
             }
         });
+
+        const headerNavBadge = document.getElementById('nav-cart-badge');
+        if (headerNavBadge) {
+            headerNavBadge.textContent = cartCount;
+            if (cartCount > 0) {
+                headerNavBadge.classList.remove('hidden');
+            } else {
+                headerNavBadge.classList.add('hidden');
+            }
+        }
+
+        // 2. Floating Cart Elements
+        const floatingBadge = document.getElementById('floating-cart-badge');
+        if (floatingBadge) {
+            floatingBadge.textContent = cartCount;
+            if (cartCount > 0) {
+                floatingBadge.classList.remove('hidden');
+            } else {
+                floatingBadge.classList.add('hidden');
+            }
+        }
+
+        const floatingItemsText = document.getElementById('floating-cart-items-text');
+        if (floatingItemsText) {
+            floatingItemsText.textContent = `${cartCount} item${cartCount === 1 ? '' : 's'}`;
+        }
+
+        const floatingSubtotal = document.getElementById('floating-cart-subtotal');
+        if (floatingSubtotal) {
+            floatingSubtotal.textContent = subtotal.toFixed(2);
+        }
+
+        const floatingBtn = document.getElementById('floating-cart-btn');
+        if (floatingBtn) {
+            floatingBtn.setAttribute('aria-label', `Shopping Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}, Subtotal ৳${subtotal.toFixed(2)}`);
+        }
 
         // 2. Drawer Totals
         const drawerSubtotal = document.getElementById('drawer-subtotal');
@@ -949,6 +992,7 @@
         initMobileMenu();
         initKeyboardListeners();
         attachFormProgressiveEnhancement();
+        refreshCartDrawer();
     });
 
 })();

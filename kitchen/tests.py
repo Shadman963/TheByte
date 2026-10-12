@@ -621,3 +621,86 @@ class KitchenTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(res_terminal.status_code, 400)
+
+    def test_floating_cart_rendering_and_context(self):
+        # 1. Test empty cart initial state on home and menu pages
+        for url_name in ['home', 'menu']:
+            response = self.client.get(reverse(url_name))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context['cart_count'], 0)
+            self.assertEqual(response.context['cart_subtotal'], 0.0)
+            
+            # Assert floating cart elements exist in HTML
+            self.assertContains(response, 'id="floating-cart-wrapper"')
+            self.assertContains(response, 'id="floating-cart-btn"')
+            self.assertContains(response, 'id="floating-cart-badge"')
+            self.assertContains(response, 'id="floating-cart-subtotal"')
+            self.assertContains(response, 'id="floating-cart-items-text"')
+            
+            # Assert slide-out drawer and backdrop elements exist
+            self.assertContains(response, 'id="cart-drawer"')
+            self.assertContains(response, 'id="cart-drawer-backdrop"')
+            self.assertContains(response, 'id="cart-drawer-items"')
+            self.assertContains(response, 'id="drawer-subtotal"')
+            self.assertContains(response, 'id="drawer-checkout-btn"')
+
+    def test_floating_cart_with_items_and_sync(self):
+        # 1. Add item to cart
+        payload = {
+            'item_id': self.item_chicken.id,
+            'quantity': 2,
+            'special_instructions': 'Hot',
+            'addon_ids': []
+        }
+        res_add = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(res_add.status_code, 200)
+        data = res_add.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['cart_count'], 2)
+        self.assertEqual(data['subtotal'], 300.0)
+
+        # 2. Page render should reflect updated floating cart values
+        res_menu = self.client.get(reverse('menu'))
+        self.assertEqual(res_menu.status_code, 200)
+        self.assertEqual(res_menu.context['cart_count'], 2)
+        self.assertEqual(res_menu.context['cart_subtotal'], 300.0)
+        self.assertContains(res_menu, '<span>৳</span><span id="floating-cart-subtotal">300.00</span>')
+        self.assertContains(res_menu, '2 items')
+
+        # 3. Test cart_items_api contains items for the drawer
+        res_items = self.client.get(reverse('cart_items_api'))
+        self.assertEqual(res_items.status_code, 200)
+        items_data = res_items.json()
+        self.assertEqual(len(items_data['items']), 1)
+        self.assertEqual(items_data['items'][0]['name'], "Chicken Curry")
+        self.assertEqual(items_data['items'][0]['quantity'], 2)
+        self.assertEqual(items_data['items'][0]['price'], 150.0)
+        self.assertEqual(items_data['items'][0]['total'], 300.0)
+
+        # 4. Update cart item quantity (+1 via delta)
+        key = items_data['items'][0]['key']
+        res_upd = self.client.post(
+            reverse('cart_update_api'),
+            data=json.dumps({'key': key, 'delta': 1}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_upd.status_code, 200)
+        upd_data = res_upd.json()
+        self.assertEqual(upd_data['cart_count'], 3)
+        self.assertEqual(upd_data['subtotal'], 450.0)
+
+        # 5. Remove item from cart
+        res_rem = self.client.post(
+            reverse('cart_remove_api'),
+            data=json.dumps({'key': key}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_rem.status_code, 200)
+        rem_data = res_rem.json()
+        self.assertEqual(rem_data['cart_count'], 0)
+        self.assertEqual(rem_data['subtotal'], 0.0)
+

@@ -53,7 +53,7 @@ class Cart:
                 'quantity': int(quantity),
                 'special_instructions': special_instructions.strip(),
                 'addons': addons_names,
-                'image': item.image.url if item.image else (item.static_image or ''),
+                'image': item.image.url if item.image else (f"/static/{item.static_image}" if item.static_image and not item.static_image.startswith(('/static/', 'http')) else (item.static_image or '')),
                 'portion_size': item.portion_size,
             }
 

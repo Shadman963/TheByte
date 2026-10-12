@@ -71,6 +71,23 @@
         .canva-shadow {
             box-shadow: 0 10px 25px -5px rgba(110, 15, 45, 0.12), 0 8px 10px -6px rgba(110, 15, 45, 0.08);
         }
+        /* Floating cart button styles */
+        .floating-cart-shadow {
+            box-shadow: 0 10px 30px -4px rgba(110, 15, 45, 0.4), 0 4px 12px -2px rgba(255, 140, 66, 0.3);
+        }
+        .floating-cart-shadow:hover {
+            box-shadow: 0 16px 36px -4px rgba(110, 15, 45, 0.55), 0 6px 16px -2px rgba(255, 140, 66, 0.45);
+        }
+        .floating-cart-safe-bottom {
+            bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));
+            right: max(1.25rem, env(safe-area-inset-right, 1.25rem));
+        }
+        @media (min-width: 640px) {
+            .floating-cart-safe-bottom {
+                bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+                right: max(1.5rem, env(safe-area-inset-right, 1.5rem));
+            }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 <body class="flex flex-col min-h-screen">
@@ -161,7 +178,7 @@
                 <!-- Shopping Bag Button -->
                 <button onclick="toggleCartDrawer()" class="relative p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition flex items-center justify-center border border-white/20" title="Shopping Cart">
                     <i class="fa-solid fa-bag-shopping text-lg"></i>
-                    <span id="nav-cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-byte-amber text-white text-xs font-extrabold flex items-center justify-center shadow {% if cart_count == 0 %}hidden{% endif %}">
+                    <span id="nav-cart-badge" class="nav-cart-badge-count absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-byte-amber text-white text-xs font-extrabold flex items-center justify-center shadow {% if cart_count == 0 %}hidden{% endif %}">
                         {{ cart_count }}
                     </span>
                 </button>
@@ -230,16 +247,53 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Floating Shopping Cart Button (Fixed Bottom-Right) -->
+    <aside id="floating-cart-wrapper" class="fixed floating-cart-safe-bottom z-40 transition-all duration-300 transform select-none" aria-label="Floating Shopping Cart">
+        <button id="floating-cart-btn"
+                type="button"
+                onclick="toggleCartDrawer()"
+                class="group relative flex items-center gap-2.5 sm:gap-3 bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white pl-3 pr-3.5 sm:pl-3.5 sm:pr-4 py-2.5 sm:py-3 rounded-full floating-cart-shadow border-2 border-byte-amber/50 hover:border-byte-amber transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-byte-amber/30 cursor-pointer"
+                aria-label="Shopping Cart with {{ cart_count }} item{{ cart_count|pluralize }}, Subtotal ৳{{ cart_subtotal|floatformat:2 }}"
+                title="View your shopping cart">
+            
+            <!-- Cart Icon with Dynamic Count Badge -->
+            <div class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-byte-amber flex items-center justify-center text-white shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
+                <i class="fa-solid fa-bag-shopping text-sm sm:text-base"></i>
+                <span id="floating-cart-badge"
+                      class="nav-cart-badge-count absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-white text-byte-maroon text-[11px] font-black flex items-center justify-center shadow border border-byte-maroon/10 {% if cart_count == 0 %}hidden{% endif %}">
+                    {{ cart_count }}
+                </span>
+            </div>
+
+            <!-- Item Count & Subtotal in BDT (৳) -->
+            <div class="flex flex-col text-left leading-tight pr-0.5 sm:pr-1">
+                <span class="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-byte-cream/80 flex items-center gap-1">
+                    <span>Cart</span>
+                    <span>•</span>
+                    <span id="floating-cart-items-text">{{ cart_count }} item{{ cart_count|pluralize }}</span>
+                </span>
+                <span class="font-extrabold text-sm sm:text-base text-byte-cream tracking-wide flex items-center">
+                    <span>৳</span><span id="floating-cart-subtotal">{{ cart_subtotal|floatformat:2 }}</span>
+                </span>
+            </div>
+
+            <!-- Visual indicator chevron -->
+            <div class="border-l border-white/20 pl-2 sm:pl-2.5 text-byte-amber group-hover:translate-x-0.5 transition-transform duration-200 flex items-center">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </div>
+        </button>
+    </aside>
+
     <!-- Slide-Out Cart Drawer -->
-    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/60 z-50 transition-opacity opacity-0 pointer-events-none duration-300"></div>
-    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div id="cart-drawer-backdrop" onclick="closeCartDrawer()" class="fixed inset-0 bg-black/60 z-50 transition-opacity opacity-0 pointer-events-none duration-300"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col" role="dialog" aria-modal="true" aria-label="Shopping Cart Drawer">
         <!-- Header -->
         <div class="p-5 bg-byte-maroon text-white flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-bag-shopping text-byte-amber text-xl"></i>
                 <h3 class="font-display font-bold text-xl tracking-wide">Your Meal Cart</h3>
             </div>
-            <button onclick="toggleCartDrawer()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+            <button onclick="closeCartDrawer()" type="button" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition focus:outline-none" aria-label="Close Cart Drawer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
@@ -251,10 +305,10 @@
                     {% if cart_subtotal >= site_setting.free_delivery_above %}
                     🎉 You qualify for FREE Delivery!
                     {% else %}
-                    Add ৳<span id="free-delivery-diff">0</span> more for Free Delivery!
+                    Add ৳<span id="free-delivery-diff">{% if site_setting.free_delivery_above %}{{ site_setting.free_delivery_above|floatformat:0 }}{% else %}0{% endif %}</span> more for Free Delivery!
                     {% endif %}
                 </span>
-                <span id="free-delivery-badge">৳{{ site_setting.free_delivery_above }}</span>
+                <span id="free-delivery-badge">৳{{ site_setting.free_delivery_above|floatformat:0 }}</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div id="free-delivery-progress" class="bg-byte-amber h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -266,7 +320,7 @@
             <div class="text-center py-12 text-gray-400">
                 <i class="fa-solid fa-utensils text-4xl mb-3 text-byte-maroon/20"></i>
                 <p class="font-medium text-sm">Your cart is currently empty.</p>
-                <a href="{% url 'menu' %}" onclick="toggleCartDrawer()" class="inline-block mt-3 px-4 py-2 rounded-full bg-byte-maroon text-white text-xs font-bold hover:bg-byte-maroonDark transition">
+                <a href="{% url 'menu' %}" onclick="closeCartDrawer()" class="inline-block mt-3 px-4 py-2 rounded-full bg-byte-maroon text-white text-xs font-bold hover:bg-byte-maroonDark transition">
                     Browse Daily Menu
                 </a>
             </div>
@@ -276,22 +330,22 @@
         <div class="p-5 bg-gray-50 border-t border-gray-200 space-y-3">
             <div class="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span class="font-bold text-gray-900">৳<span id="drawer-subtotal">0.00</span></span>
+                <span class="font-bold text-gray-900">৳<span id="drawer-subtotal">{{ cart_subtotal|floatformat:2 }}</span></span>
             </div>
             <div class="flex justify-between text-sm text-gray-600">
                 <span>Estimated Delivery</span>
-                <span class="font-semibold text-gray-900">৳<span id="drawer-delivery">40.00</span></span>
+                <span class="font-semibold text-gray-900">৳<span id="drawer-delivery">{{ cart_delivery_fee|floatformat:2 }}</span></span>
             </div>
             <div class="flex justify-between text-base font-bold text-byte-maroon pt-2 border-t border-gray-200">
                 <span>Estimated Total</span>
-                <span class="text-xl">৳<span id="drawer-total">0.00</span></span>
+                <span class="text-xl">৳<span id="drawer-total">{{ cart_total|floatformat:2 }}</span></span>
             </div>
 
             <div class="pt-2 flex gap-2">
                 <a href="{% url 'cart' %}" class="flex-1 py-3 text-center rounded-xl border-2 border-byte-maroon text-byte-maroon font-bold text-sm hover:bg-byte-maroon hover:text-white transition">
                     View Cart
                 </a>
-                <a href="{% url 'checkout' %}" id="drawer-checkout-btn" class="flex-1 py-3 text-center rounded-xl bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-sm shadow-md hover:shadow-lg transition">
+                <a href="{% url 'checkout' %}" id="drawer-checkout-btn" class="flex-1 py-3 text-center rounded-xl bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-sm shadow-md hover:shadow-lg transition {% if cart_count == 0 or cart_subtotal < site_setting.minimum_order_amount %}opacity-50 pointer-events-none{% endif %}">
                     Checkout Now
                 </a>
             </div>
