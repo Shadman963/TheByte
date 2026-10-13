@@ -501,4 +501,18 @@ class Command(BaseCommand):
                 special_instructions='Hot steamed'
             )
 
+        # 7. Default Admin / Kitchen Staff Superuser
+        from django.contrib.auth.models import User
+        admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+        admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'thebyte39@gmail.com')
+        admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin1234')
+        if not User.objects.filter(username=admin_username).exists():
+            User.objects.create_superuser(
+                username=admin_username,
+                email=admin_email,
+                password=admin_password,
+            )
+            self.stdout.write(self.style.SUCCESS(f"Created default superuser '{admin_username}'."))
+
         self.stdout.write(self.style.SUCCESS("Successfully seeded The Byte Cloud Kitchen database!"))
+
