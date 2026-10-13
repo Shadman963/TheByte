@@ -112,6 +112,9 @@ class Cart:
             qty = data['quantity']
             unit_price = Decimal(data['price'])
             item_total = unit_price * qty
+            raw_image = data.get('image', '')
+            if raw_image and not raw_image.startswith(('/static/', '/media/', 'http')):
+                raw_image = f"/static/{raw_image}"
             yield {
                 'key': key,
                 'item_id': data['item_id'],
@@ -121,7 +124,7 @@ class Cart:
                 'quantity': qty,
                 'special_instructions': data.get('special_instructions', ''),
                 'addons': data.get('addons', []),
-                'image': data.get('image', ''),
+                'image': raw_image,
                 'portion_size': data.get('portion_size', ''),
                 'total': item_total,
             }

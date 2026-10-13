@@ -663,13 +663,15 @@ class KitchenTests(TestCase):
         self.assertEqual(data['cart_count'], 2)
         self.assertEqual(data['subtotal'], 300.0)
 
-        # 2. Page render should reflect updated floating cart values
+        # 2. Page render should reflect updated floating cart values and drawer items
         res_menu = self.client.get(reverse('menu'))
         self.assertEqual(res_menu.status_code, 200)
         self.assertEqual(res_menu.context['cart_count'], 2)
         self.assertEqual(res_menu.context['cart_subtotal'], 300.0)
+        self.assertEqual(len(res_menu.context['cart_items']), 1)
         self.assertContains(res_menu, '<span>৳</span><span id="floating-cart-subtotal">300.00</span>')
         self.assertContains(res_menu, '2 items')
+        self.assertContains(res_menu, 'data-cart-key=')
 
         # 3. Test cart_items_api contains items for the drawer
         res_items = self.client.get(reverse('cart_items_api'))
