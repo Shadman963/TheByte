@@ -706,3 +706,10 @@ class KitchenTests(TestCase):
         self.assertEqual(rem_data['cart_count'], 0)
         self.assertEqual(rem_data['subtotal'], 0.0)
 
+    def test_hero_cta_and_tracking_widget_removed_on_home(self):
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, '<!-- CTA Action Buttons -->')
+        self.assertNotContains(response, '<!-- LIVE ORDER TRACKING QUICK LOOKUP WIDGET -->')
+        self.assertNotContains(response, 'Enter Order Number (e.g. BYTE-82194)')
+

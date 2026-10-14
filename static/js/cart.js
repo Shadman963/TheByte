@@ -318,7 +318,6 @@
                     updateCartUI(body);
                     renderDrawerItems(body);
                     showToast(body.message || 'Added to cart!', 'success');
-                    openCartDrawer();
 
                     // Animate navigation badge
                     const badge = document.getElementById('nav-cart-badge');

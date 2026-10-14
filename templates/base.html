@@ -242,7 +242,7 @@
             </div>
             {% if site_setting.announcement_banner %}
             <div class="w-full lg:flex-1 min-w-0 text-center px-1 sm:px-2 py-0.5 text-byte-amber font-semibold whitespace-normal break-words leading-snug text-[11px] sm:text-xs" title="{{ site_setting.announcement_banner }}">
-                <i class="fa-solid fa-bolt mr-1"></i>{{ site_setting.announcement_banner }}
+                <i class="fa-solid fa-bolt mr-1"></i>{{ site_setting.announcement_banner|cut:"⚡" }}
             </div>
             {% endif %}
             <div class="flex flex-wrap items-center justify-center lg:justify-end gap-x-3 sm:gap-x-4 gap-y-1 text-[11px] sm:text-xs font-medium w-full lg:w-auto">
