@@ -4,10 +4,10 @@
 {% block title %}Checkout — {{ setting.restaurant_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-byte-creamLight min-h-screen py-10">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-byte-creamLight min-h-screen py-6 sm:py-10">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
         
-        <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-4">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-500 mb-3 sm:mb-4 px-1 sm:px-0">
             <a href="{% url 'home' %}" class="hover:text-byte-maroon">Home</a>
             <span>/</span>
             <a href="{% url 'cart' %}" class="hover:text-byte-maroon">Cart</a>
@@ -15,7 +15,7 @@
             <span class="text-byte-maroon">Checkout</span>
         </div>
 
-        <h1 class="font-display text-3xl sm:text-4xl font-extrabold text-byte-maroon uppercase tracking-wide mb-8">
+        <h1 class="responsive-section-title font-display text-2xl sm:text-4xl font-extrabold text-byte-maroon uppercase tracking-wide mb-5 sm:mb-8 px-1 sm:px-0 break-words">
             Delivery & Payment
         </h1>
 
@@ -24,41 +24,41 @@
             {% if checkout_token %}
             <input type="hidden" name="checkout_token" value="{{ checkout_token }}">
             {% endif %}
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-start">
                 
                 <!-- Left Column: Delivery & Payment Details -->
-                <div class="lg:col-span-8 space-y-6">
+                <div class="lg:col-span-8 space-y-5 sm:space-y-6 min-w-0">
                     
                     <!-- 1. Customer Details -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-full bg-byte-maroon text-white font-bold flex items-center justify-center text-sm">1</span>
-                                <h2 class="font-display text-xl font-bold text-byte-maroon">Customer & Delivery Information</h2>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-5 sm:mb-6">
+                            <div class="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0">
+                                <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-byte-maroon text-white font-bold flex items-center justify-center text-xs sm:text-sm shrink-0">1</span>
+                                <h2 class="font-display text-lg sm:text-xl font-bold text-byte-maroon leading-snug break-words min-w-0">Customer & Delivery Information</h2>
                             </div>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Logged in as {{ request.user.username }}
+                            <span class="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] sm:text-xs font-bold max-w-full break-words">
+                                <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i> <span class="break-words min-w-0">Logged in as {{ request.user.username }}</span>
                             </span>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name *</label>
-                                <input type="text" name="customer_name" value="{{ initial_name }}" required placeholder="e.g. Tanvir Ahmed" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon font-medium">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                            <div class="min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Full Name *</label>
+                                <input type="text" name="customer_name" value="{{ initial_name }}" required placeholder="e.g. Tanvir Ahmed" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon font-medium">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Phone Number (Active for Rider Call) *</label>
-                                <input type="tel" name="customer_phone" value="{{ initial_phone }}" required placeholder="017xxxxxxxx" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon font-medium">
+                            <div class="min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Phone Number (Active) *</label>
+                                <input type="tel" name="customer_phone" value="{{ initial_phone }}" required placeholder="017xxxxxxxx" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon font-medium">
                             </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Address (For Order Receipt)</label>
-                                <input type="email" name="customer_email" value="{{ initial_email }}" placeholder="tanvir@example.com" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                            <div class="sm:col-span-2 min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Email Address (For Order Receipt)</label>
+                                <input type="email" name="customer_email" value="{{ initial_email }}" placeholder="tanvir@example.com" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
                             </div>
 
                             <!-- Delivery Area -->
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Delivery Zone / Area *</label>
-                                <select name="delivery_area" required class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 focus:outline-none focus:border-byte-maroon">
+                            <div class="sm:col-span-2 min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Delivery Zone / Area *</label>
+                                <select name="delivery_area" required class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 focus:outline-none focus:border-byte-maroon">
                                     <option value="">Select your area in Dhaka...</option>
                                     {% for area in delivery_areas %}
                                     <option value="{{ area }}" {% if initial_area == area %}selected{% endif %}>{{ area }}</option>
@@ -67,15 +67,15 @@
                             </div>
 
                             <!-- Full Street Address -->
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Detailed Street Address / Flat / Road *</label>
-                                <textarea name="delivery_address" rows="2" required placeholder="e.g. House 24, Road 7, Block C, Flat 4B (Near XYZ landmark)" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">{{ initial_address }}</textarea>
+                            <div class="sm:col-span-2 min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Detailed Street Address / Flat / Road *</label>
+                                <textarea name="delivery_address" rows="2" required placeholder="e.g. House 24, Road 7, Block C, Flat 4B (Near XYZ landmark)" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">{{ initial_address }}</textarea>
                             </div>
 
                             <!-- Delivery Time Preference -->
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Delivery Timing Preference</label>
-                                <select name="delivery_slot" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 focus:outline-none focus:border-byte-maroon">
+                            <div class="sm:col-span-2 min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Delivery Timing Preference</label>
+                                <select name="delivery_slot" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 focus:outline-none focus:border-byte-maroon">
                                     <option value="Immediate Delivery (25-40 mins)">Immediate Delivery (25 - 40 mins)</option>
                                     <option value="Lunch Slot (1:00 PM - 2:00 PM)">Lunch Slot (1:00 PM - 2:00 PM)</option>
                                     <option value="Evening Snack Slot (5:30 PM - 6:30 PM)">Evening Snack Slot (5:30 PM - 6:30 PM)</option>
@@ -84,83 +84,83 @@
                             </div>
 
                             <!-- Kitchen Cooking Instructions -->
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kitchen / Delivery Instructions</label>
-                                <input type="text" name="customer_notes" placeholder="e.g. Less spicy, extra sauce, call before reaching the gate" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
+                            <div class="sm:col-span-2 min-w-0">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1 break-words">Kitchen / Delivery Instructions</label>
+                                <input type="text" name="customer_notes" placeholder="e.g. Less spicy, extra sauce, call before reaching the gate" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-byte-maroon focus:ring-1 focus:ring-byte-maroon">
                             </div>
                         </div>
                     </div>
 
                     <!-- 2. Payment Method -->
-                    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="w-8 h-8 rounded-full bg-byte-maroon text-white font-bold flex items-center justify-center text-sm">2</span>
-                            <h2 class="font-display text-xl font-bold text-byte-maroon">Select Payment Method</h2>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-200">
+                        <div class="flex items-start sm:items-center gap-2.5 sm:gap-3 mb-5 sm:mb-6">
+                            <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-byte-maroon text-white font-bold flex items-center justify-center text-xs sm:text-sm shrink-0">2</span>
+                            <h2 class="font-display text-lg sm:text-xl font-bold text-byte-maroon break-words min-w-0">Select Payment Method</h2>
                         </div>
 
                         <div class="space-y-3" id="payment-options-group">
                             <!-- COD -->
-                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-byte-maroon bg-byte-cream/20 cursor-pointer transition" onclick="handlePaymentChoice('cod', this)">
-                                <input type="radio" name="payment_method" value="cod" checked class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-sm text-gray-900">Cash on Delivery (COD)</span>
-                                        <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs font-bold">Standard</span>
+                            <label class="payment-option-card flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-byte-maroon bg-byte-cream/20 cursor-pointer transition" onclick="handlePaymentChoice('cod', this)">
+                                <input type="radio" name="payment_method" value="cod" checked class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4 shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-1">
+                                        <span class="font-bold text-xs sm:text-sm text-gray-900 break-words">Cash on Delivery (COD)</span>
+                                        <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] sm:text-xs font-bold">Standard</span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-0.5">Pay in cash to the delivery rider when your hot food arrives.</p>
+                                    <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 break-words">Pay in cash to the delivery rider when your hot food arrives.</p>
                                 </div>
                             </label>
 
                             <!-- bKash -->
-                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('bkash', this)">
-                                <input type="radio" name="payment_method" value="bkash" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-sm text-pink-700 flex items-center gap-2">
-                                            <i class="fa-solid fa-mobile-screen-button"></i> bKash Mobile Banking
+                            <label class="payment-option-card flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('bkash', this)">
+                                <input type="radio" name="payment_method" value="bkash" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4 shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-1">
+                                        <span class="font-bold text-xs sm:text-sm text-pink-700 flex items-center gap-1.5 break-words">
+                                            <i class="fa-solid fa-mobile-screen-button shrink-0"></i> <span>bKash Mobile Banking</span>
                                         </span>
-                                        <span class="px-2 py-0.5 rounded bg-pink-100 text-pink-700 text-xs font-bold">Instant</span>
+                                        <span class="px-2 py-0.5 rounded bg-pink-100 text-pink-700 text-[10px] sm:text-xs font-bold">Instant</span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-0.5">Send Money / Payment to Merchant Number: <strong class="text-gray-900">{{ setting.phone }}</strong></p>
+                                    <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 break-words">Send Money / Payment to Merchant Number: <strong class="text-gray-900">{{ setting.phone }}</strong></p>
                                 </div>
                             </label>
 
                             <!-- Nagad -->
-                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('nagad', this)">
-                                <input type="radio" name="payment_method" value="nagad" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-sm text-orange-700 flex items-center gap-2">
-                                            <i class="fa-solid fa-mobile-screen-button"></i> Nagad Mobile Banking
+                            <label class="payment-option-card flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('nagad', this)">
+                                <input type="radio" name="payment_method" value="nagad" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4 shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-1">
+                                        <span class="font-bold text-xs sm:text-sm text-orange-700 flex items-center gap-1.5 break-words">
+                                            <i class="fa-solid fa-mobile-screen-button shrink-0"></i> <span>Nagad Mobile Banking</span>
                                         </span>
-                                        <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-xs font-bold">Instant</span>
+                                        <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] sm:text-xs font-bold">Instant</span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-0.5">Send Money / Payment to Number: <strong class="text-gray-900">{{ setting.phone }}</strong></p>
+                                    <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 break-words">Send Money / Payment to Number: <strong class="text-gray-900">{{ setting.phone }}</strong></p>
                                 </div>
                             </label>
 
                             <!-- Card on Delivery -->
-                            <label class="payment-option-card flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('card', this)">
-                                <input type="radio" name="payment_method" value="card" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-sm text-gray-900 flex items-center gap-2">
-                                            <i class="fa-solid fa-credit-card"></i> Card on Delivery / POS
+                            <label class="payment-option-card flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-gray-200 hover:border-byte-maroon cursor-pointer transition bg-white" onclick="handlePaymentChoice('card', this)">
+                                <input type="radio" name="payment_method" value="card" class="mt-1 text-byte-maroon focus:ring-byte-maroon w-4 h-4 shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-1">
+                                        <span class="font-bold text-xs sm:text-sm text-gray-900 flex items-center gap-1.5 break-words">
+                                            <i class="fa-solid fa-credit-card shrink-0"></i> <span>Card on Delivery / POS</span>
                                         </span>
-                                        <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs font-bold">Rider POS</span>
+                                        <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] sm:text-xs font-bold">Rider POS</span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-0.5">Rider carries a POS swipe machine for Visa / Mastercard.</p>
+                                    <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 break-words">Rider carries a POS swipe machine for Visa / Mastercard.</p>
                                 </div>
                             </label>
                         </div>
 
                         <!-- Mobile Banking Transaction ID Field (Conditional) -->
-                        <div id="trx-id-container" class="mt-4 p-4 rounded-2xl bg-byte-cream/50 border border-byte-maroon/20 hidden">
-                            <label class="block text-xs font-bold text-byte-maroon uppercase mb-1">
+                        <div id="trx-id-container" class="mt-4 p-3.5 sm:p-4 rounded-2xl bg-byte-cream/50 border border-byte-maroon/20 hidden">
+                            <label class="block text-xs font-bold text-byte-maroon uppercase mb-1 break-words">
                                 <i class="fa-solid fa-receipt mr-1"></i> bKash / Nagad Transaction ID (TrxID)
                             </label>
-                            <input type="text" name="transaction_id" id="transaction_id_input" placeholder="e.g. 9K38JF1029" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-bold uppercase focus:outline-none focus:border-byte-maroon">
-                            <p class="text-[11px] text-gray-500 mt-1">
+                            <input type="text" name="transaction_id" id="transaction_id_input" placeholder="e.g. 9K38JF1029" class="w-full px-3.5 sm:px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-bold uppercase focus:outline-none focus:border-byte-maroon">
+                            <p class="text-[11px] text-gray-500 mt-1 break-words">
                                 Please send <strong>৳{{ total|floatformat:2 }}</strong> to <strong>{{ setting.phone }}</strong> and enter the transaction ID above for immediate verification.
                             </p>
                         </div>
@@ -170,8 +170,8 @@
                 </div>
 
                 <!-- Right Column: Order Review Box -->
-                <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-5 sticky top-24">
-                    <h3 class="font-display text-xl font-bold text-byte-maroon border-b border-gray-100 pb-3">
+                <div class="lg:col-span-4 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200 space-y-4 sm:space-y-5 lg:sticky lg:top-24 min-w-0">
+                    <h3 class="font-display text-lg sm:text-xl font-bold text-byte-maroon border-b border-gray-100 pb-3 break-words">
                         Order Review
                     </h3>
 
@@ -179,38 +179,38 @@
                     <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                         {% for item in cart %}
                         <div class="flex items-start justify-between text-xs gap-2">
-                            <div>
-                                <span class="font-bold text-gray-900">{{ item.quantity }}x {{ item.name }}</span>
+                            <div class="min-w-0 flex-1">
+                                <span class="font-bold text-gray-900 break-words">{{ item.quantity }}x {{ item.name }}</span>
                                 {% if item.addons %}
-                                <span class="block text-[10px] text-byte-amber">+ {{ item.addons|join:", " }}</span>
+                                <span class="block text-[10px] text-byte-amber break-words">+ {{ item.addons|join:", " }}</span>
                                 {% endif %}
                             </div>
-                            <span class="font-bold text-byte-maroon">৳{{ item.total|floatformat:2 }}</span>
+                            <span class="font-bold text-byte-maroon shrink-0">৳{{ item.total|floatformat:2 }}</span>
                         </div>
                         {% endfor %}
                     </div>
 
-                    <div class="pt-4 border-t border-gray-100 space-y-2.5 text-sm text-gray-600">
-                        <div class="flex justify-between">
+                    <div class="pt-4 border-t border-gray-100 space-y-2.5 text-xs sm:text-sm text-gray-600">
+                        <div class="flex flex-wrap justify-between gap-2">
                             <span>Subtotal</span>
                             <span class="font-bold text-gray-900">৳{{ subtotal|floatformat:2 }}</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex flex-wrap justify-between gap-2">
                             <span>Delivery Fee</span>
                             <span class="font-bold text-gray-900">৳{{ delivery_fee|floatformat:2 }}</span>
                         </div>
-                        <div class="flex justify-between text-base font-extrabold text-byte-maroon pt-3 border-t border-gray-100">
+                        <div class="flex flex-wrap justify-between gap-2 text-sm sm:text-base font-extrabold text-byte-maroon pt-3 border-t border-gray-100">
                             <span>Total Payable</span>
-                            <span class="text-2xl">৳{{ total|floatformat:2 }}</span>
+                            <span class="text-xl sm:text-2xl">৳{{ total|floatformat:2 }}</span>
                         </div>
                     </div>
 
-                    <button type="submit" id="checkout-submit-btn" class="w-full py-4 rounded-2xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-extrabold text-base tracking-wide shadow-xl hover:shadow-2xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-circle-check text-byte-amber"></i>
+                    <button type="submit" id="checkout-submit-btn" class="w-full px-4 py-3.5 sm:py-4 rounded-2xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-extrabold text-sm sm:text-base tracking-wide shadow-xl hover:shadow-2xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 whitespace-normal">
+                        <i class="fa-solid fa-circle-check text-byte-amber shrink-0"></i>
                         <span>Confirm & Place Order</span>
                     </button>
 
-                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500 break-words">
                         <i class="fa-solid fa-bell text-byte-amber mr-1"></i>
                         Kitchen starts cooking immediately once order is received.
                     </div>

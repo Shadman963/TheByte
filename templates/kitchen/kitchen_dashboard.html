@@ -4,34 +4,34 @@
 {% block title %}Kitchen Operations Dashboard (KDS) — {{ setting.restaurant_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-gray-100 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-gray-100 min-h-screen py-5 sm:py-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
         <!-- Header & Kitchen Controls -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
-                    <h1 class="font-display text-2xl sm:text-3xl font-bold text-byte-maroon">Kitchen Display System (KDS)</h1>
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-6 sm:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div class="min-w-0">
+                <div class="flex items-start sm:items-center gap-2.5 sm:gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full shrink-0 mt-1.5 sm:mt-0 {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
+                    <h1 class="responsive-section-title font-display text-xl sm:text-3xl font-bold text-byte-maroon break-words min-w-0">Kitchen Display System (KDS)</h1>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                <p class="text-xs sm:text-sm text-gray-500 mt-1 break-words">
                     Live operational cockpit for chefs, packers, and dispatch riders.
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <!-- Toggle Open/Closed -->
-                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
+                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
                     <i class="fa-solid fa-power-off"></i>
                     <span id="kitchen-status-toggle-text">{% if setting.is_kitchen_open %}Kitchen is OPEN{% else %}Kitchen is CLOSED{% endif %}</span>
                 </button>
 
-                <button onclick="window.location.reload()" class="px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <button onclick="window.location.reload()" class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-rotate-right"></i>
                     <span>Refresh</span>
                 </button>
 
-                <a href="{% url 'admin:index' %}" class="px-4 py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
+                <a href="{% url 'admin:index' %}" class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-gear"></i>
                     <span>Admin Portal</span>
                 </a>
@@ -39,51 +39,51 @@
         </div>
 
         <!-- Metric KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-200 flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                     <i class="fa-solid fa-fire-burner"></i>
                 </div>
-                <div>
-                    <span class="text-xs font-bold text-gray-400 uppercase">Orders in Kitchen</span>
-                    <h3 class="text-2xl font-black text-byte-maroon">{{ pending_prep_count }} Active</h3>
+                <div class="min-w-0">
+                    <span class="text-[11px] sm:text-xs font-bold text-gray-400 uppercase block break-words">Orders in Kitchen</span>
+                    <h3 class="text-xl sm:text-2xl font-black text-byte-maroon break-words">{{ pending_prep_count }} Active</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-200 flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                     <i class="fa-solid fa-receipt"></i>
                 </div>
-                <div>
-                    <span class="text-xs font-bold text-gray-400 uppercase">Today's Total Orders</span>
-                    <h3 class="text-2xl font-black text-gray-900">{{ today_count }} Orders</h3>
+                <div class="min-w-0">
+                    <span class="text-[11px] sm:text-xs font-bold text-gray-400 uppercase block break-words">Today's Total Orders</span>
+                    <h3 class="text-xl sm:text-2xl font-black text-gray-900 break-words">{{ today_count }} Orders</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-200 flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                     <i class="fa-solid fa-bangladeshi-taka-sign"></i>
                 </div>
-                <div>
-                    <span class="text-xs font-bold text-gray-400 uppercase">Today's Revenue</span>
-                    <h3 class="text-2xl font-black text-emerald-700">৳{{ today_revenue|floatformat:0 }}</h3>
+                <div class="min-w-0">
+                    <span class="text-[11px] sm:text-xs font-bold text-gray-400 uppercase block break-words">Today's Revenue</span>
+                    <h3 class="text-xl sm:text-2xl font-black text-emerald-700 break-words">৳{{ today_revenue|floatformat:0 }}</h3>
                 </div>
             </div>
         </div>
 
         <!-- Active Orders Kanban Stream -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="font-display text-xl font-bold text-byte-maroon flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-list text-byte-amber"></i>
+        <div class="mb-6 sm:mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 class="font-display text-lg sm:text-xl font-bold text-byte-maroon flex items-center gap-2 break-words">
+                    <i class="fa-solid fa-clipboard-list text-byte-amber shrink-0"></i>
                     <span>Live Active Orders (<span id="active-orders-count-badge">{{ active_orders|length }}</span>)</span>
                 </h2>
-                <span class="text-xs text-gray-500">Auto-syncs live in background</span>
+                <span class="text-[11px] sm:text-xs text-gray-500">Auto-syncs live in background</span>
             </div>
 
-            <div id="new-order-alert-banner" class="hidden mb-6 p-4 rounded-2xl bg-amber-500 text-white font-bold text-sm flex items-center justify-between shadow-lg">
+            <div id="new-order-alert-banner" class="hidden mb-6 p-3.5 sm:p-4 rounded-2xl bg-amber-500 text-white font-bold text-xs sm:text-sm flex flex-wrap items-center justify-between gap-3 shadow-lg">
                 <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-bell animate-bounce text-base"></i>
+                    <i class="fa-solid fa-bell animate-bounce text-base shrink-0"></i>
                     <span>New customer order received!</span>
                 </div>
                 <button onclick="window.location.reload()" class="px-4 py-1.5 rounded-xl bg-white text-byte-maroon font-extrabold text-xs shadow hover:bg-gray-100 transition">
@@ -92,99 +92,99 @@
             </div>
 
             {% if active_orders %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {% for order in active_orders %}
-                <div class="bg-white rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between" id="order-card-{{ order.id }}">
+                <div class="bg-white rounded-2xl sm:rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between" id="order-card-{{ order.id }}">
                     
                     <div>
                         <!-- Card Header -->
-                        <div class="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                            <div>
-                                <span class="font-mono font-black text-base text-byte-maroon">#{{ order.order_number }}</span>
+                        <div class="p-3.5 sm:p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <span class="font-mono font-black text-sm sm:text-base text-byte-maroon break-words">#{{ order.order_number }}</span>
                                 <span class="text-[11px] text-gray-500 block">{{ order.created_at|timesince }} ago</span>
                             </div>
-                            <span data-order-status-badge class="px-3 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            <span data-order-status-badge class="px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold shrink-0 {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
                                 {{ order.get_order_status_display }}
                             </span>
                         </div>
 
                         <!-- Customer Details -->
-                        <div class="p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
-                            <div class="flex justify-between">
-                                <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
-                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1">
+                        <div class="p-3.5 sm:p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
+                            <div class="flex flex-wrap justify-between items-center gap-2">
+                                <span class="font-bold text-gray-900 text-sm break-words min-w-0">{{ order.customer_name }}</span>
+                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1 shrink-0">
                                     <i class="fa-solid fa-phone"></i> {{ order.customer_phone }}
                                 </a>
                             </div>
-                            <p class="text-gray-600"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> {{ order.delivery_area }} • {{ order.delivery_address }}</p>
-                            <div class="flex items-center justify-between text-[11px] pt-1 text-gray-500">
-                                <span>Slot: <strong>{{ order.delivery_slot }}</strong></span>
-                                <span class="font-bold uppercase text-byte-maroon">{{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})</span>
+                            <p class="text-gray-600 break-words"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> {{ order.delivery_area }} • {{ order.delivery_address }}</p>
+                            <div class="flex flex-wrap items-center justify-between gap-1 text-[11px] pt-1 text-gray-500">
+                                <span class="break-words">Slot: <strong>{{ order.delivery_slot }}</strong></span>
+                                <span class="font-bold uppercase text-byte-maroon break-words">{{ order.get_payment_method_display }} ({{ order.get_payment_status_display }})</span>
                             </div>
                             {% if order.customer_notes %}
-                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2">
+                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2 break-words">
                                 ⚠️ Notes: {{ order.customer_notes }}
                             </div>
                             {% endif %}
                         </div>
 
                         <!-- Items in Ticket (KOT) -->
-                        <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
+                        <div class="p-3.5 sm:p-4 space-y-2 max-h-48 overflow-y-auto">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kitchen Ticket Items</span>
                             {% for item in order.items.all %}
-                            <div class="flex items-start justify-between text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
-                                <div>
+                            <div class="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                <div class="min-w-0 flex-1">
                                     <span class="font-extrabold text-gray-900 text-sm">{{ item.quantity }}x</span>
-                                    <span class="font-bold text-gray-800">{{ item.item_name }}</span>
+                                    <span class="font-bold text-gray-800 break-words">{{ item.item_name }}</span>
                                     {% if item.addons %}
-                                    <span class="block text-[10px] text-byte-amber font-semibold">+ {{ item.addons }}</span>
+                                    <span class="block text-[10px] text-byte-amber font-semibold break-words">+ {{ item.addons }}</span>
                                     {% endif %}
                                     {% if item.special_instructions %}
-                                    <span class="block text-[10px] text-rose-600 font-bold">👉 {{ item.special_instructions }}</span>
+                                    <span class="block text-[10px] text-rose-600 font-bold break-words">👉 {{ item.special_instructions }}</span>
                                     {% endif %}
                                 </div>
-                                <span class="font-semibold text-gray-600">৳{{ item.subtotal|floatformat:0 }}</span>
+                                <span class="font-semibold text-gray-600 shrink-0">৳{{ item.subtotal|floatformat:0 }}</span>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <!-- Card Actions -->
-                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2" data-order-actions>
-                        <div class="flex items-center justify-between text-xs font-bold text-gray-700 pb-1">
+                    <div class="p-3.5 sm:p-4 bg-gray-50 border-t border-gray-200 space-y-2" data-order-actions>
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-gray-700 pb-1">
                             <span>Total Bill:</span>
                             <span class="text-base text-byte-maroon font-black">৳{{ order.total|floatformat:2 }}</span>
                         </div>
 
                         <!-- Transition Buttons -->
-                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                        <div class="grid grid-cols-1 xs:grid-cols-2 gap-2 text-xs font-bold">
                             {% if order.order_status == 'pending' %}
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'confirmed', this)" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'confirmed', this)" class="px-2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition whitespace-normal">
                                 Confirm Order
                             </button>
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="px-2 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition whitespace-normal">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'confirmed' %}
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'preparing', this)" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition whitespace-normal">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'preparing' %}
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'ready', this)" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'ready', this)" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition whitespace-normal">
                                 Mark Packed & Ready 📦
                             </button>
                             {% elif order.order_status == 'ready' %}
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'out_for_delivery', this)" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'out_for_delivery', this)" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition whitespace-normal">
                                 Hand to Rider 🛵
                             </button>
                             {% elif order.order_status == 'out_for_delivery' %}
-                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'delivered', this)" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                            <button type="button" onclick="changeOrderStatus({{ order.id }}, 'delivered', this)" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition whitespace-normal">
                                 Mark Delivered 🎉
                             </button>
                             {% endif %}
                         </div>
 
-                        <div class="flex justify-between items-center pt-1 text-[11px]">
+                        <div class="flex flex-wrap justify-between items-center gap-2 pt-1 text-[11px]">
                             <a href="{% url 'order_tracking' order.order_number %}" target="_blank" class="text-gray-500 hover:text-byte-maroon font-semibold">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer View
                             </a>
@@ -198,19 +198,19 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div class="bg-white rounded-3xl p-12 text-center border border-gray-200">
-                <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-3"></i>
-                <h3 class="font-display text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center border border-gray-200">
+                <i class="fa-solid fa-check-circle text-4xl sm:text-5xl text-emerald-500 mb-3"></i>
+                <h3 class="font-display text-xl sm:text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
                 <p class="text-xs text-gray-500">There are no pending or in-progress orders right now.</p>
             </div>
             {% endif %}
         </div>
 
         <!-- Recent Completed Orders Table -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-            <h3 class="font-display text-lg font-bold text-byte-maroon mb-4">Recently Delivered Orders</h3>
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200">
+            <h3 class="font-display text-base sm:text-lg font-bold text-byte-maroon mb-4 break-words">Recently Delivered Orders</h3>
             <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left">
+                <table class="responsive-table w-full sm:min-w-[560px] text-xs text-left">
                     <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
                         <tr>
                             <th class="p-3">Order #</th>
@@ -225,17 +225,17 @@
                     <tbody class="divide-y divide-gray-100">
                         {% for order in delivered_orders %}
                         <tr class="hover:bg-gray-50">
-                            <td class="p-3 font-mono font-bold text-byte-maroon">#{{ order.order_number }}</td>
-                            <td class="p-3 font-semibold text-gray-900">{{ order.customer_name }}</td>
-                            <td class="p-3 text-gray-600">{{ order.customer_phone }}</td>
-                            <td class="p-3 text-gray-600">{{ order.delivery_area }}</td>
-                            <td class="p-3 font-bold text-gray-900">৳{{ order.total|floatformat:2 }}</td>
-                            <td class="p-3">
+                            <td data-label="Order #" class="p-3 font-mono font-bold text-byte-maroon sm:whitespace-nowrap">#{{ order.order_number }}</td>
+                            <td data-label="Customer" class="p-3 font-semibold text-gray-900 break-words">{{ order.customer_name }}</td>
+                            <td data-label="Phone" class="p-3 text-gray-600 sm:whitespace-nowrap">{{ order.customer_phone }}</td>
+                            <td data-label="Area" class="p-3 text-gray-600 break-words">{{ order.delivery_area }}</td>
+                            <td data-label="Total" class="p-3 font-bold text-gray-900 sm:whitespace-nowrap">৳{{ order.total|floatformat:2 }}</td>
+                            <td data-label="Payment" class="p-3 sm:whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">
                                     {{ order.get_payment_method_display }}
                                 </span>
                             </td>
-                            <td class="p-3 text-gray-500">{{ order.updated_at|date:"I:i A, d M" }}</td>
+                            <td data-label="Delivered Time" class="p-3 text-gray-500 sm:whitespace-nowrap">{{ order.updated_at|date:"I:i A, d M" }}</td>
                         </tr>
                         {% empty %}
                         <tr>

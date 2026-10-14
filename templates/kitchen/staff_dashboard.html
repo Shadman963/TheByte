@@ -16,44 +16,44 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-gray-100 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-gray-100 min-h-screen py-5 sm:py-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
         <!-- Top Operations Bar -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div>
-                <div class="flex items-center gap-3">
-                    <span class="w-3.5 h-3.5 rounded-full {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
-                    <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-byte-maroon">
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200 mb-5 sm:mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+            <div class="min-w-0">
+                <div class="flex items-start sm:items-center gap-2.5 sm:gap-3">
+                    <span class="w-3.5 h-3.5 rounded-full shrink-0 mt-1.5 sm:mt-0 {% if setting.is_kitchen_open %}bg-emerald-500 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
+                    <h1 class="responsive-section-title font-display text-xl sm:text-3xl font-extrabold text-byte-maroon break-words min-w-0">
                         Kitchen Operations & Staff Portal
                     </h1>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                <p class="text-xs sm:text-sm text-gray-500 mt-1 break-words">
                     Logged in as <strong>{{ request.user.username }}</strong> ({{ request.user.get_full_name|default:"Staff" }}) • Live order processing & cloud kitchen management
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <!-- Kitchen Open/Closed Toggle -->
-                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
+                <button onclick="toggleKitchenStatus()" id="kitchen-status-toggle-btn" class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow {% if setting.is_kitchen_open %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
                     <i class="fa-solid fa-power-off"></i>
                     <span id="kitchen-status-toggle-text">{% if setting.is_kitchen_open %}Kitchen: OPEN{% else %}Kitchen: CLOSED{% endif %}</span>
                 </button>
 
                 <!-- Sound Notifications Toggle -->
-                <button onclick="toggleSoundAlert()" id="sound-toggle-btn" class="px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Toggle audio chime on new orders">
+                <button onclick="toggleSoundAlert()" id="sound-toggle-btn" class="px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Toggle audio chime on new orders">
                     <i id="sound-icon" class="fa-solid fa-bell text-byte-amber"></i>
                     <span id="sound-text">Sound: ON</span>
                 </button>
 
                 <!-- Refresh -->
-                <button onclick="window.location.reload()" class="px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <button onclick="window.location.reload()" class="px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-rotate-right"></i>
                     <span>Refresh</span>
                 </button>
 
                 <!-- Django Admin -->
-                <a href="{% url 'admin:index' %}" class="px-4 py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
+                <a href="{% url 'admin:index' %}" class="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-byte-maroon text-white hover:bg-byte-maroonDark text-xs font-bold transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-sliders"></i>
                     <span>Django Admin</span>
                 </a>
@@ -61,120 +61,120 @@
         </div>
 
         <!-- Metric KPI Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">
+        <div class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-6">
+            <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-200 flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                     <i class="fa-solid fa-fire-burner"></i>
                 </div>
-                <div>
-                    <span class="text-[11px] font-bold text-gray-400 uppercase">Cooking Tickets</span>
-                    <h3 class="text-xl font-black text-byte-maroon" id="kpi-cooking-count">{{ pending_prep_count }} Active</h3>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase block leading-tight break-words">Cooking Tickets</span>
+                    <h3 class="text-base sm:text-xl font-black text-byte-maroon leading-snug break-words" id="kpi-cooking-count">{{ pending_prep_count }} Active</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg font-bold">
+            <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-200 flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                     <i class="fa-solid fa-motorcycle"></i>
                 </div>
-                <div>
-                    <span class="text-[11px] font-bold text-gray-400 uppercase">Ready / En Route</span>
-                    <h3 class="text-xl font-black text-purple-700">{{ ready_count|add:out_for_delivery_count }} Orders</h3>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase block leading-tight break-words">Ready / En Route</span>
+                    <h3 class="text-base sm:text-xl font-black text-purple-700 leading-snug break-words">{{ ready_count|add:out_for_delivery_count }} Orders</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-bold">
+            <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-200 flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                     <i class="fa-solid fa-receipt"></i>
                 </div>
-                <div>
-                    <span class="text-[11px] font-bold text-gray-400 uppercase">Today's Orders</span>
-                    <h3 class="text-xl font-black text-gray-900" id="kpi-today-count">{{ today_count }} Orders</h3>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase block leading-tight break-words">Today's Orders</span>
+                    <h3 class="text-base sm:text-xl font-black text-gray-900 leading-snug break-words" id="kpi-today-count">{{ today_count }} Orders</h3>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+            <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-200 flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                     <i class="fa-solid fa-bangladeshi-taka-sign"></i>
                 </div>
-                <div>
-                    <span class="text-[11px] font-bold text-gray-400 uppercase">Today's Revenue</span>
-                    <h3 class="text-xl font-black text-emerald-700" id="kpi-today-revenue">৳{{ today_revenue|floatformat:0 }}</h3>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase block leading-tight break-words">Today's Revenue</span>
+                    <h3 class="text-base sm:text-xl font-black text-emerald-700 leading-snug break-words" id="kpi-today-revenue">৳{{ today_revenue|floatformat:0 }}</h3>
                 </div>
             </div>
         </div>
 
         <!-- Tabbed Navigation -->
-        <div class="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-200 pb-3">
-            <button onclick="switchTab('tab-orders')" id="btn-tab-orders" class="portal-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm">
-                <i class="fa-solid fa-fire-burner"></i>
-                <span>Order Processing Pipeline ({{ active_orders|length }})</span>
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 mb-5 sm:mb-6 border-b border-gray-200 pb-3">
+            <button onclick="switchTab('tab-orders')" id="btn-tab-orders" class="portal-tab-btn active px-2.5 sm:px-5 py-2.5 rounded-xl font-bold text-[11px] sm:text-xs transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center whitespace-normal leading-tight">
+                <i class="fa-solid fa-fire-burner shrink-0"></i>
+                <span class="break-words">Order Pipeline ({{ active_orders|length }})</span>
             </button>
-            <button onclick="switchTab('tab-menu')" id="btn-tab-menu" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
-                <i class="fa-solid fa-utensils"></i>
-                <span>Menu & Stock Control</span>
+            <button onclick="switchTab('tab-menu')" id="btn-tab-menu" class="portal-tab-btn px-2.5 sm:px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-[11px] sm:text-xs transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center whitespace-normal leading-tight">
+                <i class="fa-solid fa-utensils shrink-0"></i>
+                <span class="break-words">Menu & Stock</span>
             </button>
-            <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
-                <i class="fa-solid fa-gear"></i>
-                <span>Kitchen Settings</span>
+            <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="portal-tab-btn px-2.5 sm:px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-[11px] sm:text-xs transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center whitespace-normal leading-tight">
+                <i class="fa-solid fa-gear shrink-0"></i>
+                <span class="break-words">Kitchen Settings</span>
             </button>
-            <button onclick="switchTab('tab-history')" id="btn-tab-history" class="portal-tab-btn px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-xs transition flex items-center gap-2 shadow-sm">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Order Archive</span>
+            <button onclick="switchTab('tab-history')" id="btn-tab-history" class="portal-tab-btn px-2.5 sm:px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold text-[11px] sm:text-xs transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center whitespace-normal leading-tight">
+                <i class="fa-solid fa-clock-rotate-left shrink-0"></i>
+                <span class="break-words">Order Archive</span>
             </button>
         </div>
 
         <!-- ========================================================= -->
         <!-- TAB 1: ORDER PROCESSING PIPELINE (LIVE KDS) -->
         <!-- ========================================================= -->
-        <div id="tab-orders" class="portal-tab-content active space-y-6">
+        <div id="tab-orders" class="portal-tab-content active space-y-5 sm:space-y-6">
             
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs font-bold text-gray-500 uppercase mr-1">Filter View:</span>
-                    <button onclick="filterOrderCards('all')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-byte-maroon text-white">All Active ({{ active_orders|length }})</button>
-                    <button onclick="filterOrderCards('pending')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Pending</button>
-                    <button onclick="filterOrderCards('preparing')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Cooking</button>
-                    <button onclick="filterOrderCards('ready')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">Ready</button>
-                    <button onclick="filterOrderCards('out_for_delivery')" class="status-filter-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200">En Route</button>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span class="text-[11px] sm:text-xs font-bold text-gray-500 uppercase mr-1 shrink-0">Filter:</span>
+                    <button onclick="filterOrderCards('all')" class="status-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-byte-maroon text-white whitespace-normal">All Active ({{ active_orders|length }})</button>
+                    <button onclick="filterOrderCards('pending')" class="status-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200 whitespace-normal">Pending</button>
+                    <button onclick="filterOrderCards('preparing')" class="status-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200 whitespace-normal">Cooking</button>
+                    <button onclick="filterOrderCards('ready')" class="status-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200 whitespace-normal">Ready</button>
+                    <button onclick="filterOrderCards('out_for_delivery')" class="status-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 hover:bg-gray-200 whitespace-normal">En Route</button>
                 </div>
-                <span class="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
-                    <i class="fa-solid fa-rotate text-xs animate-spin text-byte-amber"></i> Live auto-syncing every 8s
+                <span class="text-[11px] sm:text-xs text-gray-500 flex items-center gap-1.5 font-medium">
+                    <i class="fa-solid fa-rotate text-xs animate-spin text-byte-amber shrink-0"></i> Live auto-syncing every 8s
                 </span>
             </div>
 
             <!-- Orders Grid -->
-            <div id="orders-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="orders-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {% for order in active_orders %}
-                <div class="order-pipeline-card bg-white rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between transition-all" data-order-status="{{ order.order_status }}" data-order-id="{{ order.id }}">
+                <div class="order-pipeline-card bg-white rounded-2xl sm:rounded-3xl shadow-md border-2 {% if order.order_status == 'pending' %}border-amber-400{% elif order.order_status == 'preparing' %}border-byte-maroon{% elif order.order_status == 'ready' %}border-purple-400{% else %}border-blue-400{% endif %} overflow-hidden flex flex-col justify-between transition-all" data-order-status="{{ order.order_status }}" data-order-id="{{ order.id }}">
                     
                     <div>
                         <!-- Header -->
-                        <div class="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-mono font-black text-base text-byte-maroon">#{{ order.order_number }}</span>
+                        <div class="p-3.5 sm:p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-mono font-black text-sm sm:text-base text-byte-maroon break-words">#{{ order.order_number }}</span>
                                     <span class="text-[11px] text-gray-500 block">{{ order.created_at|timesince }} ago</span>
                                 </div>
-                                <span class="text-[11px] text-gray-500 font-medium">Slot: <strong>{{ order.delivery_slot }}</strong></span>
+                                <span class="text-[11px] text-gray-500 font-medium break-words">Slot: <strong>{{ order.delivery_slot }}</strong></span>
                             </div>
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold shrink-0 {% if order.order_status == 'pending' %}bg-amber-100 text-amber-800{% elif order.order_status == 'preparing' %}bg-rose-100 text-rose-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
                                 {{ order.get_order_status_display }}
                             </span>
                         </div>
 
                         <!-- Customer Details -->
-                        <div class="p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
-                            <div class="flex justify-between">
-                                <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
-                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1">
+                        <div class="p-3.5 sm:p-4 border-b border-gray-100 text-xs space-y-1 bg-white">
+                            <div class="flex flex-wrap justify-between items-center gap-2">
+                                <span class="font-bold text-gray-900 text-sm break-words min-w-0">{{ order.customer_name }}</span>
+                                <a href="tel:{{ order.customer_phone }}" class="text-byte-maroon font-bold hover:underline flex items-center gap-1 shrink-0">
                                     <i class="fa-solid fa-phone"></i> {{ order.customer_phone }}
                                 </a>
                             </div>
-                            <p class="text-gray-600"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> <strong>{{ order.delivery_area }}</strong> • {{ order.delivery_address }}</p>
+                            <p class="text-gray-600 break-words"><i class="fa-solid fa-map-pin text-byte-amber mr-1"></i> <strong>{{ order.delivery_area }}</strong> • {{ order.delivery_address }}</p>
                             
                             <!-- Payment Status row -->
-                            <div class="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100 mt-2">
-                                <span class="font-bold text-gray-700">{{ order.get_payment_method_display }}</span>
+                            <div class="flex flex-wrap items-center justify-between gap-1 text-[11px] pt-1 border-t border-gray-100 mt-2">
+                                <span class="font-bold text-gray-700 break-words">{{ order.get_payment_method_display }}</span>
                                 <div class="flex items-center gap-1.5">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if order.payment_status == 'verified' %}bg-emerald-100 text-emerald-800{% elif order.payment_status == 'submitted' %}bg-amber-100 text-amber-800{% else %}bg-gray-200 text-gray-700{% endif %}">
                                         {{ order.get_payment_status_display }}
@@ -187,74 +187,74 @@
                                 </div>
                             </div>
                             {% if order.transaction_id %}
-                            <div class="text-[10px] font-mono text-gray-500">TrxID: <strong>{{ order.transaction_id }}</strong></div>
+                            <div class="text-[10px] font-mono text-gray-500 break-all">TrxID: <strong>{{ order.transaction_id }}</strong></div>
                             {% endif %}
 
                             {% if order.customer_notes %}
-                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2">
+                            <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold mt-2 break-words">
                                 ⚠️ Notes: {{ order.customer_notes }}
                             </div>
                             {% endif %}
                         </div>
 
                         <!-- Ticket Items -->
-                        <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
+                        <div class="p-3.5 sm:p-4 space-y-2 max-h-48 overflow-y-auto">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kitchen Items</span>
                             {% for item in order.items.all %}
-                            <div class="flex items-start justify-between text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
-                                <div>
+                            <div class="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                <div class="min-w-0 flex-1">
                                     <span class="font-extrabold text-gray-900 text-sm">{{ item.quantity }}x</span>
-                                    <span class="font-bold text-gray-800">{{ item.item_name }}</span>
+                                    <span class="font-bold text-gray-800 break-words">{{ item.item_name }}</span>
                                     {% if item.addons %}
-                                    <span class="block text-[10px] text-byte-amber font-semibold">+ {{ item.addons }}</span>
+                                    <span class="block text-[10px] text-byte-amber font-semibold break-words">+ {{ item.addons }}</span>
                                     {% endif %}
                                     {% if item.special_instructions %}
-                                    <span class="block text-[10px] text-rose-600 font-bold">👉 {{ item.special_instructions }}</span>
+                                    <span class="block text-[10px] text-rose-600 font-bold break-words">👉 {{ item.special_instructions }}</span>
                                     {% endif %}
                                 </div>
-                                <span class="font-semibold text-gray-600">৳{{ item.subtotal|floatformat:0 }}</span>
+                                <span class="font-semibold text-gray-600 shrink-0">৳{{ item.subtotal|floatformat:0 }}</span>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
-                        <div class="flex items-center justify-between text-xs font-bold text-gray-700 pb-1">
+                    <div class="p-3.5 sm:p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-gray-700 pb-1">
                             <span>Bill:</span>
                             <span class="text-base text-byte-maroon font-black">৳{{ order.total|floatformat:2 }}</span>
                         </div>
 
                         <!-- Workflow buttons -->
-                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                        <div class="grid grid-cols-1 xs:grid-cols-2 gap-2 text-xs font-bold">
                             {% if order.order_status == 'pending' %}
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'confirmed')" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'confirmed')" class="px-2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition whitespace-normal">
                                 Confirm
                             </button>
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="px-2 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition whitespace-normal">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'confirmed' %}
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'preparing')" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition whitespace-normal">
                                 Start Cooking 🍳
                             </button>
                             {% elif order.order_status == 'preparing' %}
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'ready')" class="col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'ready')" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition whitespace-normal">
                                 Mark Packed & Ready 📦
                             </button>
                             {% elif order.order_status == 'ready' %}
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'out_for_delivery')" class="col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'out_for_delivery')" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition whitespace-normal">
                                 Hand to Rider 🛵
                             </button>
                             {% elif order.order_status == 'out_for_delivery' %}
-                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'delivered')" class="col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                            <button type="button" onclick="updateOrderStatus({{ order.id }}, 'delivered')" class="xs:col-span-2 px-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition whitespace-normal">
                                 Mark Delivered 🎉
                             </button>
                             {% endif %}
                         </div>
 
                         <!-- Secondary utility links -->
-                        <div class="flex justify-between items-center pt-2 text-[11px] border-t border-gray-200">
+                        <div class="flex flex-wrap justify-between items-center gap-2 pt-2 text-[11px] border-t border-gray-200">
                             <a href="{% url 'staff_kot' order.order_number %}" target="_blank" class="text-byte-maroon hover:underline font-bold flex items-center gap-1">
                                 <i class="fa-solid fa-print"></i> Print KOT
                             </a>
@@ -269,9 +269,9 @@
 
                 </div>
                 {% empty %}
-                <div class="col-span-3 bg-white rounded-3xl p-12 text-center border border-gray-200 shadow-sm">
-                    <i class="fa-solid fa-check-circle text-5xl text-emerald-500 mb-3"></i>
-                    <h3 class="font-display text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
+                <div class="col-span-full bg-white rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center border border-gray-200 shadow-sm">
+                    <i class="fa-solid fa-check-circle text-4xl sm:text-5xl text-emerald-500 mb-3"></i>
+                    <h3 class="font-display text-xl sm:text-2xl font-bold text-gray-800 mb-1">All Caught Up!</h3>
                     <p class="text-xs text-gray-500">There are no pending or active kitchen tickets right now.</p>
                 </div>
                 {% endfor %}
@@ -282,23 +282,23 @@
         <!-- ========================================================= -->
         <!-- TAB 2: MENU & INVENTORY MANAGEMENT -->
         <!-- ========================================================= -->
-        <div id="tab-menu" class="portal-tab-content space-y-6">
+        <div id="tab-menu" class="portal-tab-content space-y-5 sm:space-y-6">
             
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 class="font-display text-xl font-bold text-byte-maroon">Menu Items & Real-Time Stock</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Toggle availability instantly when dishes run out of stock or update selling prices.</p>
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <h2 class="font-display text-lg sm:text-xl font-bold text-byte-maroon break-words">Menu Items & Real-Time Stock</h2>
+                    <p class="text-xs text-gray-500 mt-0.5 break-words">Toggle availability instantly when dishes run out of stock or update selling prices.</p>
                 </div>
-                <button onclick="document.getElementById('add-item-modal').classList.remove('hidden')" class="px-5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-2">
+                <button onclick="document.getElementById('add-item-modal').classList.remove('hidden')" class="px-5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center justify-center gap-2 shrink-0">
                     <i class="fa-solid fa-plus"></i>
                     <span>Add New Menu Item</span>
                 </button>
             </div>
 
             <!-- Items Table -->
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-0 shadow-sm border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left">
+                    <table class="responsive-table w-full sm:min-w-[680px] text-xs text-left">
                         <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
                             <tr>
                                 <th class="p-3">Dish / Item</th>
@@ -313,8 +313,8 @@
                         <tbody class="divide-y divide-gray-100">
                             {% for item in menu_items %}
                             <tr class="hover:bg-gray-50 transition" id="menu-row-{{ item.id }}">
-                                <td class="p-3">
-                                    <div class="flex items-center gap-2.5">
+                                <td data-label="Dish / Item" class="p-3">
+                                    <div class="flex items-center justify-end sm:justify-start gap-2.5 text-right sm:text-left">
                                         <div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                                             {% if item.image %}
                                             <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
@@ -324,8 +324,8 @@
                                             <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
                                             {% endif %}
                                         </div>
-                                        <div>
-                                            <span class="font-bold text-gray-900 block">{{ item.name }}</span>
+                                        <div class="min-w-0">
+                                            <span class="font-bold text-gray-900 block break-words">{{ item.name }}</span>
                                             <span class="text-[10px] text-gray-400">
                                                 {% if item.is_featured %}★ Featured {% endif %}
                                                 {% if item.is_frozen %}❄️ Frozen {% endif %}
@@ -334,20 +334,20 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="p-3 font-semibold text-gray-700">{{ item.category.name }}</td>
-                                <td class="p-3 text-gray-500">{{ item.portion_size }}</td>
-                                <td class="p-3">
-                                    <input type="number" step="0.01" value="{{ item.price }}" id="price-input-{{ item.id }}" class="w-20 px-2 py-1 rounded border border-gray-300 text-xs font-bold text-gray-900">
+                                <td data-label="Category" class="p-3 font-semibold text-gray-700 break-words">{{ item.category.name }}</td>
+                                <td data-label="Portion Size" class="p-3 text-gray-500 break-words">{{ item.portion_size }}</td>
+                                <td data-label="Regular Price" class="p-3">
+                                    <input type="number" step="0.01" value="{{ item.price }}" id="price-input-{{ item.id }}" class="w-24 sm:w-20 px-2 py-1 rounded border border-gray-300 text-xs font-bold text-gray-900">
                                 </td>
-                                <td class="p-3">
-                                    <input type="number" step="0.01" value="{{ item.discount_price|default:'' }}" id="discount-input-{{ item.id }}" placeholder="None" class="w-20 px-2 py-1 rounded border border-gray-300 text-xs text-gray-900">
+                                <td data-label="Discount Price" class="p-3">
+                                    <input type="number" step="0.01" value="{{ item.discount_price|default:'' }}" id="discount-input-{{ item.id }}" placeholder="None" class="w-24 sm:w-20 px-2 py-1 rounded border border-gray-300 text-xs text-gray-900">
                                 </td>
-                                <td class="p-3">
+                                <td data-label="Stock" class="p-3 sm:whitespace-nowrap">
                                     <button type="button" onclick="toggleItemStock({{ item.id }})" id="stock-btn-{{ item.id }}" class="px-3 py-1 rounded-full text-[11px] font-bold transition {% if item.is_available %}bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200{% endif %}">
                                         {% if item.is_available %}In Stock{% else %}Sold Out{% endif %}
                                     </button>
                                 </td>
-                                <td class="p-3 text-right">
+                                <td data-label="Actions" class="p-3 text-right">
                                     <button type="button" onclick="saveItemPrices({{ item.id }})" class="px-3 py-1 rounded-lg bg-byte-maroon text-white font-bold text-[11px] hover:bg-byte-maroonDark transition shadow-sm">
                                         Save
                                     </button>
@@ -362,11 +362,11 @@
         </div>
 
         <!-- Add Item Modal -->
-        <div id="add-item-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-            <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div id="add-item-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
+            <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[90dvh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-gray-100 pb-3">
                     <h3 class="font-display font-bold text-lg text-byte-maroon">Add New Menu Item</h3>
-                    <button onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
+                    <button onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 text-xl">&times;</button>
                 </div>
                 <form method="POST" action="{% url 'staff_create_item' %}" class="space-y-3">
                     {% csrf_token %}
@@ -386,7 +386,7 @@
                         <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Description</label>
                         {{ item_form.description }}
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 xs:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Price (৳)</label>
                             {{ item_form.price }}
@@ -396,7 +396,7 @@
                             {{ item_form.discount_price }}
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 xs:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Portion Size</label>
                             {{ item_form.portion_size }}
@@ -421,8 +421,8 @@
                         </label>
                     </div>
                     <div class="pt-3 border-t border-gray-100 flex justify-end gap-2">
-                        <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">Cancel</button>
-                        <button type="submit" class="px-5 py-2 rounded-xl bg-byte-maroon text-white font-bold text-xs shadow">Save Item</button>
+                        <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-byte-maroon text-white font-bold text-xs shadow">Save Item</button>
                     </div>
                 </form>
             </div>
@@ -431,11 +431,11 @@
         <!-- ========================================================= -->
         <!-- TAB 3: KITCHEN OPERATIONS & SETTINGS -->
         <!-- ========================================================= -->
-        <div id="tab-settings" class="portal-tab-content space-y-6">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 max-w-3xl">
-                <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+        <div id="tab-settings" class="portal-tab-content space-y-5 sm:space-y-6">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm border border-gray-200 max-w-3xl">
+                <div class="flex items-center gap-2 mb-5 sm:mb-6 border-b border-gray-100 pb-4">
                     <i class="fa-solid fa-sliders text-byte-amber text-xl"></i>
-                    <h2 class="font-display text-xl font-bold text-byte-maroon">Cloud Kitchen Operational Settings</h2>
+                    <h2 class="font-display text-lg sm:text-xl font-bold text-byte-maroon">Cloud Kitchen Operational Settings</h2>
                 </div>
 
                 <form method="POST" action="{% url 'staff_update_settings' %}" class="space-y-4">
@@ -504,12 +504,12 @@
                         {{ settings_form.delivery_areas }}
                     </div>
 
-                    <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-gray-800">
                             {{ settings_form.is_kitchen_open }}
                             <span>Kitchen is Currently Open for Orders</span>
                         </label>
-                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs shadow-md transition">
+                        <button type="submit" class="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs shadow-md transition">
                             Save Operational Settings
                         </button>
                     </div>
@@ -520,11 +520,11 @@
         <!-- ========================================================= -->
         <!-- TAB 4: RECENT DELIVERED & CANCELLED ORDERS ARCHIVE -->
         <!-- ========================================================= -->
-        <div id="tab-history" class="portal-tab-content space-y-6">
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-                <h2 class="font-display text-lg font-bold text-byte-maroon mb-4">Complete Recent Orders Archive</h2>
+        <div id="tab-history" class="portal-tab-content space-y-5 sm:space-y-6">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200">
+                <h2 class="font-display text-base sm:text-lg font-bold text-byte-maroon mb-4 break-words">Complete Recent Orders Archive</h2>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left">
+                    <table class="responsive-table w-full sm:min-w-[680px] text-xs text-left">
                         <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
                             <tr>
                                 <th class="p-3">Order #</th>
@@ -541,23 +541,23 @@
                         <tbody class="divide-y divide-gray-100">
                             {% for o in all_recent_orders %}
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="p-3 font-mono font-bold text-byte-maroon">#{{ o.order_number }}</td>
-                                <td class="p-3 font-semibold text-gray-900">{{ o.customer_name }}</td>
-                                <td class="p-3 text-gray-600">{{ o.customer_phone }}</td>
-                                <td class="p-3 text-gray-600">{{ o.delivery_area }}</td>
-                                <td class="p-3 font-black text-gray-900">৳{{ o.total|floatformat:2 }}</td>
-                                <td class="p-3">
+                                <td data-label="Order #" class="p-3 font-mono font-bold text-byte-maroon sm:whitespace-nowrap">#{{ o.order_number }}</td>
+                                <td data-label="Customer" class="p-3 font-semibold text-gray-900 break-words">{{ o.customer_name }}</td>
+                                <td data-label="Phone" class="p-3 text-gray-600 sm:whitespace-nowrap">{{ o.customer_phone }}</td>
+                                <td data-label="Area" class="p-3 text-gray-600 break-words">{{ o.delivery_area }}</td>
+                                <td data-label="Total" class="p-3 font-black text-gray-900 sm:whitespace-nowrap">৳{{ o.total|floatformat:2 }}</td>
+                                <td data-label="Payment" class="p-3 sm:whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if o.payment_status == 'verified' %}bg-emerald-100 text-emerald-800{% else %}bg-gray-100 text-gray-700{% endif %}">
                                         {{ o.get_payment_method_display }}
                                     </span>
                                 </td>
-                                <td class="p-3">
+                                <td data-label="Status" class="p-3 sm:whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {% if o.order_status == 'delivered' %}bg-emerald-100 text-emerald-800{% elif o.order_status == 'cancelled' %}bg-rose-100 text-rose-800{% else %}bg-blue-100 text-blue-800{% endif %}">
                                         {{ o.get_order_status_display }}
                                     </span>
                                 </td>
-                                <td class="p-3 text-gray-500">{{ o.created_at|date:"d M, I:i A" }}</td>
-                                <td class="p-3 text-right">
+                                <td data-label="Date" class="p-3 text-gray-500 sm:whitespace-nowrap">{{ o.created_at|date:"d M, I:i A" }}</td>
+                                <td data-label="Ticket" class="p-3 text-right sm:whitespace-nowrap">
                                     <a href="{% url 'staff_kot' o.order_number %}" target="_blank" class="text-byte-maroon hover:underline font-bold">
                                         KOT <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
                                     </a>

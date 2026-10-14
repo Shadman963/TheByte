@@ -4,28 +4,28 @@
 {% block title %}Kitchen Staff & Admin Login — {{ setting.restaurant_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-gray-900 min-h-[85vh] py-16 flex items-center justify-center text-white">
-    <div class="max-w-md w-full mx-auto px-4 sm:px-6">
+<div class="bg-gray-900 min-h-[80dvh] py-10 sm:py-16 flex items-center justify-center text-white">
+    <div class="max-w-md w-full mx-auto px-3 sm:px-6">
         
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-2xl bg-byte-maroon border-2 border-byte-amber/50 p-3 mx-auto mb-3 shadow-2xl flex items-center justify-center text-byte-amber text-2xl font-bold">
+        <div class="text-center mb-6 sm:mb-8">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-byte-maroon border-2 border-byte-amber/50 p-3 mx-auto mb-3 shadow-2xl flex items-center justify-center text-byte-amber text-xl sm:text-2xl font-bold">
                 <i class="fa-solid fa-kitchen-set"></i>
             </div>
-            <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-1">Internal Operations</span>
-            <h1 class="font-display text-3xl font-extrabold text-white uppercase tracking-wide">
+            <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-1 break-words">Internal Operations</span>
+            <h1 class="responsive-section-title font-display text-2xl sm:text-3xl font-extrabold text-white uppercase tracking-wide break-words">
                 Staff & Admin Portal
             </h1>
-            <p class="text-xs text-gray-400 mt-1">
+            <p class="text-xs text-gray-400 mt-1 break-words">
                 Authorized cloud kitchen team only. Access live KDS, order dispatch, menu inventory, and settings.
             </p>
         </div>
 
-        <div class="bg-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-700">
+        <div class="bg-gray-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl border border-gray-700">
             <form method="POST" action="{% url 'staff_login' %}" class="space-y-4">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                <div class="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold space-y-1">
+                <div class="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold space-y-1 break-words">
                     {% for error in form.non_field_errors %}
                     <p><i class="fa-solid fa-circle-exclamation mr-1"></i> {{ error }}</p>
                     {% endfor %}
@@ -33,24 +33,24 @@
                 {% endif %}
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Staff Username or Email *</label>
+                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1 break-words">Staff Username or Email *</label>
                     <input type="text" name="username_or_email" required placeholder="admin or staff username" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:outline-none focus:border-byte-amber">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1">Password *</label>
+                    <label class="block text-xs font-bold uppercase text-gray-300 mb-1 break-words">Password *</label>
                     <input type="password" name="password" required placeholder="Staff password" class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:outline-none focus:border-byte-amber">
                 </div>
 
-                <div class="pt-3">
-                    <button type="submit" class="w-full py-3.5 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm uppercase tracking-wider transition shadow-xl hover:shadow-2xl flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-lock-open"></i>
+                <div class="pt-2 sm:pt-3">
+                    <button type="submit" class="w-full px-4 py-3.5 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider transition shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 whitespace-normal">
+                        <i class="fa-solid fa-lock-open shrink-0"></i>
                         <span>Unlock Operations Portal</span>
                     </button>
                 </div>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-xs text-gray-400">
+            <div class="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-gray-700 text-center text-xs text-gray-400 break-words">
                 <span>Looking for customer ordering?</span>
                 <a href="{% url 'home' %}" class="font-bold text-byte-amber hover:underline ml-1">
                     Return to The BYTE Home

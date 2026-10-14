@@ -43,7 +43,7 @@
         existingToasts.forEach(t => t.remove());
 
         const toast = document.createElement('div');
-        toast.className = 'byte-toast fixed bottom-24 right-5 sm:bottom-24 sm:right-6 z-50 p-4 rounded-2xl shadow-2xl text-white font-bold text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0';
+        toast.className = 'byte-toast fixed bottom-20 left-3 right-3 sm:left-auto sm:bottom-24 sm:right-6 z-50 p-3.5 sm:p-4 rounded-2xl shadow-2xl text-white font-bold text-xs sm:text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0';
         toast.setAttribute('role', 'alert');
         toast.setAttribute('aria-live', 'polite');
 
@@ -60,8 +60,9 @@
         toast.classList.add(bgClass);
 
         const icon = document.createElement('i');
-        icon.className = iconClass;
+        icon.className = iconClass + ' shrink-0';
         const textSpan = document.createElement('span');
+        textSpan.className = 'min-w-0 flex-1 break-words whitespace-normal leading-snug';
         textSpan.textContent = message;
 
         toast.appendChild(icon);
@@ -130,27 +131,28 @@
                         if (addonsSection) addonsSection.classList.remove('hidden');
                         item.addons.forEach(a => {
                             const label = document.createElement('label');
-                            label.className = 'flex items-center justify-between p-2 rounded-lg border border-gray-200 hover:bg-byte-cream/40 cursor-pointer transition text-xs font-semibold';
+                            label.className = 'flex items-start sm:items-center justify-between gap-2 p-2.5 rounded-lg border border-gray-200 hover:bg-byte-cream/40 cursor-pointer transition text-xs font-semibold';
 
                             const leftDiv = document.createElement('div');
-                            leftDiv.className = 'flex items-center gap-2';
+                            leftDiv.className = 'flex items-start sm:items-center gap-2 min-w-0 flex-1';
 
                             const chk = document.createElement('input');
                             chk.type = 'checkbox';
                             chk.name = 'modal_addons';
                             chk.value = a.id;
                             chk.dataset.price = a.price;
-                            chk.className = 'rounded text-byte-maroon focus:ring-byte-maroon w-4 h-4';
+                            chk.className = 'rounded text-byte-maroon focus:ring-byte-maroon w-4 h-4 mt-0.5 sm:mt-0 shrink-0';
                             chk.addEventListener('change', recalcModalTotal);
 
                             const nameSpan = document.createElement('span');
+                            nameSpan.className = 'break-words whitespace-normal leading-snug';
                             nameSpan.textContent = a.name;
 
                             leftDiv.appendChild(chk);
                             leftDiv.appendChild(nameSpan);
 
                             const priceSpan = document.createElement('span');
-                            priceSpan.className = 'text-byte-maroon font-bold';
+                            priceSpan.className = 'text-byte-maroon font-bold shrink-0';
                             priceSpan.textContent = `+৳${parseFloat(a.price).toFixed(2)}`;
 
                             label.appendChild(leftDiv);
@@ -683,17 +685,18 @@
                 checkoutContainer.appendChild(emptyBtn);
             } else if (!data.can_checkout) {
                 const warningDiv = document.createElement('div');
-                warningDiv.className = 'p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2 mb-3';
+                warningDiv.className = 'p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-start gap-2 mb-3';
                 const warnIcon = document.createElement('i');
-                warnIcon.className = 'fa-solid fa-triangle-exclamation text-base';
+                warnIcon.className = 'fa-solid fa-triangle-exclamation text-base mt-0.5 shrink-0';
                 const warnText = document.createElement('span');
+                warnText.className = 'break-words whitespace-normal leading-snug';
                 warnText.textContent = `Minimum order requirement is ৳${minOrder.toFixed(0)}. Please add more items.`;
                 warningDiv.appendChild(warnIcon);
                 warningDiv.appendChild(warnText);
 
                 const disabledBtn = document.createElement('button');
                 disabledBtn.disabled = true;
-                disabledBtn.className = 'w-full py-3.5 rounded-2xl bg-gray-300 text-gray-500 font-bold text-sm cursor-not-allowed';
+                disabledBtn.className = 'w-full py-3.5 px-4 rounded-2xl bg-gray-300 text-gray-500 font-bold text-sm cursor-not-allowed whitespace-normal';
                 disabledBtn.textContent = 'Proceed to Checkout';
 
                 checkoutContainer.appendChild(warningDiv);
@@ -701,7 +704,7 @@
             } else {
                 const checkoutLink = document.createElement('a');
                 checkoutLink.href = '/checkout/';
-                checkoutLink.className = 'block w-full py-4 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm text-center shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5';
+                checkoutLink.className = 'block w-full py-3.5 sm:py-4 px-4 rounded-2xl bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm text-center shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5 whitespace-normal break-words leading-snug';
                 checkoutLink.textContent = `Proceed to Checkout (৳${total.toFixed(2)})`;
                 checkoutContainer.appendChild(checkoutLink);
             }
@@ -712,13 +715,13 @@
             const mainContainer = document.getElementById('cart-items-container');
             if (mainContainer && !mainContainer.querySelector('.empty-cart-state')) {
                 mainContainer.innerHTML = `
-                    <div class="empty-cart-state bg-white rounded-3xl p-12 text-center border border-gray-200 max-w-xl mx-auto shadow-sm">
-                        <div class="w-20 h-20 rounded-full bg-byte-cream text-byte-maroon mx-auto flex items-center justify-center text-3xl mb-4">
+                    <div class="empty-cart-state bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center border border-gray-200 max-w-xl mx-auto shadow-sm">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-byte-cream text-byte-maroon mx-auto flex items-center justify-center text-2xl sm:text-3xl mb-4">
                             <i class="fa-solid fa-utensils"></i>
                         </div>
-                        <h3 class="font-display text-2xl font-bold text-byte-maroon mb-2">Your Cart is Empty</h3>
-                        <p class="text-sm text-gray-500 mb-6">Looks like you haven't added any homestyle delicious food yet.</p>
-                        <a href="/menu/" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-sm tracking-wide shadow-lg transition">
+                        <h3 class="font-display text-xl sm:text-2xl font-bold text-byte-maroon mb-2 break-words">Your Cart is Empty</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mb-6 break-words">Looks like you haven't added any homestyle delicious food yet.</p>
+                        <a href="/menu/" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-lg transition whitespace-normal text-center">
                             <span>Browse Today's Menu</span>
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
@@ -763,7 +766,7 @@
 
         data.items.forEach(item => {
             const card = document.createElement('div');
-            card.className = 'flex items-start justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100 gap-3';
+            card.className = 'flex flex-wrap xs:flex-nowrap items-start justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100 gap-2.5 sm:gap-3';
             card.dataset.cartKey = item.key;
 
             // Thumbnail
@@ -780,11 +783,11 @@
             details.className = 'flex-1 min-w-0';
 
             const nameH4 = document.createElement('h4');
-            nameH4.className = 'font-display font-bold text-sm text-byte-maroon truncate';
+            nameH4.className = 'font-display font-bold text-sm text-byte-maroon break-words whitespace-normal leading-snug';
             nameH4.textContent = item.name;
 
             const portionSpan = document.createElement('span');
-            portionSpan.className = 'text-[11px] text-gray-500 block';
+            portionSpan.className = 'text-[11px] text-gray-500 block break-words whitespace-normal';
             portionSpan.textContent = item.portion_size || '';
 
             details.appendChild(nameH4);
@@ -792,14 +795,14 @@
 
             if (item.addons && item.addons.length > 0) {
                 const addonsSpan = document.createElement('span');
-                addonsSpan.className = 'text-[10px] text-byte-amber font-semibold block truncate';
+                addonsSpan.className = 'text-[10px] text-byte-amber font-semibold block break-words whitespace-normal leading-snug mt-0.5';
                 addonsSpan.textContent = '+ ' + item.addons.join(', ');
                 details.appendChild(addonsSpan);
             }
 
             if (item.special_instructions) {
                 const notesSpan = document.createElement('span');
-                notesSpan.className = 'text-[10px] text-gray-500 italic block truncate';
+                notesSpan.className = 'text-[10px] text-gray-500 italic block break-words whitespace-normal leading-snug mt-0.5';
                 notesSpan.textContent = `"${item.special_instructions}"`;
                 details.appendChild(notesSpan);
             }
@@ -811,7 +814,7 @@
 
             // Controls
             const controls = document.createElement('div');
-            controls.className = 'flex flex-col items-end gap-1.5 flex-shrink-0';
+            controls.className = 'flex xs:flex-col items-center xs:items-end justify-between w-full xs:w-auto gap-2 xs:gap-1.5 pt-2 xs:pt-0 border-t xs:border-t-0 border-gray-200/60 flex-shrink-0';
 
             const qtyGroup = document.createElement('div');
             qtyGroup.className = 'flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white';
@@ -910,28 +913,30 @@
         const mobileMenu = document.getElementById('mobile-menu');
         if (!mobileBtn || !mobileMenu) return;
 
-        mobileBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            mobileMenu.classList.toggle('hidden');
+        function setMobileMenuOpen(isOpen) {
+            mobileMenu.classList.toggle('hidden', !isOpen);
+            mobileBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             const icon = mobileBtn.querySelector('i');
             if (icon) {
-                icon.className = mobileMenu.classList.contains('hidden') ? 'fa-solid fa-bars text-xl' : 'fa-solid fa-xmark text-xl';
+                icon.className = isOpen ? 'fa-solid fa-xmark text-lg' : 'fa-solid fa-bars text-lg';
             }
+        }
+
+        mobileBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const willOpen = mobileMenu.classList.contains('hidden');
+            setMobileMenuOpen(willOpen);
         });
 
         mobileMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-                const icon = mobileBtn.querySelector('i');
-                if (icon) icon.className = 'fa-solid fa-bars text-xl';
+                setMobileMenuOpen(false);
             });
         });
 
         document.addEventListener('click', function (e) {
             if (!mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
-                mobileMenu.classList.add('hidden');
-                const icon = mobileBtn.querySelector('i');
-                if (icon) icon.className = 'fa-solid fa-bars text-xl';
+                setMobileMenuOpen(false);
             }
         });
     }

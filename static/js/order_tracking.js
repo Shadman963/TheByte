@@ -76,7 +76,7 @@
         const badge = document.getElementById('live-status-badge');
         const text = document.getElementById('live-status-text');
         if (badge && text) {
-            badge.className = `inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold shadow-md ${st.color}`;
+            badge.className = `inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold shadow-md max-w-full whitespace-normal ${st.color}`;
             text.textContent = st.label;
         }
 

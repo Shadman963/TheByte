@@ -239,33 +239,33 @@
         if (actionsContainer) {
             actionsContainer.innerHTML = '';
             const btnGroup = document.createElement('div');
-            btnGroup.className = 'grid grid-cols-2 gap-2 text-xs font-bold';
+            btnGroup.className = 'grid grid-cols-1 xs:grid-cols-2 gap-2 text-xs font-bold';
 
             if (data.new_status === 'confirmed') {
                 const cookBtn = document.createElement('button');
                 cookBtn.type = 'button';
-                cookBtn.className = 'col-span-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition';
+                cookBtn.className = 'xs:col-span-2 px-2 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white transition whitespace-normal';
                 cookBtn.textContent = 'Start Cooking 🍳';
                 cookBtn.addEventListener('click', () => changeOrderStatus(orderId, 'preparing', cookBtn));
                 btnGroup.appendChild(cookBtn);
             } else if (data.new_status === 'preparing') {
                 const packBtn = document.createElement('button');
                 packBtn.type = 'button';
-                packBtn.className = 'col-span-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition';
+                packBtn.className = 'xs:col-span-2 px-2 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition whitespace-normal';
                 packBtn.textContent = 'Mark Packed & Ready 📦';
                 packBtn.addEventListener('click', () => changeOrderStatus(orderId, 'ready', packBtn));
                 btnGroup.appendChild(packBtn);
             } else if (data.new_status === 'ready') {
                 const riderBtn = document.createElement('button');
                 riderBtn.type = 'button';
-                riderBtn.className = 'col-span-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition';
+                riderBtn.className = 'xs:col-span-2 px-2 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition whitespace-normal';
                 riderBtn.textContent = 'Hand to Rider 🛵';
                 riderBtn.addEventListener('click', () => changeOrderStatus(orderId, 'out_for_delivery', riderBtn));
                 btnGroup.appendChild(riderBtn);
             } else if (data.new_status === 'out_for_delivery') {
                 const deliverBtn = document.createElement('button');
                 deliverBtn.type = 'button';
-                deliverBtn.className = 'col-span-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition';
+                deliverBtn.className = 'xs:col-span-2 px-2 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition whitespace-normal';
                 deliverBtn.textContent = 'Mark Delivered 🎉';
                 deliverBtn.addEventListener('click', () => changeOrderStatus(orderId, 'delivered', deliverBtn));
                 btnGroup.appendChild(deliverBtn);
@@ -275,7 +275,7 @@
 
             // Cancel action link
             const footerRow = document.createElement('div');
-            footerRow.className = 'flex justify-between items-center pt-2 text-[11px]';
+            footerRow.className = 'flex flex-wrap justify-between items-center gap-2 pt-2 text-[11px]';
 
             const trackLink = document.createElement('a');
             trackLink.href = `/order/track/${encodeURIComponent(data.order_number)}/`;
