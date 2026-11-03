@@ -194,7 +194,7 @@ def item_detail_api(request, item_id):
         'spice_level': item.get_spice_level_display(),
         'has_style_options': item.has_style_options,
         'style_options': item.style_options,
-        'image': item.image.url if item.image else (f"/static/{item.static_image}" if item.static_image else ''),
+        'image': item.valid_uploaded_image_url or f"/static/{item.resolved_static_image}",
         'addons': addons + global_addons,
     }
     return JsonResponse(data)

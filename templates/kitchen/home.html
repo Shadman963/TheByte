@@ -35,53 +35,23 @@
     <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ff8c42_1px,transparent_1px)] [background-size:20px_20px]"></div>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
-            <!-- Left Text Content -->
-            <div class="lg:col-span-7 space-y-4 sm:space-y-6 text-center lg:text-left min-w-0">
-                <!-- Status Tag -->
-                <div class="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/10 border border-white/20 text-byte-cream text-[11px] sm:text-sm font-semibold tracking-wide max-w-full">
-                    <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-byte-amber animate-ping shrink-0"></span>
-                    <span class="whitespace-normal break-words">Daily Fresh Cloud Kitchen • Dhaka</span>
-                </div>
-
-                <!-- Main Branding Heading -->
-                <h1 class="font-display responsive-hero-title font-extrabold tracking-tight uppercase break-words">
-                    <span class="text-byte-amber">{{ setting.restaurant_name }}</span>
-                    <span class="block text-white responsive-hero-subtitle mt-1.5">Fresh • Tasty • Budget-Friendly</span>
-                </h1>
-
-                <!-- Tagline from Canva reference -->
-                <p class="text-xs xs:text-sm sm:text-lg lg:text-xl text-byte-cream/90 font-medium max-w-2xl mx-auto lg:mx-0 leading-relaxed italic border-l-4 border-byte-amber pl-3 sm:pl-4 text-left break-words">
-                    “{{ setting.mission_statement }}”
-                </p>
+        <div class="max-w-3xl space-y-4 sm:space-y-6 text-center lg:text-left min-w-0">
+            <!-- Status Tag -->
+            <div class="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/10 border border-white/20 text-byte-cream text-[11px] sm:text-sm font-semibold tracking-wide max-w-full">
+                <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-byte-amber animate-ping shrink-0"></span>
+                <span class="whitespace-normal break-words">Daily Fresh Cloud Kitchen • Dhaka</span>
             </div>
 
-            <!-- Right Hero Visual Collage -->
-            <div class="lg:col-span-5 relative mt-2 sm:mt-0">
-                <div class="relative mx-auto max-w-md lg:max-w-none">
-                    <!-- Main Card -->
-                    <div class="rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 sm:border-4 border-white/20 bg-byte-maroonDark relative group">
-                        <img src="{% static 'images/hero_banner.png' %}" alt="The Byte Meal Box" class="w-full h-64 xs:h-72 sm:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-                        <div class="absolute bottom-4 sm:bottom-5 left-4 sm:left-6 right-4 sm:right-6 text-white">
-                            <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded bg-byte-amber text-[10px] sm:text-xs font-bold uppercase tracking-wider inline-block">Chef's Signature</span>
-                            <h3 class="font-display text-base sm:text-xl font-bold mt-1 break-words leading-snug">Homestyle Chicken Curry & Jira Rice</h3>
-                            <p class="text-[11px] sm:text-xs text-byte-cream/80 break-words leading-snug">Cooked fresh each morning with genuine spices.</p>
-                        </div>
-                    </div>
+            <!-- Main Branding Heading -->
+            <h1 class="font-display responsive-hero-title font-extrabold tracking-tight uppercase break-words">
+                <span class="text-byte-amber">{{ setting.restaurant_name }}</span>
+                <span class="block text-white responsive-hero-subtitle mt-1.5">Fresh • Tasty • Budget-Friendly</span>
+            </h1>
 
-                    <!-- Floating Mini Badge -->
-                    <div class="absolute -top-3 right-2 sm:-top-5 sm:right-3 lg:-right-4 bg-byte-amber text-white p-2 sm:p-4 rounded-xl sm:rounded-2xl shadow-xl flex items-center gap-2 sm:gap-3 border-2 border-white/40 transform sm:rotate-2 max-w-[calc(100%-1rem)]">
-                        <i class="fa-solid fa-award text-lg sm:text-3xl shrink-0"></i>
-                        <div class="min-w-0">
-                            <span class="text-[9px] sm:text-xs font-bold block uppercase leading-tight break-words">100% Guaranteed</span>
-                            <span class="text-xs sm:text-sm font-extrabold block break-words">Clean & Fresh</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- Tagline from Canva reference -->
+            <p class="text-xs xs:text-sm sm:text-lg lg:text-xl text-byte-cream/90 font-medium max-w-2xl mx-auto lg:mx-0 leading-relaxed italic border-l-4 border-byte-amber pl-3 sm:pl-4 text-left break-words">
+                “{{ setting.mission_statement }}”
+            </p>
         </div>
     </div>
 </section>
@@ -138,12 +108,10 @@
                             <div class="w-64 sm:w-72 shrink-0 mr-4 sm:mr-5 bg-white text-gray-800 rounded-2xl overflow-hidden shadow-lg border border-byte-amber/30 hover:border-byte-amber transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                                 <div>
                                     <div class="relative h-36 sm:h-40 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                                        {% if item.image %}
-                                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                                        {% elif item.static_image %}
-                                            <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                        {% if item.valid_uploaded_image_url %}
+                                            <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                                         {% else %}
-                                            <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                            <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                                         {% endif %}
 
                                         <div class="absolute top-2 left-2 flex flex-wrap gap-1">
@@ -268,12 +236,10 @@
                 <div class="bg-byte-creamLight rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-byte-maroon/10 transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                     <div>
                         <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% elif item.static_image %}
-                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% if item.valid_uploaded_image_url %}
+                                <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% else %}
-                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% endif %}
 
                             <div class="absolute top-2 left-2 flex flex-wrap gap-1">
@@ -394,12 +360,10 @@
                 <div class="bg-white text-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-white/15 transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                     <div>
                         <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% elif item.static_image %}
-                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% if item.valid_uploaded_image_url %}
+                                <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% else %}
-                                <img src="{% static 'images/frozen_items.jpg' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/frozen_items.jpg' %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% endif %}
 
                             <div class="absolute top-2 left-2 flex flex-wrap gap-1">
@@ -537,12 +501,10 @@
                     <div>
                         <!-- Food Photo -->
                         <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% elif item.static_image %}
-                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% if item.valid_uploaded_image_url %}
+                                <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% else %}
-                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             {% endif %}
 
                             <!-- Top Badges -->
@@ -920,12 +882,10 @@
                     <div class="p-3 rounded-2xl bg-gray-50 border border-gray-200 hover:border-byte-maroon/30 transition flex flex-col justify-between gap-2.5 group" data-item-card="{{ item.id }}">
                         <div class="flex items-start justify-between gap-3">
                             <div class="w-14 h-14 rounded-xl bg-gray-200 overflow-hidden shrink-0 cursor-pointer" onclick="openItemModal({{ item.id }})">
-                                {% if item.image %}
-                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
-                                {% elif item.static_image %}
-                                    <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                {% if item.valid_uploaded_image_url %}
+                                    <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover">
                                 {% else %}
-                                    <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                    <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover">
                                 {% endif %}
                             </div>
                             <div class="min-w-0 flex-1">

@@ -351,9 +351,11 @@ class Command(BaseCommand):
         MenuItem.objects.exclude(slug__in=active_item_slugs).delete()
 
         for item_info in items_data:
+            defaults = dict(item_info)
+            defaults['image'] = ''
             MenuItem.objects.update_or_create(
                 slug=item_info['slug'],
-                defaults=item_info
+                defaults=defaults
             )
 
         # 4. Global Addons

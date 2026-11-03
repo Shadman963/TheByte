@@ -734,6 +734,8 @@ class KitchenTests(TestCase):
         self.assertNotContains(response, '<!-- CTA Action Buttons -->')
         self.assertNotContains(response, '<!-- LIVE ORDER TRACKING QUICK LOOKUP WIDGET -->')
         self.assertNotContains(response, 'Enter Order Number (e.g. BYTE-82194)')
+        self.assertNotContains(response, "Chef's Signature")
+        self.assertNotContains(response, 'alt="The Byte Meal Box"')
 
     def test_frozen_section_items_and_style_options_and_spring_roll_nonveg(self):
         from django.core.management import call_command
@@ -855,5 +857,19 @@ class KitchenTests(TestCase):
             self.assertIn('data-requires-style="true"', page_html)
             self.assertNotIn('data-selected-style="Spicy"', page_html)
             self.assertIn('class="item-description', page_html)
+            self.assertIn('images/menu/chicken_fry.webp', page_html)
+            self.assertIn('images/menu/frozen_chicken_fry.jpg', page_html)
+
+        # 10. Verify ephemeral/broken uploaded image or blank static_image falls back to resolved_static_image
+        frozen_cf = MenuItem.objects.get(slug='frozen-chicken-fry')
+        frozen_cf.image = 'menu_items/non_existent_ephemeral_file.jpg'
+        frozen_cf.static_image = ''
+        frozen_cf.save()
+        frozen_cf.refresh_from_db()
+        self.assertIsNone(frozen_cf.valid_uploaded_image_url)
+        self.assertEqual(frozen_cf.resolved_static_image, 'images/menu/frozen_chicken_fry.jpg')
+        res_cf_api = self.client.get(reverse('item_detail_api', kwargs={'item_id': frozen_cf.id}))
+        self.assertEqual(res_cf_api.status_code, 200)
+        self.assertEqual(res_cf_api.json()['image'], '/static/images/menu/frozen_chicken_fry.jpg')
 
 

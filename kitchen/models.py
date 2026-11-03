@@ -7,7 +7,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-
 def generate_order_number():
     rand = ''.join(random.choices(string.digits, k=5))
     return f"BYTE-{rand}"
@@ -108,9 +107,63 @@ class MenuItem(models.Model):
     class Meta:
         ordering = ['order', 'name']
 
+    def resolve_default_static_image(self):
+        slug_val = (self.slug or '').lower()
+        name_val = (self.name or '').lower()
+        frozen = bool(
+            self.is_frozen
+            or 'frozen' in slug_val
+            or (self.category_id and getattr(self.category, 'slug', '') in ('frozen-items', 'ready-to-fry'))
+        )
+
+        if 'chicken-fry' in slug_val or 'chicken fry' in name_val or 'chicken fries' in name_val:
+            return 'images/menu/frozen_chicken_fry.jpg' if frozen else 'images/menu/chicken_fry.webp'
+        if 'strip' in slug_val or 'tender' in slug_val or 'strip' in name_val or 'tender' in name_val:
+            return 'images/menu/frozen_chicken_strips.jpg' if frozen else 'images/menu/chicken_tender.webp'
+        if 'wing' in slug_val or 'wing' in name_val:
+            return 'images/menu/frozen_wings.jpg' if frozen else 'images/menu/crispy_wings.jpeg'
+        if 'french-fries' in slug_val or 'french fries' in name_val or 'fries' in name_val:
+            return 'images/menu/frozen_french_fries.avif' if frozen else 'images/menu/french_fries.jfif'
+        if 'meatball' in slug_val or 'meatball' in name_val:
+            return 'images/menu/frozen_meatballs.png' if frozen else 'images/menu/meatballs.jpeg'
+        if 'samosa' in slug_val or 'samusa' in slug_val or 'samosa' in name_val or 'samusa' in name_val:
+            return 'images/menu/frozen_samosa.webp' if frozen else 'images/menu/samusa.jfif'
+        if 'spring-roll' in slug_val or 'spring roll' in name_val:
+            return 'images/menu/frozen_spring_roll.jfif' if frozen else 'images/menu/spring_roll.avif'
+        if 'combo' in slug_val or 'combo' in name_val:
+            return 'images/menu/combo.webp'
+        return 'images/frozen_items.jpg' if frozen else 'images/hero_banner.png'
+
+    @property
+    def resolved_static_image(self):
+        if self.static_image and self.static_image.strip():
+            return self.static_image.strip()
+        return self.resolve_default_static_image()
+
+    @property
+    def valid_uploaded_image_url(self):
+        if self.image and getattr(self.image, 'name', None):
+            try:
+                if self.image.storage.exists(self.image.name):
+                    return self.image.url
+            except Exception:
+                pass
+        return None
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or 'menu-item'
+            if self.is_frozen and not base_slug.startswith('frozen-'):
+                candidate = f"frozen-{base_slug}"
+            else:
+                candidate = base_slug
+            counter = 1
+            while MenuItem.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                counter += 1
+                candidate = f"{base_slug}-{counter}"
+            self.slug = candidate
+        if not self.static_image:
+            self.static_image = self.resolve_default_static_image()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -136,20 +189,39 @@ class MenuItem(models.Model):
     def has_style_options(self):
         target_slugs = {
             'chicken-fry',
+            'chicken-fries',
+            'chicken-fries-frozen',
             'chicken-strips',
             'chicken-tender',
+            'chicken-tenders',
             'chicken-wings',
             'crispy-wings',
             'spicy-wings',
             'frozen-chicken-fry',
             'frozen-chicken-strips',
+            'frozen-chicken-tender',
             'frozen-wings',
             'frozen-chicken-wings',
+            'marinated-wings-frozen',
         }
         if self.slug in target_slugs:
             return True
         lower_name = (self.name or '').lower()
-        return any(k in lower_name for k in ('chicken fry', 'chicken strips', 'chicken wings', 'wings'))
+        excluded = ('spring roll', 'samosa', 'samusa', 'meatball', 'combo', 'curry')
+        if any(ex in lower_name for ex in excluded):
+            return False
+        return any(
+            k in lower_name
+            for k in (
+                'chicken fry',
+                'chicken fries',
+                'chicken strip',
+                'chicken tender',
+                'chicken wing',
+                'wings',
+                'fried chicken',
+            )
+        )
 
     @property
     def style_options(self):

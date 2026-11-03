@@ -88,12 +88,10 @@
                 <div>
                     <!-- Photo -->
                     <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                        {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        {% elif item.static_image %}
-                            <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        {% if item.valid_uploaded_image_url %}
+                            <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         {% else %}
-                            <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         {% endif %}
 
                         <div class="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[75%]">

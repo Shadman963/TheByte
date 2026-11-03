@@ -314,12 +314,10 @@
                                 <td data-label="Dish / Item" class="p-3">
                                     <div class="flex items-center justify-end sm:justify-start gap-2.5 text-right sm:text-left">
                                         <div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                                            {% if item.image %}
-                                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
-                                            {% elif item.static_image %}
-                                            <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                            {% if item.valid_uploaded_image_url %}
+                                            <img src="{{ item.valid_uploaded_image_url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static item.resolved_static_image %}';" class="w-full h-full object-cover">
                                             {% else %}
-                                            <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                            <img src="{% static item.resolved_static_image %}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='{% static 'images/fries_main.jpg' %}';" class="w-full h-full object-cover">
                                             {% endif %}
                                         </div>
                                         <div class="min-w-0">
