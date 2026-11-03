@@ -249,9 +249,6 @@
                 <a href="tel:{{ site_setting.phone }}" class="hover:text-byte-amber transition flex items-center gap-1">
                     <i class="fa-solid fa-phone text-byte-amber shrink-0"></i> <span>{{ site_setting.phone }}</span>
                 </a>
-                <a href="{% url 'order_tracking_search' %}" class="hover:text-byte-amber transition flex items-center gap-1">
-                    <i class="fa-solid fa-map-pin text-byte-amber shrink-0"></i> <span>Track Order</span>
-                </a>
                 {% if request.user.is_authenticated and request.user.is_staff %}
                 <a href="{% url 'staff_dashboard' %}" class="bg-byte-amber hover:bg-byte-amberDark text-white px-2 py-0.5 rounded font-bold transition flex items-center gap-1 shadow">
                     <i class="fa-solid fa-kitchen-set shrink-0"></i> <span>Staff Portal</span>
@@ -278,6 +275,9 @@
             <nav class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-semibold tracking-wide">
                 <a href="{% url 'home' %}" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
                     Home
+                </a>
+                <a href="{% url 'home' %}#latest-offers" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
+                    Latest Offers
                 </a>
                 <a href="{% url 'menu' %}" class="hover:text-byte-amber transition py-1 border-b-2 border-transparent hover:border-byte-amber">
                     Menu
@@ -341,11 +341,11 @@
                 <a href="{% url 'home' %}" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/5 hover:bg-white/10 whitespace-normal break-words leading-snug">
                     <i class="fa-solid fa-house text-byte-amber w-4 text-center shrink-0"></i> <span>Home</span>
                 </a>
+                <a href="{% url 'home' %}#latest-offers" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/5 hover:bg-white/10 whitespace-normal break-words leading-snug">
+                    <i class="fa-solid fa-tags text-byte-amber w-4 text-center shrink-0"></i> <span>Latest Offers</span>
+                </a>
                 <a href="{% url 'menu' %}" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/5 hover:bg-white/10 whitespace-normal break-words leading-snug">
                     <i class="fa-solid fa-book-open text-byte-amber w-4 text-center shrink-0"></i> <span>Full Menu</span>
-                </a>
-                <a href="{% url 'order_tracking_search' %}" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/5 hover:bg-white/10 whitespace-normal break-words leading-snug">
-                    <i class="fa-solid fa-map-pin text-byte-amber w-4 text-center shrink-0"></i> <span>Track Order</span>
                 </a>
                 <a href="{% url 'home' %}#story" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/5 hover:bg-white/10 whitespace-normal break-words leading-snug">
                     <i class="fa-solid fa-fire-burner text-byte-amber w-4 text-center shrink-0"></i> <span>Our Story</span>
@@ -640,8 +640,8 @@
                     </h3>
                     <ul class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-1 gap-2 text-xs sm:text-sm text-byte-cream/80 font-medium">
                         <li><a href="{% url 'menu' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Menu</a></li>
+                        <li><a href="{% url 'home' %}#latest-offers" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Latest Offers</a></li>
                         <li><a href="{% url 'home' %}#story" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Our Story</a></li>
-                        <li><a href="{% url 'order_tracking_search' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Track Order</a></li>
                         <li><a href="{% url 'kitchen_dashboard' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Kitchen KDS</a></li>
                         <li><a href="{% url 'admin:index' %}" class="hover:text-byte-amber transition"><i class="fa-solid fa-angle-right text-xs mr-2 text-byte-amber"></i>Admin Portal</a></li>
                     </ul>

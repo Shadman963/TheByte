@@ -70,9 +70,6 @@
                                         <span class="px-3 py-1 rounded-full text-xs font-extrabold {% if order.order_status == 'preparing' %}bg-amber-100 text-amber-800 animate-pulse{% elif order.order_status == 'ready' %}bg-purple-100 text-purple-800{% elif order.order_status == 'out_for_delivery' %}bg-blue-100 text-blue-800 animate-pulse{% else %}bg-gray-200 text-gray-800{% endif %}">
                                             {{ order.get_order_status_display }}
                                         </span>
-                                        <a href="{% url 'order_tracking' order.order_number %}" class="px-3 py-1 rounded-full bg-byte-maroon hover:bg-byte-maroonDark text-white text-xs font-bold transition flex items-center gap-1 shadow">
-                                            <i class="fa-solid fa-location-crosshairs text-[10px]"></i> Track
-                                        </a>
                                     </div>
                                 </div>
 
@@ -133,16 +130,13 @@
                                     <th class="p-3">Items</th>
                                     <th class="p-3">Total</th>
                                     <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 {% for order in past_orders %}
                                 <tr class="hover:bg-gray-50 transition">
                                     <td data-label="Order #" class="p-3 font-mono font-bold text-byte-maroon sm:whitespace-nowrap">
-                                        <a href="{% url 'order_tracking' order.order_number %}" class="hover:underline">
-                                            #{{ order.order_number }}
-                                        </a>
+                                        #{{ order.order_number }}
                                     </td>
                                     <td data-label="Date" class="p-3 text-gray-500 sm:whitespace-nowrap">{{ order.created_at|date:"d M Y, I:i A" }}</td>
                                     <td data-label="Items" class="p-3 text-gray-700 break-words">
@@ -156,11 +150,6 @@
                                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold {% if order.order_status == 'delivered' %}bg-emerald-100 text-emerald-800 border border-emerald-200{% else %}bg-rose-100 text-rose-800 border border-rose-200{% endif %}">
                                             {{ order.get_order_status_display }}
                                         </span>
-                                    </td>
-                                    <td data-label="Action" class="p-3 text-right sm:whitespace-nowrap">
-                                        <a href="{% url 'order_tracking' order.order_number %}" class="text-byte-maroon hover:underline font-bold">
-                                            Details <i class="fa-solid fa-angle-right text-[10px]"></i>
-                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}

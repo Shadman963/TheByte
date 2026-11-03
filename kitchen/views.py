@@ -2,14 +2,14 @@ import json
 import uuid
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib import messages
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum
 from django.utils import timezone
 from .models import (
     KitchenSetting,
@@ -26,7 +26,6 @@ from .cart import Cart
 from .forms import (
     CustomerRegistrationForm,
     CustomerLoginForm,
-    CustomerProfileUpdateForm,
     MenuItemQuickForm,
     KitchenSettingForm
 )
@@ -56,7 +55,38 @@ def get_site_setting():
 def home_view(request):
     setting = get_site_setting()
     categories = Category.objects.filter(is_active=True).prefetch_related('items')
-    featured_items = MenuItem.objects.filter(is_featured=True, is_available=True)[:8]
+    available_items = MenuItem.objects.filter(is_available=True).select_related('category')
+    featured_items = available_items.filter(is_featured=True)[:8]
+
+    # 1. Latest Offers (highlighted promotional items/discounts)
+    discounted_items = [
+        item for item in available_items.filter(discount_price__isnull=False).order_by('order', 'name')
+        if item.has_discount
+    ]
+    if len(discounted_items) < 4:
+        existing_ids = {item.id for item in discounted_items}
+        for item in available_items.filter(is_featured=True).exclude(id__in=existing_ids)[:4 - len(discounted_items)]:
+            discounted_items.append(item)
+    latest_offers_items = discounted_items[:4]
+    offered_slider_items = discounted_items
+
+    # 2. Student Combo (budget-friendly meal combinations)
+    combo_qs = available_items.filter(
+        Q(category__slug__in=['meal-combos', 'student-combo', 'combos']) | Q(name__icontains='combo')
+    )
+    student_combo_items = list(combo_qs[:4])
+    if len(student_combo_items) < 4:
+        existing_combo_ids = {item.id for item in student_combo_items}
+        budget_items = available_items.filter(is_frozen=False).exclude(id__in=existing_combo_ids).order_by('price', 'order')
+        for item in budget_items[:4 - len(student_combo_items)]:
+            student_combo_items.append(item)
+
+    # 3. Ready to Fry (frozen/pre-packaged items ready for home frying)
+    ready_to_fry_qs = available_items.filter(
+        Q(is_frozen=True) | Q(category__slug__in=['frozen-items', 'ready-to-fry'])
+    )
+    ready_to_fry_items = list(ready_to_fry_qs[:4])
+
     reviews = CustomerReview.objects.filter(is_approved=True)[:6]
     global_addons = MenuItemAddon.objects.filter(item=None, is_available=True)
 
@@ -67,6 +97,10 @@ def home_view(request):
         'setting': setting,
         'categories': categories,
         'featured_items': featured_items,
+        'latest_offers_items': latest_offers_items,
+        'offered_slider_items': offered_slider_items,
+        'student_combo_items': student_combo_items,
+        'ready_to_fry_items': ready_to_fry_items,
         'reviews': reviews,
         'global_addons': global_addons,
         'free_delivery_percent': free_delivery_percent,
@@ -85,6 +119,7 @@ def menu_view(request):
     query = request.GET.get('q', '').strip()
     diet = request.GET.get('diet')
     frozen = request.GET.get('frozen')
+    offers = request.GET.get('offers')
 
     current_category = None
     if category_slug:
@@ -103,6 +138,9 @@ def menu_view(request):
     if frozen == 'true':
         items = items.filter(is_frozen=True)
 
+    if offers == 'true':
+        items = items.filter(discount_price__isnull=False)
+
     global_addons = MenuItemAddon.objects.filter(item=None, is_available=True)
 
     context = {
@@ -114,6 +152,7 @@ def menu_view(request):
         'search_query': query,
         'diet_filter': diet,
         'frozen_filter': frozen,
+        'offers_filter': offers,
         'global_addons': global_addons,
     }
     return render(request, 'kitchen/menu.html', context)
@@ -417,7 +456,7 @@ def checkout_view(request):
         if recent_order:
             cart.clear()
             messages.info(request, f"Your order #{recent_order.order_number} has already been placed!")
-            return redirect('order_tracking', order_number=recent_order.order_number)
+            return redirect('customer_dashboard')
 
         # Auto-update profile default address & phone if empty or updated
         updated_profile = False
@@ -477,7 +516,7 @@ def checkout_view(request):
         request.session.pop('checkout_token', None)
         cart.clear()
         messages.success(request, f"🎉 Order #{order.order_number} placed successfully! The kitchen has received your order.")
-        return redirect('order_tracking', order_number=order.order_number)
+        return redirect('customer_dashboard')
 
     # GET request - generate checkout token
     checkout_token = uuid.uuid4().hex
@@ -504,55 +543,6 @@ def checkout_view(request):
         'checkout_token': checkout_token,
     }
     return render(request, 'kitchen/checkout.html', context)
-
-
-@ensure_csrf_cookie
-def order_tracking_view(request, order_number=None):
-    setting = get_site_setting()
-    order = None
-    search_num = order_number or request.GET.get('order_number', '').strip()
-
-    if search_num:
-        order = Order.objects.filter(order_number__iexact=search_num).first()
-        if not order:
-            messages.error(request, f"No order found with number: '{search_num}'. Please check and try again.")
-        elif order.user:
-            # Check ownership: only order owner or staff can view private order details
-            if not request.user.is_authenticated or (request.user != order.user and not is_kitchen_staff(request.user)):
-                messages.error(request, "You do not have permission to view details for this order.")
-                return redirect('home')
-
-    context = {
-        'setting': setting,
-        'order': order,
-        'search_num': search_num,
-    }
-    return render(request, 'kitchen/order_tracking.html', context)
-
-
-def order_status_api(request, order_number):
-    if not order_number or len(order_number) > 40:
-        return JsonResponse({'found': False, 'message': 'Invalid order identifier.'}, status=400)
-
-    order = Order.objects.filter(order_number__iexact=order_number).first()
-    if not order:
-        return JsonResponse({'found': False, 'message': 'Order not found.'}, status=404)
-
-    # Check ownership
-    if order.user:
-        if not request.user.is_authenticated or (request.user != order.user and not is_kitchen_staff(request.user)):
-            return JsonResponse({'found': False, 'message': 'Access forbidden.'}, status=403)
-
-    return JsonResponse({
-        'found': True,
-        'order_number': order.order_number,
-        'order_status': order.order_status,
-        'status_display': order.get_order_status_display(),
-        'step_index': order.status_step_index,
-        'payment_status': order.get_payment_status_display(),
-        'is_terminal': order.is_terminal_status,
-        'updated_at': order.updated_at.strftime('%I:%M %p, %d %b'),
-    })
 
 
 @ensure_csrf_cookie

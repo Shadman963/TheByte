@@ -275,13 +275,7 @@
 
             // Cancel action link
             const footerRow = document.createElement('div');
-            footerRow.className = 'flex flex-wrap justify-between items-center gap-2 pt-2 text-[11px]';
-
-            const trackLink = document.createElement('a');
-            trackLink.href = `/order/track/${encodeURIComponent(data.order_number)}/`;
-            trackLink.target = '_blank';
-            trackLink.className = 'text-gray-500 hover:text-byte-maroon font-semibold';
-            trackLink.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Customer View';
+            footerRow.className = 'flex flex-wrap justify-end items-center gap-2 pt-2 text-[11px]';
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
@@ -293,7 +287,6 @@
                 }
             });
 
-            footerRow.appendChild(trackLink);
             footerRow.appendChild(cancelBtn);
             actionsContainer.appendChild(footerRow);
         }

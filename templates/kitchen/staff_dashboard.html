@@ -258,9 +258,6 @@
                             <a href="{% url 'staff_kot' order.order_number %}" target="_blank" class="text-byte-maroon hover:underline font-bold flex items-center gap-1">
                                 <i class="fa-solid fa-print"></i> Print KOT
                             </a>
-                            <a href="{% url 'order_tracking' order.order_number %}" target="_blank" class="text-gray-500 hover:text-byte-maroon font-semibold">
-                                Live Tracker <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                            </a>
                             <button type="button" onclick="if(confirm('Cancel order #{{ order.order_number }}?')) updateOrderStatus({{ order.id }}, 'cancelled')" class="text-rose-600 hover:underline font-semibold">
                                 Cancel
                             </button>

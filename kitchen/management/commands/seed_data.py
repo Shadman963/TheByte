@@ -4,7 +4,7 @@ from kitchen.models import KitchenSetting, Category, MenuItem, MenuItemAddon, Cu
 
 
 class Command(BaseCommand):
-    help = 'Seeds initial data for The Byte cloud kitchen matching Canva reference'
+    help = 'Seeds initial data for The Byte cloud kitchen matching F:\\Menu items'
 
     def handle(self, *args, **options):
         self.stdout.write("Seeding The Byte Cloud Kitchen data...")
@@ -44,41 +44,30 @@ class Command(BaseCommand):
         # 2. Categories
         cat_data = [
             {
-                'name': 'Curry',
-                'slug': 'curry',
-                'order': 1,
-                'description': 'Slow-cooked traditional spiced curries made with premium meats and fresh garden vegetables.',
-                'static_banner': 'images/curry_main.jpg'
-            },
-            {
-                'name': 'Rice',
-                'slug': 'rice',
-                'order': 2,
-                'description': 'Steamed premium rice varieties cooked fresh to perfection—light, fluffy, and aromatic.',
-                'static_banner': 'images/rice_main.jpg'
-            },
-            {
                 'name': 'Fries & Crispy',
                 'slug': 'fries',
-                'order': 3,
-                'description': 'Golden, crunchy, and spicy sides cooked to order for ultimate crunch and flavor.',
-                'static_banner': 'images/fries_main.jpg'
+                'order': 1,
+                'description': 'Golden, crunchy, and spicy snacks and wings cooked fresh to order for ultimate crunch and flavor.',
+                'static_banner': 'images/menu/chicken_fry.webp'
             },
             {
                 'name': 'Frozen Items',
                 'slug': 'frozen-items',
-                'order': 4,
+                'order': 2,
                 'description': 'Convenient, pre-portioned, seasoned treats ready to fry at home anytime.',
-                'static_banner': 'images/frozen_items.jpg'
+                'static_banner': 'images/menu/frozen_wings.jpg'
             },
             {
                 'name': 'Meal Combos',
                 'slug': 'meal-combos',
-                'order': 5,
-                'description': 'Complete, filling, budget-friendly meal boxes designed for students & professionals.',
-                'static_banner': 'images/hero_banner.png'
+                'order': 3,
+                'description': 'Complete, filling, budget-friendly snack platters and combos.',
+                'static_banner': 'images/menu/combo.webp'
             }
         ]
+
+        active_cat_slugs = [c['slug'] for c in cat_data]
+        Category.objects.exclude(slug__in=active_cat_slugs).delete()
 
         categories = {}
         for c in cat_data:
@@ -94,114 +83,8 @@ class Command(BaseCommand):
             )
             categories[c['slug']] = cat
 
-        # 3. Menu Items
+        # 3. Menu Items (from F:\Menu)
         items_data = [
-            # Rice
-            {
-                'category': categories['rice'],
-                'name': 'Plain Rice',
-                'slug': 'plain-rice',
-                'tagline': 'Light, fluffy, steamed daily',
-                'description': 'Steamed premium rice, cooked fresh to perfection—light, fluffy, and the perfect base for any meal.',
-                'price': 40.00,
-                'discount_price': None,
-                'static_image': 'images/rice_main.jpg',
-                'portion_size': '1 Plate (approx 350g)',
-                'is_available': True,
-                'is_featured': False,
-                'is_vegetarian': True,
-                'is_frozen': False,
-                'spice_level': 'none',
-                'order': 1
-            },
-            {
-                'category': categories['rice'],
-                'name': 'Fried Rice',
-                'slug': 'fried-rice',
-                'tagline': 'Fragrant stir-fry with garden veggies',
-                'description': 'Fragrant rice stir-fried with fresh vegetables and light seasoning—simple, flavorful, and perfectly satisfying.',
-                'price': 90.00,
-                'discount_price': None,
-                'static_image': 'images/rice_section_bg.png',
-                'portion_size': '1 Plate (approx 380g)',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': True,
-                'is_frozen': False,
-                'spice_level': 'mild',
-                'order': 2
-            },
-            {
-                'category': categories['rice'],
-                'name': 'Jira Rice',
-                'slug': 'jira-rice',
-                'tagline': 'Aromatic cumin-infused basmati style',
-                'description': 'Steamed plain rice lightly tossed with cumin seeds and onions—simple, aromatic, and comfortingly flavorful.',
-                'price': 70.00,
-                'discount_price': None,
-                'static_image': 'images/rice_main.jpg',
-                'portion_size': '1 Plate (approx 350g)',
-                'is_available': True,
-                'is_featured': False,
-                'is_vegetarian': True,
-                'is_frozen': False,
-                'spice_level': 'mild',
-                'order': 3
-            },
-
-            # Curry
-            {
-                'category': categories['curry'],
-                'name': 'Chicken Curry',
-                'slug': 'chicken-curry',
-                'tagline': 'Slow-cooked homestyle comfort',
-                'description': 'Tender chicken slow-cooked with onions and traditional spices—rich in flavor, comforting, and freshly prepared.',
-                'price': 150.00,
-                'discount_price': None,
-                'static_image': 'images/curry_main.jpg',
-                'portion_size': '2 Large Pcs with rich onion gravy',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': False,
-                'spice_level': 'medium',
-                'order': 1
-            },
-            {
-                'category': categories['curry'],
-                'name': 'Beef Curry',
-                'slug': 'beef-curry',
-                'tagline': 'Deeply savory tender beef',
-                'description': 'Juicy beef pieces cooked slowly with onions and selected spices—deeply flavorful, hearty, and freshly made.',
-                'price': 220.00,
-                'discount_price': None,
-                'static_image': 'images/curry_section_bg.png',
-                'portion_size': '4-5 Tender Pcs with thick rich gravy',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': False,
-                'spice_level': 'hot',
-                'order': 2
-            },
-            {
-                'category': categories['curry'],
-                'name': 'Vegetable Curry',
-                'slug': 'vegetable-curry',
-                'tagline': 'Healthy, wholesome seasonal harvest',
-                'description': 'Fresh seasonal vegetables cooked with traditional spices into a hearty, flavorful curry.',
-                'price': 70.00,
-                'discount_price': None,
-                'static_image': 'images/curry_main.jpg',
-                'portion_size': '1 Bowl (approx 250g)',
-                'is_available': True,
-                'is_featured': False,
-                'is_vegetarian': True,
-                'is_frozen': False,
-                'spice_level': 'mild',
-                'order': 3
-            },
-
             # Fries & Crispy
             {
                 'category': categories['fries'],
@@ -210,8 +93,8 @@ class Command(BaseCommand):
                 'tagline': 'Spicy crunch on outside, juicy inside',
                 'description': 'Crispy and spicy chicken pieces, perfectly fried for a juicy inside and a flavorful kick outside.',
                 'price': 130.00,
-                'discount_price': None,
-                'static_image': 'images/fries_main.jpg',
+                'discount_price': 110.00,
+                'static_image': 'images/menu/chicken_fry.webp',
                 'portion_size': '2 Pcs Crispy Chicken',
                 'is_available': True,
                 'is_featured': True,
@@ -222,117 +105,202 @@ class Command(BaseCommand):
             },
             {
                 'category': categories['fries'],
+                'name': 'Chicken Tender',
+                'slug': 'chicken-tender',
+                'tagline': 'Golden crispy boneless chicken strips',
+                'description': 'Tender, juicy boneless chicken strips coated in a seasoned golden crispy batter, served with dipping sauce.',
+                'price': 150.00,
+                'discount_price': 135.00,
+                'static_image': 'images/menu/chicken_tender.webp',
+                'portion_size': '4 Pcs Crispy Tenders',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': False,
+                'spice_level': 'medium',
+                'order': 2
+            },
+            {
+                'category': categories['fries'],
+                'name': 'Crispy Wings',
+                'slug': 'crispy-wings',
+                'tagline': 'Extra crunchy golden fried chicken wings',
+                'description': 'Juicy chicken wings double-coated and fried to a golden, shattering crunch.',
+                'price': 160.00,
+                'discount_price': 140.00,
+                'static_image': 'images/menu/crispy_wings.jpeg',
+                'portion_size': '6 Pcs Crispy Wings',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': False,
+                'spice_level': 'medium',
+                'order': 3
+            },
+            {
+                'category': categories['fries'],
+                'name': 'Spicy Wings',
+                'slug': 'spicy-wings',
+                'tagline': 'Fiery glazed & spiced hot wings',
+                'description': 'Crispy chicken wings tossed in our signature fiery spice blend for a bold, mouthwatering kick.',
+                'price': 170.00,
+                'discount_price': None,
+                'static_image': 'images/menu/spicy_wings.jpg',
+                'portion_size': '6 Pcs Spicy Wings',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': False,
+                'spice_level': 'hot',
+                'order': 4
+            },
+            {
+                'category': categories['fries'],
+                'name': 'Meatballs',
+                'slug': 'meatballs',
+                'tagline': 'Savory, juicy spiced meatballs',
+                'description': 'Tender, flavorful meatballs seasoned with aromatic herbs and spices, fried to golden perfection.',
+                'price': 120.00,
+                'discount_price': None,
+                'static_image': 'images/menu/meatballs.jpeg',
+                'portion_size': '6 Pcs Meatballs',
+                'is_available': True,
+                'is_featured': False,
+                'is_vegetarian': False,
+                'is_frozen': False,
+                'spice_level': 'medium',
+                'order': 5
+            },
+            {
+                'category': categories['fries'],
                 'name': 'French Fries',
                 'slug': 'french-fries',
                 'tagline': 'Classic golden salted crunch',
                 'description': 'Golden, crispy potato sticks—perfectly salted and irresistibly crunchy.',
                 'price': 80.00,
                 'discount_price': None,
-                'static_image': 'images/fries_section_bg.jpg',
-                'portion_size': 'Large Basket (approx 180g)',
+                'static_image': 'images/menu/french_fries.jfif',
+                'portion_size': '1 Large Basket (approx 180g)',
                 'is_available': True,
                 'is_featured': False,
                 'is_vegetarian': True,
                 'is_frozen': False,
                 'spice_level': 'none',
-                'order': 2
+                'order': 6
             },
             {
                 'category': categories['fries'],
-                'name': 'Pakora',
-                'slug': 'pakora',
-                'tagline': 'Bengali spiced vegetable fritters',
-                'description': 'Crispy, golden fritters made with fresh vegetables coated in spiced chickpea batter—perfectly crunchy and flavorful.',
+                'name': 'Samusa',
+                'slug': 'samusa',
+                'tagline': 'Crisp pastry triangles with savory filling',
+                'description': 'Freshly fried golden pastry triangles stuffed with a savory, spiced filling—flaky, crunchy, and delicious.',
                 'price': 60.00,
                 'discount_price': None,
-                'static_image': 'images/fries_main.jpg',
-                'portion_size': '6 Pcs Fresh Fritters',
+                'static_image': 'images/menu/samusa.jfif',
+                'portion_size': '4 Pcs Fresh Samusa',
+                'is_available': True,
+                'is_featured': False,
+                'is_vegetarian': False,
+                'is_frozen': False,
+                'spice_level': 'medium',
+                'order': 7
+            },
+            {
+                'category': categories['fries'],
+                'name': 'Spring Roll',
+                'slug': 'spring-roll',
+                'tagline': 'Crispy golden rolls with savory filling',
+                'description': 'Crunchy golden rolls packed with seasoned vegetables and savory filling, fried fresh to order.',
+                'price': 80.00,
+                'discount_price': None,
+                'static_image': 'images/menu/spring_roll.avif',
+                'portion_size': '4 Pcs Fresh Spring Rolls',
                 'is_available': True,
                 'is_featured': False,
                 'is_vegetarian': True,
                 'is_frozen': False,
-                'spice_level': 'medium',
-                'order': 3
+                'spice_level': 'mild',
+                'order': 8
             },
 
             # Frozen Items
             {
                 'category': categories['frozen-items'],
-                'name': 'Spring Rolls (Frozen)',
-                'slug': 'spring-rolls-frozen',
-                'tagline': 'Ready-to-fry appetizer snack',
-                'description': 'Frozen spring rolls, packed with fresh vegetables and spices ready to fry at home for a hot, crispy snack.',
-                'price': 180.00,
-                'discount_price': None,
-                'static_image': 'images/frozen_items.jpg',
-                'portion_size': '1 Pack (10 Pieces)',
-                'is_available': True,
-                'is_featured': False,
-                'is_vegetarian': True,
-                'is_frozen': True,
-                'spice_level': 'mild',
-                'order': 1
-            },
-            {
-                'category': categories['frozen-items'],
-                'name': 'Samosa (Frozen)',
-                'slug': 'samosa-frozen',
-                'tagline': 'Traditional triangular spiced snack',
-                'description': 'Frozen samosas filled with spiced vegetables or meat—ready to fry at home for a hot, crispy treat.',
-                'price': 160.00,
-                'discount_price': None,
-                'static_image': 'images/frozen_items.jpg',
-                'portion_size': '1 Pack (10 Pieces)',
-                'is_available': True,
-                'is_featured': False,
-                'is_vegetarian': False,
-                'is_frozen': True,
-                'spice_level': 'medium',
-                'order': 2
-            },
-            {
-                'category': categories['frozen-items'],
-                'name': 'Chicken Fries (Frozen)',
-                'slug': 'chicken-fries-frozen',
-                'tagline': 'Seasoned chicken fingers ready in 5 mins',
-                'description': 'Frozen chicken pieces, marinated and seasoned—ready to fry at home for a crispy, spicy, and juicy meal.',
-                'price': 260.00,
-                'discount_price': None,
-                'static_image': 'images/frozen_items.jpg',
-                'portion_size': '1 Pack (12 Pieces)',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': True,
-                'spice_level': 'hot',
-                'order': 3
-            },
-            {
-                'category': categories['frozen-items'],
-                'name': 'French Fries (Frozen)',
-                'slug': 'french-fries-frozen',
+                'name': 'Frozen French Fries',
+                'slug': 'frozen-french-fries',
                 'tagline': 'Pre-cut restaurant quality potatoes',
                 'description': 'Frozen potato sticks, coated and ready to fry at home for golden, crispy, and perfectly seasoned fries.',
                 'price': 140.00,
                 'discount_price': None,
-                'static_image': 'images/frozen_items.jpg',
+                'static_image': 'images/menu/frozen_french_fries.avif',
                 'portion_size': '1 Pack (500g)',
                 'is_available': True,
                 'is_featured': False,
                 'is_vegetarian': True,
                 'is_frozen': True,
                 'spice_level': 'none',
+                'order': 1
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'Frozen Meatballs',
+                'slug': 'frozen-meatballs',
+                'tagline': 'Ready-to-cook seasoned meatballs',
+                'description': 'Pre-seasoned, tender frozen meatballs ready to fry or pan-sear at home in minutes.',
+                'price': 220.00,
+                'discount_price': None,
+                'static_image': 'images/menu/frozen_meatballs.png',
+                'portion_size': '1 Pack (15 Pieces)',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': True,
+                'spice_level': 'medium',
+                'order': 2
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'Frozen Samosa',
+                'slug': 'frozen-samosa',
+                'tagline': 'Traditional triangular spiced snack',
+                'description': 'Frozen samosas filled with spiced savory filling—ready to fry at home for a hot, crispy treat.',
+                'price': 160.00,
+                'discount_price': None,
+                'static_image': 'images/menu/frozen_samosa.webp',
+                'portion_size': '1 Pack (10 Pieces)',
+                'is_available': True,
+                'is_featured': False,
+                'is_vegetarian': False,
+                'is_frozen': True,
+                'spice_level': 'medium',
+                'order': 3
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'Frozen Spring Roll',
+                'slug': 'frozen-spring-roll',
+                'tagline': 'Ready-to-fry appetizer snack',
+                'description': 'Frozen spring rolls, packed with fresh vegetables and spices ready to fry at home for a hot, crispy snack.',
+                'price': 180.00,
+                'discount_price': None,
+                'static_image': 'images/menu/frozen_spring_roll.jfif',
+                'portion_size': '1 Pack (10 Pieces)',
+                'is_available': True,
+                'is_featured': False,
+                'is_vegetarian': True,
+                'is_frozen': True,
+                'spice_level': 'mild',
                 'order': 4
             },
             {
                 'category': categories['frozen-items'],
-                'name': 'Marinated Wings (Frozen)',
-                'slug': 'marinated-wings-frozen',
-                'tagline': 'Signature secret recipe marinade',
-                'description': 'Tender chicken wings soaked in our special house marinade, packed with bold flavor and grilled/fried to juicy perfection.',
+                'name': 'Frozen Wings',
+                'slug': 'frozen-wings',
+                'tagline': 'Signature secret recipe marinated wings',
+                'description': 'Tender chicken wings soaked in our special house marinade, frozen and ready to fry or bake to juicy perfection.',
                 'price': 280.00,
-                'discount_price': None,
-                'static_image': 'images/frozen_items.jpg',
+                'discount_price': 250.00,
+                'static_image': 'images/menu/frozen_wings.jpg',
                 'portion_size': '1 Pack (8 Jumbo Wings)',
                 'is_available': True,
                 'is_featured': True,
@@ -345,14 +313,14 @@ class Command(BaseCommand):
             # Meal Combos
             {
                 'category': categories['meal-combos'],
-                'name': 'BYTE Student Box (Chicken Curry + Plain Rice)',
-                'slug': 'byte-student-box',
-                'tagline': 'Our #1 best-selling student & hustler meal',
-                'description': 'Our signature tender chicken curry paired with fluffy steamed rice and fresh salad. Honest portions, reliable taste, student-friendly price!',
-                'price': 190.00,
-                'discount_price': 165.00,
-                'static_image': 'images/hero_banner.png',
-                'portion_size': '1 Complete Box (Rice + 2pc Chicken + Gravy + Salad)',
+                'name': 'Combo',
+                'slug': 'combo',
+                'tagline': 'Ultimate crispy snack platter with dips',
+                'description': 'Assorted crispy snack platter featuring golden samosas, crunchy spring rolls, crispy bites, and signature dipping sauces.',
+                'price': 220.00,
+                'discount_price': 190.00,
+                'static_image': 'images/menu/combo.webp',
+                'portion_size': '1 Full Platter (Samosa + Spring Roll + Crispy Bites + Dips)',
                 'is_available': True,
                 'is_featured': True,
                 'is_vegetarian': False,
@@ -360,41 +328,10 @@ class Command(BaseCommand):
                 'spice_level': 'medium',
                 'order': 1
             },
-            {
-                'category': categories['meal-combos'],
-                'name': 'BYTE Beef Feast Box (Beef Curry + Jira Rice + Pakora)',
-                'slug': 'byte-beef-feast-box',
-                'tagline': 'Hearty lunch or dinner combo',
-                'description': 'Slow-cooked savory beef curry served with fragrant cumin rice and 2 crispy vegetable pakoras.',
-                'price': 290.00,
-                'discount_price': 260.00,
-                'static_image': 'images/curry_section_bg.png',
-                'portion_size': '1 Complete Box (Jira Rice + Beef Curry + 2pc Pakora)',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': False,
-                'spice_level': 'hot',
-                'order': 2
-            },
-            {
-                'category': categories['meal-combos'],
-                'name': 'BYTE Crispy Snack Box (Chicken Fry + Fries + Dip)',
-                'slug': 'byte-crispy-snack-box',
-                'tagline': 'Crunchy satisfaction anytime',
-                'description': '2 pcs crunchy spiced chicken fry paired with golden crispy french fries and signature dipping sauce.',
-                'price': 210.00,
-                'discount_price': 185.00,
-                'static_image': 'images/fries_main.jpg',
-                'portion_size': '2pc Chicken Fry + Fries Basket + Garlic Mayo',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': False,
-                'spice_level': 'hot',
-                'order': 3
-            },
         ]
+
+        active_item_slugs = [item['slug'] for item in items_data]
+        MenuItem.objects.exclude(slug__in=active_item_slugs).delete()
 
         for item_info in items_data:
             MenuItem.objects.update_or_create(
@@ -425,19 +362,19 @@ class Command(BaseCommand):
                 'name': 'Tanvir Ahmed',
                 'role': 'Software Engineer, Gulshan',
                 'rating': 5,
-                'comment': 'The Byte’s Chicken Curry with Jira Rice is the ultimate comfort lunch during our sprint days. Honest portions, freshly cooked, and delivered hot!'
+                'comment': 'The Byte’s Chicken Fry and Spicy Wings are the ultimate comfort snack during our sprint days. Honest portions, freshly fried, and delivered hot!'
             },
             {
                 'name': 'Ayesha Siddiqua',
                 'role': 'University Student (AIUB)',
                 'rating': 5,
-                'comment': 'Budget-friendly meals with clean restaurant-grade taste. The student box is a lifesaver between classes, and the pakoras are super crunchy.'
+                'comment': 'Budget-friendly snacks with clean restaurant-grade taste. The Combo platter is a lifesaver between classes, and the samusas are super crunchy.'
             },
             {
                 'name': 'Farhana Kabir',
                 'role': 'Home Maker, Mirpur DOHS',
                 'rating': 5,
-                'comment': 'We keep their frozen samosas and marinated wings in our freezer. Ready in 5 minutes when guests arrive and they always ask where we got them!'
+                'comment': 'We keep their frozen samosas and frozen wings in our freezer. Ready in 5 minutes when guests arrive and they always ask where we got them!'
             },
             {
                 'name': 'Mahinur Rahman',
@@ -468,20 +405,20 @@ class Command(BaseCommand):
                 'delivery_address': 'House 14, Road 5, Block B, Mirpur 12',
                 'delivery_area': 'Mirpur',
                 'delivery_slot': 'Immediate Delivery (30-45 mins)',
-                'customer_notes': 'Please keep gravy separate if possible, less spicy.',
+                'customer_notes': 'Please keep sauce separate if possible, less spicy.',
                 'payment_method': 'bkash',
                 'payment_status': 'verified',
                 'transaction_id': '9K38JF1029',
                 'order_status': 'preparing',
-                'subtotal': 345.00,
+                'subtotal': 340.00,
                 'delivery_fee': 40.00,
                 'discount': 0.00,
-                'total': 385.00
+                'total': 380.00
             }
         )
         if created:
-            chick = MenuItem.objects.get(slug='chicken-curry')
-            rice = MenuItem.objects.get(slug='plain-rice')
+            chick = MenuItem.objects.get(slug='chicken-fry')
+            fries = MenuItem.objects.get(slug='french-fries')
             OrderItem.objects.create(
                 order=sample_order,
                 menu_item=chick,
@@ -493,12 +430,12 @@ class Command(BaseCommand):
             )
             OrderItem.objects.create(
                 order=sample_order,
-                menu_item=rice,
-                item_name=rice.name,
-                unit_price=rice.final_price,
+                menu_item=fries,
+                item_name=fries.name,
+                unit_price=fries.final_price,
                 quantity=1,
-                subtotal=rice.final_price,
-                special_instructions='Hot steamed'
+                subtotal=fries.final_price,
+                special_instructions='Extra crispy'
             )
 
         # 7. Default Admin / Kitchen Staff Superuser
@@ -515,4 +452,3 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"Created default superuser '{admin_username}'."))
 
         self.stdout.write(self.style.SUCCESS("Successfully seeded The Byte Cloud Kitchen database!"))
-

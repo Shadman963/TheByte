@@ -25,11 +25,8 @@ urlpatterns = [
     path('account/', views.customer_dashboard_view, name='account_alias'),
     path('api/customer/orders/', views.customer_orders_api, name='customer_orders_api'),
 
-    # Checkout & Live Order Tracking
+    # Checkout
     path('checkout/', views.checkout_view, name='checkout'),
-    path('order/track/', views.order_tracking_view, name='order_tracking_search'),
-    path('order/track/<str:order_number>/', views.order_tracking_view, name='order_tracking'),
-    path('api/order/<str:order_number>/status/', views.order_status_api, name='order_status_api'),
 
     # Kitchen KDS (Direct)
     path('kitchen/dashboard/', views.kitchen_dashboard_view, name='kitchen_dashboard'),

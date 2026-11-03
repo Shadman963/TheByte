@@ -3,6 +3,30 @@
 
 {% block title %}{{ setting.restaurant_name }} — {{ setting.tagline }} | Cloud Kitchen{% endblock %}
 
+{% block extra_head %}
+<style>
+    @keyframes offersMarqueeScroll {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+    .offers-marquee-track {
+        display: flex;
+        width: max-content;
+        animation: offersMarqueeScroll 28s linear infinite;
+        will-change: transform;
+    }
+    .offers-marquee-viewport:hover .offers-marquee-track,
+    .offers-marquee-viewport:focus-within .offers-marquee-track,
+    .offers-marquee-track.is-paused {
+        animation-play-state: paused;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <!-- HERO SECTION -->
@@ -62,159 +86,463 @@
     </div>
 </section>
 
-<!-- WHO WE ARE / OUR STORY (Matching Canva Slide 2) -->
-<section id="story" class="py-10 sm:py-16 lg:py-24 bg-white relative">
+<!-- DEDICATED LATEST OFFERS & UPDATES AUTO-SLIDING SECTION -->
+<section id="latest-offers" class="py-8 sm:py-14 bg-white relative border-b border-byte-maroon/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
-            <!-- Left Photo / Artwork -->
-            <div class="lg:col-span-5 relative pb-4 sm:pb-0">
-                <div class="relative mx-auto max-w-md lg:max-w-none">
-                    <div class="rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-byte-cream bg-byte-maroon">
-                        <img src="{% static 'images/story_chef.jpg' %}" alt="The Byte Kitchen Story" class="w-full h-60 xs:h-72 sm:h-96 object-cover">
+        <div class="bg-gradient-to-br from-byte-maroon via-byte-maroonDark to-byte-maroon rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 text-white shadow-2xl border-2 border-byte-amber/40 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ff8c42_1px,transparent_1px)] [background-size:18px_18px] pointer-events-none"></div>
+
+            <!-- Section Header & Slider Controls -->
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 mb-6">
+                <div class="space-y-1.5 sm:space-y-2 max-w-2xl min-w-0">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-byte-amber text-white text-[11px] sm:text-xs font-extrabold uppercase tracking-widest shadow">
+                        <i class="fa-solid fa-fire-flame-curved"></i>
+                        <span>Latest Updates &amp; Hot Deals</span>
                     </div>
-                    <!-- Decorative Badge from Canva -->
-                    <div class="absolute -bottom-5 right-2 left-2 xs:left-auto sm:-bottom-6 sm:right-3 lg:-right-4 bg-byte-maroon text-white p-3.5 sm:p-5 rounded-2xl shadow-2xl border-2 border-byte-amber xs:max-w-[230px] sm:max-w-xs text-center">
-                        <span class="text-byte-amber font-display text-lg sm:text-2xl font-black block break-words">100% FRESH</span>
-                        <span class="text-[11px] sm:text-xs text-byte-cream font-medium block break-words leading-snug">No artificial shortcuts. Honest portions every single day.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Text from Canva -->
-            <div class="lg:col-span-7 space-y-4 sm:space-y-6 pt-3 sm:pt-0 min-w-0">
-                <div class="inline-block px-3 py-1 rounded-full bg-byte-maroon/10 text-byte-maroon text-xs font-extrabold uppercase tracking-widest">
-                    Who We Are
-                </div>
-
-                <h2 class="font-display responsive-section-title font-extrabold text-byte-maroon uppercase tracking-wide break-words">
-                    Our Story
-                </h2>
-
-                <div class="text-gray-700 text-sm sm:text-lg leading-relaxed space-y-4">
-                    <p class="font-medium text-byte-charcoal break-words">
-                        {{ setting.story }}
+                    <h2 class="font-display responsive-section-title font-extrabold text-white uppercase tracking-wide break-words">
+                        Latest Offers
+                    </h2>
+                    <p class="text-xs sm:text-sm text-byte-cream/90 leading-relaxed break-words">
+                        All our latest discounted items and special kitchen updates—sliding automatically. Hover any card to pause or add directly to your cart!
                     </p>
                 </div>
 
-                <!-- 3 Target Pillars -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2 sm:pt-4">
-                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h4 class="font-bold text-byte-maroon text-sm break-words">For Students</h4>
-                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Pocket-friendly, fulfilling meal boxes between classes.</p>
-                        </div>
-                    </div>
-
-                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
-                            <i class="fa-solid fa-briefcase"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h4 class="font-bold text-byte-maroon text-sm break-words">For Office Hustlers</h4>
-                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Reliable, on-time hot lunches that fuel productive workdays.</p>
-                        </div>
-                    </div>
-
-                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
-                            <i class="fa-solid fa-snowflake"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h4 class="font-bold text-byte-maroon text-sm break-words">Ready-To-Fry</h4>
-                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Frozen snacks & wings to fry hot at home anytime.</p>
-                        </div>
-                    </div>
+                <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                    <span class="text-[11px] text-byte-cream/80 hidden sm:inline-flex items-center gap-1 mr-1">
+                        <i class="fa-solid fa-hand-pointer text-byte-amber"></i>
+                        <span>Hover to pause</span>
+                    </span>
+                    <button type="button" id="offers-marquee-toggle-btn" onclick="toggleOffersMarquee()" class="px-3.5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" aria-label="Pause or play latest offers slider">
+                        <i id="offers-marquee-toggle-icon" class="fa-solid fa-pause text-[10px] text-byte-amber"></i>
+                        <span id="offers-marquee-toggle-text">Pause</span>
+                    </button>
+                    <button type="button" onclick="openLatestOffersModal()" class="px-4 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-extrabold text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Offers Pop-Up</span>
+                    </button>
+                    <a href="{% url 'menu' %}?offers=true" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                        <span>All Deals</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
                 </div>
-
             </div>
 
+            <!-- Horizontal Auto-Sliding Track (Only Content in Section) -->
+            {% if offered_slider_items %}
+            <div id="offered-items-slider" class="relative z-10">
+                <div class="offers-marquee-viewport relative overflow-hidden rounded-2xl bg-black/25 p-3 sm:p-4 border border-white/15">
+                    <div id="offers-marquee-track" class="offers-marquee-track">
+                        {% for pass_num in "12" %}
+                        <div class="flex items-stretch shrink-0" {% if pass_num == "2" %}aria-hidden="true"{% endif %}>
+                            {% for item in offered_slider_items %}
+                            <div class="w-64 sm:w-72 shrink-0 mr-4 sm:mr-5 bg-white text-gray-800 rounded-2xl overflow-hidden shadow-lg border border-byte-amber/30 hover:border-byte-amber transition-all duration-300 flex flex-col justify-between group">
+                                <div>
+                                    <div class="relative h-36 sm:h-40 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                        {% elif item.static_image %}
+                                            <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                        {% else %}
+                                            <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                        {% endif %}
+
+                                        <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+                                            <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider shadow">
+                                                {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}★ Latest Offer{% endif %}
+                                            </span>
+                                            {% if item.is_frozen %}
+                                            <span class="px-1.5 py-0.5 rounded-md bg-cyan-700 text-white text-[10px] font-black uppercase tracking-wider shadow">
+                                                <i class="fa-solid fa-snowflake"></i> Frozen
+                                            </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="absolute bottom-1.5 left-2 right-2 w-fit max-w-[calc(100%-1rem)] bg-black/75 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-normal break-words leading-snug">
+                                            <i class="fa-solid fa-scale-balanced mr-1"></i>{{ item.portion_size }}
+                                        </div>
+                                    </div>
+
+                                    <div class="p-3 sm:p-3.5 space-y-1">
+                                        <div class="flex items-center justify-between gap-1 text-[10px]">
+                                            <span class="text-byte-amber font-extrabold uppercase tracking-wider truncate">{{ item.category.name }}</span>
+                                            {% if item.spice_level == 'hot' %}
+                                            <span class="text-rose-600 font-bold flex items-center gap-0.5 shrink-0">
+                                                <i class="fa-solid fa-pepper-hot"></i><span>Spicy</span>
+                                            </span>
+                                            {% elif item.spice_level == 'medium' %}
+                                            <span class="text-amber-600 font-bold flex items-center gap-0.5 shrink-0">
+                                                <i class="fa-solid fa-pepper-hot"></i><span>Medium</span>
+                                            </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <h3 class="font-display font-bold text-sm sm:text-base text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer break-words" onclick="openItemModal({{ item.id }})">
+                                            {{ item.name }}
+                                        </h3>
+
+                                        <p class="text-[11px] text-gray-500 line-clamp-2 leading-relaxed break-words">
+                                            {{ item.tagline|default:item.description }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 sm:p-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2 bg-byte-creamLight/60">
+                                    <div class="min-w-0">
+                                        {% if item.has_discount %}
+                                        <span class="text-[10px] text-gray-400 line-through block leading-none">৳{{ item.price|floatformat:0 }}</span>
+                                        <span class="font-extrabold text-sm sm:text-base text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
+                                        {% else %}
+                                        <span class="font-extrabold text-sm sm:text-base text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                                            <i class="fa-solid fa-sliders text-xs"></i>
+                                        </button>
+                                        <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1">
+                                            <i class="fa-solid fa-plus text-[10px]"></i>
+                                            <span>Add</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>
 
-<!-- CANVA SHOWCASE BANNER SECTIONS (Curry, Rice, Fries) -->
-<section class="py-10 sm:py-12 bg-byte-maroon text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-            <span class="text-xs uppercase font-extrabold tracking-widest text-byte-amber block mb-1.5 sm:mb-2">Canva Featured Highlights</span>
-            <h2 class="font-display responsive-section-title font-extrabold uppercase tracking-wide break-words">
-                Specialties from Our Kitchen
-            </h2>
+<!-- RESTRUCTURED KITCHEN SHOWCASE SECTIONS: 1) LATEST OFFERS, 2) STUDENT COMBO, 3) READY TO FRY -->
+<div id="kitchen-showcases" class="bg-byte-cream/50 divide-y divide-byte-maroon/10">
+
+    <!-- SECTION A: LATEST OFFERS -->
+    <section id="showcase-latest-offers" class="py-10 sm:py-16">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-10">
+                <div class="min-w-0">
+                    <span class="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest text-rose-600 mb-1.5">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>Promotional Deals &amp; Discounts</span>
+                    </span>
+                    <h2 class="font-display responsive-section-title font-extrabold text-byte-maroon uppercase tracking-wide break-words">
+                        Latest Offers
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl break-words">
+                        Highlighted promotional items and discounted kitchen favorites freshly prepared for maximum value.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <button type="button" onclick="openLatestOffersModal()" class="px-4 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-Layer-group"></i>
+                        <span>Quick Offers Modal</span>
+                    </button>
+                    <a href="{% url 'menu' %}?offers=true" class="px-4 py-2.5 rounded-full bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                        <span>View All Offers</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {% for item in latest_offers_items %}
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-rose-100 transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% elif item.static_image %}
+                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% else %}
+                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% endif %}
+
+                            <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+                                <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}★ Special Offer{% endif %}
+                                </span>
+                                {% if item.is_frozen %}
+                                <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    <i class="fa-solid fa-snowflake"></i> Frozen
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="absolute bottom-1.5 left-2 right-2 w-fit max-w-[calc(100%-1rem)] bg-black/70 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded whitespace-normal break-words leading-snug">
+                                <i class="fa-solid fa-scale-balanced mr-1"></i>{{ item.portion_size }}
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 sm:p-4 space-y-1.5 sm:space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-xs">
+                                <span class="text-byte-amber font-extrabold uppercase tracking-wider break-words whitespace-normal">{{ item.category.name }}</span>
+                                {% if item.spice_level == 'hot' %}
+                                <span class="text-rose-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Spicy</span>
+                                </span>
+                                {% elif item.spice_level == 'medium' %}
+                                <span class="text-amber-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Medium</span>
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="font-display font-bold text-base sm:text-lg text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer break-words whitespace-normal" onclick="openItemModal({{ item.id }})">
+                                {{ item.name }}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
+                                {{ item.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 sm:p-4 pt-2.5 sm:pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 mt-1 sm:mt-2">
+                        <div class="min-w-0">
+                            {% if item.has_discount %}
+                            <span class="text-[10px] sm:text-xs text-gray-400 line-through block leading-none">৳{{ item.price|floatformat:0 }}</span>
+                            <span class="font-extrabold text-base sm:text-lg text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                                <i class="fa-solid fa-sliders text-xs"></i>
+                            </button>
+                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full bg-white rounded-2xl p-6 text-center border border-gray-200 text-gray-500 text-sm">
+                    Check back soon for new promotional items!
+                </div>
+                {% endfor %}
+            </div>
         </div>
+    </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-            <!-- Curry Box -->
-            <div class="bg-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
-                <div>
-                    <div class="rounded-xl sm:rounded-2xl overflow-hidden h-44 sm:h-52 mb-4 sm:mb-5 relative">
-                        <img src="{% static 'images/curry_main.jpg' %}" alt="Curry Dishes" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-byte-amber text-white text-[10px] sm:text-xs font-extrabold uppercase">Slow-Cooked</span>
-                    </div>
-                    <h3 class="font-display text-xl sm:text-2xl font-bold uppercase tracking-wider text-byte-amber mb-1.5 sm:mb-2 break-words">CURRY</h3>
-                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-3 sm:mb-4 break-words">
-                        Slow-cooked with onions and traditional spices—rich in flavor, comforting, and freshly prepared.
+    <!-- SECTION B: STUDENT COMBO -->
+    <section id="showcase-student-combo" class="py-10 sm:py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-10">
+                <div class="min-w-0">
+                    <span class="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest text-byte-amber mb-1.5">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Budget-Friendly Meal Combinations</span>
+                    </span>
+                    <h2 class="font-display responsive-section-title font-extrabold text-byte-maroon uppercase tracking-wide break-words">
+                        Student Combo
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl break-words">
+                        Pocket-friendly platters, filling snack combos, and daily value favorites designed for students and busy hustlers.
                     </p>
-                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Chicken Curry (Homestyle)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Beef Curry (Tender & Hearty)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Vegetable Curry (Seasonal Garden)</span></li>
-                    </ul>
                 </div>
-                <a href="{% url 'menu' %}?category=curry" class="mt-5 sm:mt-6 w-full py-2.5 px-3 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition whitespace-normal">
-                    Explore Curries
+                <a href="{% url 'menu' %}?category=meal-combos" class="w-fit px-4 py-2.5 rounded-full bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5 shrink-0">
+                    <span>Explore Combos</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
-            <!-- Rice Box -->
-            <div class="bg-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
-                <div>
-                    <div class="rounded-xl sm:rounded-2xl overflow-hidden h-44 sm:h-52 mb-4 sm:mb-5 relative">
-                        <img src="{% static 'images/rice_main.jpg' %}" alt="Rice Dishes" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-byte-amber text-white text-[10px] sm:text-xs font-extrabold uppercase">Steamed Fresh</span>
-                    </div>
-                    <h3 class="font-display text-xl sm:text-2xl font-bold uppercase tracking-wider text-byte-amber mb-1.5 sm:mb-2 break-words">RICE</h3>
-                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-3 sm:mb-4 break-words">
-                        Steamed premium rice varieties cooked fresh to perfection—light, fluffy, and the ideal base.
-                    </p>
-                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Plain Rice (Light & Fluffy)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Fried Rice (Fresh Veggies)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Jira Rice (Cumin Aromatic)</span></li>
-                    </ul>
-                </div>
-                <a href="{% url 'menu' %}?category=rice" class="mt-5 sm:mt-6 w-full py-2.5 px-3 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition whitespace-normal">
-                    Explore Rice
-                </a>
-            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {% for item in student_combo_items %}
+                <div class="bg-byte-creamLight rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-byte-maroon/10 transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% elif item.static_image %}
+                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% else %}
+                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% endif %}
 
-            <!-- Fries Box -->
-            <div class="bg-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-white/10 hover:border-byte-amber transition flex flex-col justify-between group">
-                <div>
-                    <div class="rounded-xl sm:rounded-2xl overflow-hidden h-44 sm:h-52 mb-4 sm:mb-5 relative">
-                        <img src="{% static 'images/fries_main.jpg' %}" alt="Fries and Sides" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-byte-amber text-white text-[10px] sm:text-xs font-extrabold uppercase">Crispy Crunch</span>
+                            <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+                                <span class="px-2 py-0.5 rounded-md bg-byte-maroon text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    <i class="fa-solid fa-graduation-cap mr-1 text-byte-amber"></i>Student Pick
+                                </span>
+                                {% if item.has_discount %}
+                                <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    -{{ item.discount_percent }}%
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="absolute bottom-1.5 left-2 right-2 w-fit max-w-[calc(100%-1rem)] bg-black/70 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded whitespace-normal break-words leading-snug">
+                                <i class="fa-solid fa-scale-balanced mr-1"></i>{{ item.portion_size }}
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 sm:p-4 space-y-1.5 sm:space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-xs">
+                                <span class="text-byte-amber font-extrabold uppercase tracking-wider break-words whitespace-normal">{{ item.category.name }}</span>
+                                {% if item.spice_level == 'hot' %}
+                                <span class="text-rose-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Spicy</span>
+                                </span>
+                                {% elif item.spice_level == 'medium' %}
+                                <span class="text-amber-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Medium</span>
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="font-display font-bold text-base sm:text-lg text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer break-words whitespace-normal" onclick="openItemModal({{ item.id }})">
+                                {{ item.name }}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
+                                {{ item.description }}
+                            </p>
+                        </div>
                     </div>
-                    <h3 class="font-display text-xl sm:text-2xl font-bold uppercase tracking-wider text-byte-amber mb-1.5 sm:mb-2 break-words">FRIES</h3>
-                    <p class="text-xs text-byte-cream/80 leading-relaxed mb-3 sm:mb-4 break-words">
-                        Crispy and spicy chicken, golden potato sticks, and authentic spiced vegetable pakoras.
-                    </p>
-                    <ul class="text-xs text-byte-cream/90 space-y-1.5 font-medium border-t border-white/10 pt-3">
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Chicken Fry (Spicy Crunch)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">French Fries (Golden Salted)</span></li>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-byte-amber text-[10px] mt-1 shrink-0"></i> <span class="break-words">Pakora (Crispy Vegetable)</span></li>
-                    </ul>
+
+                    <div class="p-3.5 sm:p-4 pt-2.5 sm:pt-3 border-t border-gray-200/70 flex flex-wrap items-center justify-between gap-2 mt-1 sm:mt-2">
+                        <div class="min-w-0">
+                            {% if item.has_discount %}
+                            <span class="text-[10px] sm:text-xs text-gray-400 line-through block leading-none">৳{{ item.price|floatformat:0 }}</span>
+                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.discount_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                                <i class="fa-solid fa-sliders text-xs"></i>
+                            </button>
+                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <a href="{% url 'menu' %}?category=fries" class="mt-5 sm:mt-6 w-full py-2.5 px-3 rounded-xl bg-white/10 hover:bg-byte-amber text-white text-xs font-bold text-center transition whitespace-normal">
-                    Explore Fries
-                </a>
+                {% empty %}
+                <div class="col-span-full bg-gray-50 rounded-2xl p-6 text-center border border-gray-200 text-gray-500 text-sm">
+                    Student combo options coming soon!
+                </div>
+                {% endfor %}
             </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <!-- SECTION C: READY TO FRY -->
+    <section id="showcase-ready-to-fry" class="py-10 sm:py-16 bg-byte-maroonDark text-white">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-10">
+                <div class="min-w-0">
+                    <span class="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest text-cyan-300 mb-1.5">
+                        <i class="fa-solid fa-snowflake"></i>
+                        <span>Frozen &amp; Pre-Packaged Home Packs</span>
+                    </span>
+                    <h2 class="font-display responsive-section-title font-extrabold text-white uppercase tracking-wide break-words">
+                        Ready to Fry
+                    </h2>
+                    <p class="text-xs sm:text-sm text-byte-cream/85 mt-1 max-w-2xl break-words">
+                        Stock your freezer with our marinated wings, seasoned meatballs, flaky samosas, and crispy spring rolls—ready in 5 minutes at home!
+                    </p>
+                </div>
+                <a href="{% url 'menu' %}?frozen=true" class="w-fit px-5 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs transition shadow-lg flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-snowflake"></i>
+                    <span>Order Frozen Packs</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {% for item in ready_to_fry_items %}
+                <div class="bg-white text-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-white/15 transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% elif item.static_image %}
+                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% else %}
+                                <img src="{% static 'images/frozen_items.jpg' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            {% endif %}
+
+                            <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+                                <span class="px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    <i class="fa-solid fa-snowflake mr-1"></i>Ready to Fry
+                                </span>
+                                {% if item.has_discount %}
+                                <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
+                                    -{{ item.discount_percent }}%
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="absolute bottom-1.5 left-2 right-2 w-fit max-w-[calc(100%-1rem)] bg-black/70 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded whitespace-normal break-words leading-snug">
+                                <i class="fa-solid fa-box-open mr-1"></i>{{ item.portion_size }}
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 sm:p-4 space-y-1.5 sm:space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-xs">
+                                <span class="text-cyan-700 font-extrabold uppercase tracking-wider break-words whitespace-normal">{{ item.category.name }}</span>
+                                {% if item.spice_level == 'hot' %}
+                                <span class="text-rose-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Spicy</span>
+                                </span>
+                                {% elif item.spice_level == 'medium' %}
+                                <span class="text-amber-600 font-bold flex items-center gap-0.5 shrink-0">
+                                    <i class="fa-solid fa-pepper-hot"></i><span>Medium</span>
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="font-display font-bold text-base sm:text-lg text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer break-words whitespace-normal" onclick="openItemModal({{ item.id }})">
+                                {{ item.name }}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
+                                {{ item.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 sm:p-4 pt-2.5 sm:pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 mt-1 sm:mt-2">
+                        <div class="min-w-0">
+                            {% if item.has_discount %}
+                            <span class="text-[10px] sm:text-xs text-gray-400 line-through block leading-none">৳{{ item.price|floatformat:0 }}</span>
+                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.discount_price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                                <i class="fa-solid fa-sliders text-xs"></i>
+                            </button>
+                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full bg-white/10 rounded-2xl p-6 text-center border border-white/20 text-byte-cream text-sm">
+                    Ready-to-fry frozen packs will be restocked shortly!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+</div>
 
 <!-- MAIN INTERACTIVE MENU CATALOG -->
 <section id="menu-catalog" class="py-10 sm:py-16 lg:py-24 bg-byte-creamLight">
@@ -343,7 +671,7 @@
 
         <div class="mt-8 sm:mt-12 text-center">
             <a href="{% url 'menu' %}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 rounded-full border-2 border-byte-maroon text-byte-maroon hover:bg-byte-maroon hover:text-white font-extrabold text-xs sm:text-sm tracking-wide transition shadow-sm whitespace-normal text-center leading-snug">
-                <span>View Full Menu with Filters & Search</span>
+                <span>View Full Menu with Filters &amp; Search</span>
                 <i class="fa-solid fa-arrow-right shrink-0"></i>
             </a>
         </div>
@@ -351,32 +679,76 @@
     </div>
 </section>
 
-<!-- FROZEN ITEMS HOME COOKING BANNER -->
-<section class="py-10 sm:py-16 bg-byte-maroonDark text-white relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="bg-gradient-to-r from-byte-maroon to-byte-maroonLight rounded-2xl sm:rounded-3xl p-5 sm:p-10 lg:p-12 border border-white/20 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
-            <div class="lg:col-span-8 space-y-3 sm:space-y-4 text-center lg:text-left min-w-0">
-                <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-[11px] sm:text-xs font-bold uppercase tracking-wider inline-flex flex-wrap items-center justify-center gap-1.5 max-w-full">
-                    <i class="fa-solid fa-snowflake shrink-0"></i> <span>Ready To Fry at Home</span>
-                </span>
-                <h3 class="font-display responsive-section-title font-bold uppercase text-white leading-snug break-words">
-                    Stock Your Freezer with The BYTE's Frozen Delights
-                </h3>
-                <p class="text-xs sm:text-base text-byte-cream/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed break-words">
-                    Samosas, spring rolls, seasoned chicken fries, and our signature marinated wings. Ready in 5 minutes whenever hunger strikes or unexpected guests show up!
-                </p>
-                <div class="pt-1 sm:pt-2 flex flex-wrap justify-center lg:justify-start gap-4">
-                    <a href="{% url 'menu' %}?frozen=true" class="w-full sm:w-auto px-6 py-3 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs sm:text-sm transition shadow-lg flex items-center justify-center gap-2 whitespace-normal text-center">
-                        <i class="fa-solid fa-snowflake shrink-0"></i>
-                        <span>Order Frozen Packs</span>
-                    </a>
+<!-- WHO WE ARE / OUR STORY (Repositioned directly above Customer Reviews) -->
+<section id="story" class="py-10 sm:py-16 lg:py-24 bg-white border-y border-byte-maroon/10 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            <!-- Left Photo / Artwork -->
+            <div class="lg:col-span-5 relative pb-4 sm:pb-0">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                    <div class="rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-byte-cream bg-byte-maroon">
+                        <img src="{% static 'images/story_chef.jpg' %}" alt="The Byte Kitchen Story" class="w-full h-60 xs:h-72 sm:h-96 object-cover">
+                    </div>
+                    <!-- Decorative Badge from Canva -->
+                    <div class="absolute -bottom-5 right-2 left-2 xs:left-auto sm:-bottom-6 sm:right-3 lg:-right-4 bg-byte-maroon text-white p-3.5 sm:p-5 rounded-2xl shadow-2xl border-2 border-byte-amber xs:max-w-[230px] sm:max-w-xs text-center">
+                        <span class="text-byte-amber font-display text-lg sm:text-2xl font-black block break-words">100% FRESH</span>
+                        <span class="text-[11px] sm:text-xs text-byte-cream font-medium block break-words leading-snug">No artificial shortcuts. Honest portions every single day.</span>
+                    </div>
                 </div>
             </div>
-            <div class="lg:col-span-4 flex justify-center">
-                <div class="rounded-2xl overflow-hidden shadow-xl border-4 border-white/20 w-full max-w-xs">
-                    <img src="{% static 'images/frozen_items.jpg' %}" alt="Frozen Items" class="w-full h-52 sm:h-64 object-cover">
+
+            <!-- Right Text from Canva -->
+            <div class="lg:col-span-7 space-y-4 sm:space-y-6 pt-3 sm:pt-0 min-w-0">
+                <div class="inline-block px-3 py-1 rounded-full bg-byte-maroon/10 text-byte-maroon text-xs font-extrabold uppercase tracking-widest">
+                    Who We Are
                 </div>
+
+                <h2 class="font-display responsive-section-title font-extrabold text-byte-maroon uppercase tracking-wide break-words">
+                    Our Story
+                </h2>
+
+                <div class="text-gray-700 text-sm sm:text-lg leading-relaxed space-y-4">
+                    <p class="font-medium text-byte-charcoal break-words">
+                        {{ setting.story }}
+                    </p>
+                </div>
+
+                <!-- 3 Target Pillars -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2 sm:pt-4">
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-byte-maroon text-sm break-words">For Students</h4>
+                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Pocket-friendly, fulfilling meal boxes between classes.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-byte-maroon text-sm break-words">For Office Hustlers</h4>
+                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Reliable, on-time hot lunches that fuel productive workdays.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream/60 border border-byte-maroon/10 flex sm:block items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-byte-maroon text-white flex items-center justify-center sm:mb-3 shrink-0">
+                            <i class="fa-solid fa-snowflake"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-byte-maroon text-sm break-words">Ready-To-Fry</h4>
+                            <p class="text-xs text-gray-600 mt-0.5 sm:mt-1 break-words leading-relaxed">Frozen snacks &amp; wings to fry hot at home anytime.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+
         </div>
     </div>
 </section>
@@ -523,6 +895,94 @@
     </div>
 </section>
 
+<!-- LATEST OFFERS POP-UP MODAL -->
+<div id="latest-offers-modal" onclick="if(event.target === this) closeLatestOffersModal()" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-xs" role="dialog" aria-modal="true" aria-labelledby="latest-offers-modal-title">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[90dvh] overflow-y-auto shadow-2xl safe-bottom-pad relative border-2 border-byte-amber">
+        <!-- Modal Header -->
+        <div class="p-5 sm:p-6 bg-gradient-to-r from-byte-maroon to-byte-maroonDark text-white flex items-start justify-between gap-3 sticky top-0 z-10">
+            <div class="min-w-0">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-byte-amber text-white text-[10px] font-black uppercase tracking-widest mb-1">
+                    <i class="fa-solid fa-fire"></i> Limited Time Promos
+                </span>
+                <h3 id="latest-offers-modal-title" class="font-display text-xl sm:text-2xl font-extrabold uppercase tracking-wide break-words">
+                    Latest Offers &amp; Discounts
+                </h3>
+                <p class="text-xs text-byte-cream/85 mt-0.5 break-words">
+                    Add discounted items directly to your meal cart or unlock free delivery on orders above ৳{{ setting.free_delivery_above|floatformat:0 }}.
+                </p>
+            </div>
+            <button type="button" onclick="closeLatestOffersModal()" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition shrink-0" aria-label="Close Latest Offers Modal">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-4 sm:p-6 space-y-4">
+            <!-- Promo Banner Strip -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-byte-cream border border-byte-maroon/15 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-byte-maroon text-byte-amber flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-xs sm:text-sm text-byte-maroon break-words">Free Home Delivery Deal</h4>
+                        <p class="text-[11px] sm:text-xs text-gray-600 break-words">Automatically applied at checkout on all orders of ৳{{ setting.free_delivery_above|floatformat:0 }} or more.</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold shrink-0">Active Now</span>
+            </div>
+
+            <!-- Discounted Items List inside Modal -->
+            <div class="space-y-3">
+                <h4 class="font-display font-bold text-sm sm:text-base text-byte-maroon uppercase tracking-wider">
+                    Promotional Menu Deals
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {% for item in latest_offers_items %}
+                    <div class="p-3 rounded-2xl bg-gray-50 border border-gray-200 hover:border-byte-maroon/30 transition flex items-center justify-between gap-3">
+                        <div class="w-14 h-14 rounded-xl bg-gray-200 overflow-hidden shrink-0">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                            {% elif item.static_image %}
+                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black uppercase">
+                                {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}Featured Deal{% endif %}
+                            </span>
+                            <h5 class="font-display font-bold text-sm text-byte-maroon mt-0.5 break-words">{{ item.name }}</h5>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                {% if item.has_discount %}
+                                <span class="text-[11px] text-gray-400 line-through">৳{{ item.price|floatformat:0 }}</span>
+                                <span class="text-xs font-extrabold text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
+                                {% else %}
+                                <span class="text-xs font-extrabold text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow shrink-0">
+                            + Add
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-gray-200 flex flex-col xs:flex-row items-center justify-end gap-2">
+                <button type="button" onclick="closeLatestOffersModal()" class="w-full xs:w-auto px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition">
+                    Continue Browsing
+                </button>
+                <a href="{% url 'menu' %}?offers=true" class="w-full xs:w-auto px-5 py-2.5 rounded-xl bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs text-center transition shadow">
+                    Explore Full Offers Menu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- REVIEW SUBMISSION MODAL -->
 <div id="review-modal" onclick="if(event.target === this) this.classList.add('hidden')" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full max-h-[90dvh] overflow-y-auto p-5 sm:p-6 safe-bottom-pad shadow-2xl relative">
@@ -565,6 +1025,36 @@
 
 {% block extra_js %}
 <script>
+    function openLatestOffersModal() {
+        const modal = document.getElementById('latest-offers-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeLatestOffersModal() {
+        const modal = document.getElementById('latest-offers-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function toggleOffersMarquee() {
+        const track = document.getElementById('offers-marquee-track');
+        const icon = document.getElementById('offers-marquee-toggle-icon');
+        const text = document.getElementById('offers-marquee-toggle-text');
+        if (!track) return;
+        const isPaused = track.classList.toggle('is-paused');
+        if (icon) {
+            icon.className = isPaused
+                ? 'fa-solid fa-play text-[10px] text-byte-amber'
+                : 'fa-solid fa-pause text-[10px] text-byte-amber';
+        }
+        if (text) {
+            text.textContent = isPaused ? 'Play' : 'Pause';
+        }
+    }
+
     function filterCategory(slug, btn) {
         // Tab styling
         document.querySelectorAll('.menu-tab-btn').forEach(b => {

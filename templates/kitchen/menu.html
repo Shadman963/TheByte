@@ -66,8 +66,11 @@
             <!-- Quick Category Pill Tags -->
             <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 pb-0.5">
                 <span class="text-[11px] font-bold text-gray-500 uppercase mr-1 shrink-0">Quick:</span>
-                <a href="{% url 'menu' %}" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if not selected_category_slug and not frozen_filter and not diet_filter %}bg-byte-maroon text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                <a href="{% url 'menu' %}" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if not selected_category_slug and not frozen_filter and not diet_filter and not offers_filter %}bg-byte-maroon text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                     All
+                </a>
+                <a href="{% url 'menu' %}?offers=true" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if offers_filter %}bg-rose-600 text-white{% else %}bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100{% endif %}">
+                    <i class="fa-solid fa-tags mr-1"></i> Latest Offers
                 </a>
                 {% for cat in categories %}
                 <a href="{% url 'menu' %}?category={{ cat.slug }}" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if selected_category_slug == cat.slug %}bg-byte-maroon text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
@@ -75,7 +78,7 @@
                 </a>
                 {% endfor %}
                 <a href="{% url 'menu' %}?frozen=true" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if frozen_filter %}bg-cyan-700 text-white{% else %}bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100{% endif %}">
-                    <i class="fa-solid fa-snowflake mr-1"></i> Frozen Items
+                    <i class="fa-solid fa-snowflake mr-1"></i> Ready to Fry
                 </a>
             </div>
         </div>

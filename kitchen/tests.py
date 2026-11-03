@@ -119,7 +119,7 @@ class KitchenTests(TestCase):
         self.assertEqual(res_anon_post.status_code, 302)
         self.assertIn(reverse('customer_login'), res_anon_post.url)
 
-    def test_checkout_and_order_tracking_authenticated(self):
+    def test_checkout_authenticated(self):
         # Log in as customer
         self.client.login(username='customer1', password='password123')
 
@@ -151,11 +151,7 @@ class KitchenTests(TestCase):
         self.assertEqual(order.user, self.customer_user)
         self.assertEqual(order.items.count(), 1)
         self.assertEqual(order.items.first().item_name, "Chicken Curry")
-
-        # Test tracking API
-        res_track = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
-        self.assertEqual(res_track.status_code, 200)
-        self.assertEqual(res_track.json()['order_status'], 'pending')
+        self.assertContains(res, f"#{order.order_number}")
 
     def test_customer_registration_and_portal(self):
         reg_data = {
@@ -502,43 +498,54 @@ class KitchenTests(TestCase):
         # Must not create a duplicate order
         self.assertEqual(second_order_count, 1)
 
-    def test_order_tracking_ownership_and_unauthorized_access(self):
-        # Create user 2
-        user2 = User.objects.create_user(
-            username='customer2',
-            password='password123'
-        )
+    def test_order_tracking_removed_and_landing_page_structure(self):
+        # 1. Verify order tracking routes are completely removed (404)
+        res_track_search = self.client.get('/order/track/')
+        self.assertEqual(res_track_search.status_code, 404)
+        res_track_detail = self.client.get('/order/track/BYTE-12345/')
+        self.assertEqual(res_track_detail.status_code, 404)
+        res_track_api = self.client.get('/api/order/BYTE-12345/status/')
+        self.assertEqual(res_track_api.status_code, 404)
 
-        # Order belongs to customer1
-        order = Order.objects.create(
-            user=self.customer_user,
-            customer_name="Tanvir",
-            customer_phone="01711111111",
-            delivery_address="Mirpur 10",
-            delivery_area="Mirpur",
-            subtotal=150.00,
-            total=190.00,
-            order_status='pending'
-        )
+        # 2. Verify landing page structure:
+        #    - Latest Offers banner/modal right below hero
+        #    - Three showcase sections: Latest Offers, Student Combo, Ready to Fry
+        #    - Our Story repositioned directly above Customer Reviews
+        res_home = self.client.get(reverse('home'))
+        self.assertEqual(res_home.status_code, 200)
+        html = res_home.content.decode('utf-8')
 
-        # 1. Customer 2 tries to access customer 1's order status API -> 403 Forbidden
-        self.client.login(username='customer2', password='password123')
-        res_api_denied = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
-        self.assertEqual(res_api_denied.status_code, 403)
+        self.assertNotIn('Track Order', html)
+        self.assertNotIn('Specialties from Our Kitchen', html)
 
-        # 2. Customer 2 tries to access customer 1's tracking page -> redirected
-        res_page_denied = self.client.get(reverse('order_tracking', kwargs={'order_number': order.order_number}))
-        self.assertEqual(res_page_denied.status_code, 302)
+        self.assertIn('id="latest-offers"', html)
+        self.assertIn('id="offered-items-slider"', html)
+        self.assertIn('id="offers-marquee-track"', html)
+        self.assertIn('offersMarqueeScroll', html)
+        self.assertNotIn('Crispy Platter &amp; Wing Deals', html)
+        self.assertIn('id="latest-offers-modal"', html)
+        self.assertIn('id="showcase-latest-offers"', html)
+        self.assertIn('id="showcase-student-combo"', html)
+        self.assertIn('id="showcase-ready-to-fry"', html)
+        self.assertIn('id="story"', html)
+        self.assertIn('id="reviews"', html)
 
-        # 3. Customer 1 (owner) accesses own order -> 200 OK
-        self.client.login(username='customer1', password='password123')
-        res_api_allowed = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
-        self.assertEqual(res_api_allowed.status_code, 200)
+        # Verify section ordering:
+        # latest-offers -> showcase-latest-offers -> showcase-student-combo -> showcase-ready-to-fry -> menu-catalog -> story -> reviews
+        idx_offers_banner = html.index('id="latest-offers"')
+        idx_showcase_offers = html.index('id="showcase-latest-offers"')
+        idx_showcase_combo = html.index('id="showcase-student-combo"')
+        idx_showcase_fry = html.index('id="showcase-ready-to-fry"')
+        idx_catalog = html.index('id="menu-catalog"')
+        idx_story = html.index('id="story"')
+        idx_reviews = html.index('id="reviews"')
 
-        # 4. Staff user accesses customer 1's order -> 200 OK
-        self.client.login(username='staff1', password='password123')
-        res_staff_allowed = self.client.get(reverse('order_status_api', kwargs={'order_number': order.order_number}))
-        self.assertEqual(res_staff_allowed.status_code, 200)
+        self.assertLess(idx_offers_banner, idx_showcase_offers)
+        self.assertLess(idx_showcase_offers, idx_showcase_combo)
+        self.assertLess(idx_showcase_combo, idx_showcase_fry)
+        self.assertLess(idx_showcase_fry, idx_catalog)
+        self.assertLess(idx_catalog, idx_story)
+        self.assertLess(idx_story, idx_reviews)
 
     def test_kitchen_status_staff_only_permission(self):
         order = Order.objects.create(
@@ -712,4 +719,3 @@ class KitchenTests(TestCase):
         self.assertNotContains(response, '<!-- CTA Action Buttons -->')
         self.assertNotContains(response, '<!-- LIVE ORDER TRACKING QUICK LOOKUP WIDGET -->')
         self.assertNotContains(response, 'Enter Order Number (e.g. BYTE-82194)')
-
