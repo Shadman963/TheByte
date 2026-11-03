@@ -18,7 +18,7 @@ class Cart:
         inst_hash = hashlib.md5(clean_instructions.encode('utf-8')).hexdigest()[:8] if clean_instructions else 'none'
         return f"{item_id}_{addons_part}_{inst_hash}"
 
-    def add(self, item_id, quantity=1, special_instructions='', addon_ids=None):
+    def add(self, item_id, quantity=1, special_instructions='', addon_ids=None, style_option=''):
         try:
             quantity = int(quantity)
             if quantity <= 0 or quantity > 50:
@@ -30,6 +30,24 @@ class Cart:
             item = MenuItem.objects.get(id=item_id, is_available=True)
         except (MenuItem.DoesNotExist, ValueError, TypeError):
             return False, "Item not found or unavailable."
+
+        special_instructions = (special_instructions or '').strip()
+        chosen_style = (style_option or '').strip().title()
+
+        if item.has_style_options:
+            if not chosen_style and special_instructions:
+                lower_inst = special_instructions.lower()
+                for opt in item.style_options:
+                    opt_lower = opt.lower()
+                    if f"style: {opt_lower}" in lower_inst or lower_inst == opt_lower:
+                        chosen_style = opt
+                        break
+
+            if chosen_style not in item.style_options:
+                return False, f"Please choose an option ({' or '.join(item.style_options)}) for {item.name} before adding to cart."
+
+            if not special_instructions.lower().startswith('style:'):
+                special_instructions = f"Style: {chosen_style}" + (f" | {special_instructions}" if special_instructions else "")
 
         addon_ids = addon_ids or []
         addons = MenuItemAddon.objects.filter(id__in=addon_ids, is_available=True)
@@ -51,14 +69,17 @@ class Cart:
                 'slug': item.slug,
                 'price': str(unit_price),
                 'quantity': int(quantity),
-                'special_instructions': special_instructions.strip(),
+                'special_instructions': special_instructions,
+                'style_option': chosen_style,
                 'addons': addons_names,
                 'image': item.image.url if item.image else (f"/static/{item.static_image}" if item.static_image and not item.static_image.startswith(('/static/', 'http')) else (item.static_image or '')),
                 'portion_size': item.portion_size,
             }
 
         self.save()
-        return True, "Item added to cart."
+        if chosen_style:
+            return True, f"{item.name} ({chosen_style}) added to cart."
+        return True, f"{item.name} added to cart."
 
     def update(self, key, quantity):
         try:

@@ -122,6 +122,57 @@
                 if (qtyElem) qtyElem.textContent = '1';
                 if (instructionsElem) instructionsElem.value = '';
 
+                // Style options (Spicy / Crispy) - mandatory choice for items with options
+                const styleSection = document.getElementById('modal-style-section');
+                const styleContainer = document.getElementById('modal-style-options');
+                const modalStyleError = document.getElementById('modal-style-error');
+                if (modalStyleError) modalStyleError.classList.add('hidden');
+                if (styleSection) {
+                    styleSection.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50/60', 'p-2.5', 'rounded-xl');
+                }
+                if (styleContainer) {
+                    styleContainer.innerHTML = '';
+                    if (item.has_style_options && Array.isArray(item.style_options) && item.style_options.length > 0) {
+                        if (styleSection) styleSection.classList.remove('hidden');
+                        item.style_options.forEach((optName) => {
+                            const label = document.createElement('label');
+                            label.className = 'modal-style-label w-full min-h-[42px] flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 cursor-pointer transition-all duration-200 text-xs font-extrabold uppercase tracking-wider select-none touch-manipulation border-gray-200 bg-white text-gray-700 hover:border-byte-maroon/50 hover:text-byte-maroon';
+
+                            const radio = document.createElement('input');
+                            radio.type = 'radio';
+                            radio.name = 'modal_style_option';
+                            radio.value = optName;
+                            radio.checked = false;
+                            radio.className = 'sr-only';
+                            radio.addEventListener('change', function () {
+                                document.querySelectorAll('.modal-style-label').forEach(lbl => {
+                                    lbl.classList.remove('border-byte-maroon', 'bg-byte-maroon', 'text-white', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+                                    lbl.classList.add('border-gray-200', 'bg-white', 'text-gray-700');
+                                });
+                                label.classList.remove('border-gray-200', 'bg-white', 'text-gray-700');
+                                label.classList.add('border-byte-maroon', 'bg-byte-maroon', 'text-white', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+                                if (modalStyleError) modalStyleError.classList.add('hidden');
+                                if (styleSection) {
+                                    styleSection.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50/60', 'p-2.5', 'rounded-xl');
+                                }
+                            });
+
+                            const icon = document.createElement('i');
+                            icon.className = optName.toLowerCase() === 'spicy' ? 'fa-solid fa-pepper-hot' : 'fa-solid fa-drumstick-bite';
+
+                            const span = document.createElement('span');
+                            span.textContent = optName;
+
+                            label.appendChild(radio);
+                            label.appendChild(icon);
+                            label.appendChild(span);
+                            styleContainer.appendChild(label);
+                        });
+                    } else if (styleSection) {
+                        styleSection.classList.add('hidden');
+                    }
+                }
+
                 // Addons list
                 const addonsSection = document.getElementById('modal-addons-section');
                 const addonsContainer = document.getElementById('modal-addons-list');
@@ -240,13 +291,111 @@
     function submitModalAddToCart() {
         if (!currentModalItem) return;
         const instructionsElem = document.getElementById('modal-instructions');
-        const instructions = instructionsElem ? instructionsElem.value.trim() : '';
+        let instructions = instructionsElem ? instructionsElem.value.trim() : '';
+        let selectedStyle = '';
+
+        if (currentModalItem.has_style_options && Array.isArray(currentModalItem.style_options) && currentModalItem.style_options.length > 0) {
+            const selectedStyleRadio = document.querySelector('input[name="modal_style_option"]:checked');
+            if (!selectedStyleRadio || !selectedStyleRadio.value) {
+                const styleSection = document.getElementById('modal-style-section');
+                const modalStyleError = document.getElementById('modal-style-error');
+                if (modalStyleError) modalStyleError.classList.remove('hidden');
+                if (styleSection) {
+                    styleSection.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50/60', 'p-2.5', 'rounded-xl');
+                    styleSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                showToast('Please choose Spicy or Crispy option before adding to cart!', 'error');
+                return;
+            }
+            selectedStyle = selectedStyleRadio.value;
+            const stylePrefix = `Style: ${selectedStyle}`;
+            instructions = instructions ? `${stylePrefix} | ${instructions}` : stylePrefix;
+        }
+
         const addonCheckboxes = document.querySelectorAll('input[name="modal_addons"]:checked');
         const addonIds = Array.from(addonCheckboxes).map(chk => parseInt(chk.value, 10));
 
-        const submitBtn = document.getElementById('modal-add-btn');
-        addToCart(currentModalItem.id, currentModalQty, instructions, addonIds, submitBtn);
+        addToCart(currentModalItem.id, currentModalQty, instructions, addonIds, null, selectedStyle);
         closeItemModal();
+    }
+
+    /**
+     * Select a style pill on a menu card (Spicy / Crispy).
+     */
+    function selectCardStyle(itemId, styleValue, btnElem, evt) {
+        if (evt && typeof evt.stopPropagation === 'function') {
+            evt.stopPropagation();
+        }
+        if (!btnElem) return;
+        const group = btnElem.closest('[data-style-selector-for]');
+        if (group) {
+            group.dataset.selectedStyle = styleValue;
+            group.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50/70', 'p-1.5', 'rounded-xl');
+
+            const errElem = group.querySelector('[data-style-error]');
+            if (errElem) errElem.classList.add('hidden');
+
+            const labelElem = group.querySelector('[data-style-label]');
+            if (labelElem) {
+                labelElem.innerHTML = `Option: <span class="text-emerald-600 font-extrabold">${styleValue} ✓</span>`;
+            }
+
+            group.querySelectorAll('.card-style-btn').forEach(b => {
+                b.classList.remove('bg-byte-maroon', 'text-white', 'border-byte-maroon', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+                b.classList.add('bg-white', 'text-gray-700', 'border-gray-200', 'hover:border-byte-maroon/50', 'hover:text-byte-maroon');
+                b.setAttribute('aria-pressed', 'false');
+                const icon = b.querySelector('[data-style-icon]') || b.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-byte-amber', 'text-white');
+                    if ((b.dataset.styleOption || '').toLowerCase() === 'spicy') {
+                        icon.classList.add('text-rose-500');
+                    } else {
+                        icon.classList.add('text-amber-500');
+                    }
+                }
+            });
+        }
+        btnElem.classList.remove('bg-white', 'text-gray-700', 'border-gray-200', 'hover:border-byte-maroon/50', 'hover:text-byte-maroon');
+        btnElem.classList.add('bg-byte-maroon', 'text-white', 'border-byte-maroon', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+        btnElem.setAttribute('aria-pressed', 'true');
+        const activeIcon = btnElem.querySelector('[data-style-icon]') || btnElem.querySelector('i');
+        if (activeIcon) {
+            activeIcon.classList.remove('text-rose-500', 'text-amber-500');
+            activeIcon.classList.add('text-byte-amber');
+        }
+    }
+
+    /**
+     * Quick add from card while enforcing mandatory style option selection on chicken items.
+     */
+    function addCardItemToCart(itemId, triggerBtn, evt) {
+        if (evt && typeof evt.stopPropagation === 'function') {
+            evt.stopPropagation();
+        }
+        let instructions = '';
+        let selectedStyle = '';
+        if (triggerBtn) {
+            const card = triggerBtn.closest('[data-item-card]') || triggerBtn.closest('.group') || triggerBtn.closest('.menu-card');
+            if (card) {
+                const selector = card.querySelector(`[data-style-selector-for="${itemId}"]`) || card.querySelector('[data-style-selector-for]');
+                if (selector) {
+                    selectedStyle = (selector.dataset.selectedStyle || '').trim();
+                    if (!selectedStyle) {
+                        selector.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50/70', 'p-1.5', 'rounded-xl', 'transition-all');
+                        const errElem = selector.querySelector('[data-style-error]');
+                        if (errElem) errElem.classList.remove('hidden');
+                        const firstBtn = selector.querySelector('.card-style-btn');
+                        if (firstBtn && typeof firstBtn.focus === 'function') {
+                            firstBtn.focus({ preventScroll: true });
+                        }
+                        showToast('Please choose Spicy or Crispy option before adding to cart!', 'error');
+                        return;
+                    }
+                    instructions = `Style: ${selectedStyle}`;
+                }
+            }
+        }
+        addToCart(itemId, 1, instructions, [], triggerBtn, selectedStyle);
     }
 
     /**
@@ -284,8 +433,8 @@
     /**
      * Add an item to the shopping cart.
      */
-    function addToCart(itemId, quantity = 1, instructions = '', addonIds = [], triggerBtn = null) {
-        const reqKey = `add-${itemId}`;
+    function addToCart(itemId, quantity = 1, instructions = '', addonIds = [], triggerBtn = null, styleOption = '') {
+        const reqKey = `add-${itemId}-${styleOption || 'default'}`;
         if (pendingRequests.has(reqKey)) return;
         pendingRequests.add(reqKey);
 
@@ -307,6 +456,7 @@
                 item_id: itemId,
                 quantity: quantity,
                 special_instructions: instructions,
+                style_option: styleOption,
                 addon_ids: addonIds
             })
         })
@@ -318,6 +468,18 @@
                     updateCartUI(body);
                     renderDrawerItems(body);
                     showToast(body.message || 'Added to cart!', 'success');
+
+                    if (triggerBtn) {
+                        triggerBtn.classList.remove('bg-byte-maroon', 'hover:bg-byte-maroonDark');
+                        triggerBtn.classList.add('bg-emerald-600');
+                        triggerBtn.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i><span>Added</span>';
+                        setTimeout(() => {
+                            triggerBtn.classList.remove('bg-emerald-600');
+                            triggerBtn.classList.add('bg-byte-maroon', 'hover:bg-byte-maroonDark');
+                            triggerBtn.disabled = false;
+                            triggerBtn.innerHTML = originalBtnHtml;
+                        }, 650);
+                    }
 
                     // Animate navigation badge
                     const badge = document.getElementById('nav-cart-badge');
@@ -333,19 +495,23 @@
                         setTimeout(() => floatingBtn.classList.remove('scale-105', 'ring-4', 'ring-byte-amber/50'), 300);
                     }
                 } else {
+                    if (triggerBtn) {
+                        triggerBtn.disabled = false;
+                        triggerBtn.innerHTML = originalBtnHtml;
+                    }
                     showToast(body.message || 'Could not add item to cart.', 'error');
                 }
             })
             .catch(err => {
                 console.error('Add to cart error:', err);
-                showToast('Network error while adding to cart. Please retry.', 'error');
-            })
-            .finally(() => {
-                pendingRequests.delete(reqKey);
                 if (triggerBtn) {
                     triggerBtn.disabled = false;
                     triggerBtn.innerHTML = originalBtnHtml;
                 }
+                showToast('Network error while adding to cart. Please retry.', 'error');
+            })
+            .finally(() => {
+                pendingRequests.delete(reqKey);
             });
     }
 
@@ -963,6 +1129,8 @@
         adjustModalQty,
         recalcModalTotal,
         submitModalAddToCart,
+        selectCardStyle,
+        addCardItemToCart,
         openCartDrawer,
         closeCartDrawer,
         toggleCartDrawer,
@@ -980,6 +1148,8 @@
     window.adjustModalQty = adjustModalQty;
     window.recalcModalTotal = recalcModalTotal;
     window.submitModalAddToCart = submitModalAddToCart;
+    window.selectCardStyle = selectCardStyle;
+    window.addCardItemToCart = addCardItemToCart;
     window.openCartDrawer = openCartDrawer;
     window.closeCartDrawer = closeCartDrawer;
     window.toggleCartDrawer = toggleCartDrawer;

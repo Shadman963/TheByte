@@ -300,6 +300,7 @@
                             <tr>
                                 <th class="p-3">Dish / Item</th>
                                 <th class="p-3">Category</th>
+                                <th class="p-3">Description</th>
                                 <th class="p-3">Portion Size</th>
                                 <th class="p-3">Regular Price</th>
                                 <th class="p-3">Discount Price</th>
@@ -325,13 +326,16 @@
                                             <span class="font-bold text-gray-900 block break-words">{{ item.name }}</span>
                                             <span class="text-[10px] text-gray-400">
                                                 {% if item.is_featured %}★ Featured {% endif %}
-                                                {% if item.is_frozen %}❄️ Frozen {% endif %}
+                                                {% if item.is_frozen %}❄️ Ready to Fry {% endif %}
                                                 {% if item.is_vegetarian %}🌱 Veg{% endif %}
                                             </span>
                                         </div>
                                     </div>
                                 </td>
                                 <td data-label="Category" class="p-3 font-semibold text-gray-700 break-words">{{ item.category.name }}</td>
+                                <td data-label="Description" class="p-3 min-w-[200px]">
+                                    <textarea rows="2" id="description-input-{{ item.id }}" aria-label="Description for {{ item.name }}" class="w-full px-2 py-1 rounded border border-gray-300 text-xs text-gray-800 leading-snug">{{ item.description|default:item.tagline }}</textarea>
+                                </td>
                                 <td data-label="Portion Size" class="p-3 text-gray-500 break-words">{{ item.portion_size }}</td>
                                 <td data-label="Regular Price" class="p-3">
                                     <input type="number" step="0.01" value="{{ item.price }}" id="price-input-{{ item.id }}" class="w-24 sm:w-20 px-2 py-1 rounded border border-gray-300 text-xs font-bold text-gray-900">
@@ -345,9 +349,14 @@
                                     </button>
                                 </td>
                                 <td data-label="Actions" class="p-3 text-right">
-                                    <button type="button" onclick="saveItemPrices({{ item.id }})" class="px-3 py-1 rounded-lg bg-byte-maroon text-white font-bold text-[11px] hover:bg-byte-maroonDark transition shadow-sm">
-                                        Save
-                                    </button>
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <button type="button" onclick="saveItemPrices({{ item.id }})" class="px-3 py-1 rounded-lg bg-byte-maroon text-white font-bold text-[11px] hover:bg-byte-maroonDark transition shadow-sm">
+                                            Save
+                                        </button>
+                                        <button type="button" onclick="deleteMenuItem({{ item.id }}, '{{ item.name|escapejs }}')" class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] hover:bg-rose-600 hover:text-white transition shadow-sm" title="Remove item from kitchen menu">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -739,6 +748,8 @@
     function saveItemPrices(itemId) {
         const price = document.getElementById(`price-input-${itemId}`).value;
         const discount = document.getElementById(`discount-input-${itemId}`).value;
+        const descElem = document.getElementById(`description-input-${itemId}`);
+        const description = descElem ? descElem.value : undefined;
 
         fetch(`/api/staff/item/${itemId}/update/`, {
             method: 'POST',
@@ -748,15 +759,39 @@
             },
             body: JSON.stringify({
                 price: price,
-                discount_price: discount
+                discount_price: discount,
+                description: description
             })
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showToast(`Saved prices for ${data.name}!`, 'success');
+                showToast(`Saved details for ${data.name}!`, 'success');
             } else {
-                showToast(data.message || 'Error saving prices', 'error');
+                showToast(data.message || 'Error saving item details', 'error');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function deleteMenuItem(itemId, itemName) {
+        if (!confirm(`Remove "${itemName}" from the kitchen menu?`)) return;
+
+        fetch(`/api/staff/item/${itemId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.getElementById(`menu-row-${itemId}`);
+                if (row) row.remove();
+                showToast(data.message || `Removed ${itemName} from menu!`, 'info');
+            } else {
+                showToast(data.message || 'Error removing item', 'error');
             }
         })
         .catch(err => console.error(err));

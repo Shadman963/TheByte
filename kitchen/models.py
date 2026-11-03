@@ -132,6 +132,31 @@ class MenuItem(models.Model):
             return int(round((1 - (self.discount_price / self.price)) * 100))
         return 0
 
+    @property
+    def has_style_options(self):
+        target_slugs = {
+            'chicken-fry',
+            'chicken-strips',
+            'chicken-tender',
+            'chicken-wings',
+            'crispy-wings',
+            'spicy-wings',
+            'frozen-chicken-fry',
+            'frozen-chicken-strips',
+            'frozen-wings',
+            'frozen-chicken-wings',
+        }
+        if self.slug in target_slugs:
+            return True
+        lower_name = (self.name or '').lower()
+        return any(k in lower_name for k in ('chicken fry', 'chicken strips', 'chicken wings', 'wings'))
+
+    @property
+    def style_options(self):
+        if self.has_style_options:
+            return ['Spicy', 'Crispy']
+        return []
+
 
 class MenuItemAddon(models.Model):
     item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='addons', blank=True, null=True, help_text="Leave blank if global addon")

@@ -568,6 +568,18 @@
 
             <p id="modal-description" class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed break-words"></p>
 
+            <!-- Style / Preparation Options (Spicy / Crispy) -->
+            <div id="modal-style-section" class="mb-4 hidden transition-all">
+                <label class="block text-xs font-bold uppercase tracking-wider text-byte-maroon mb-2">
+                    Select Style Option <span class="text-rose-600">*Required</span>
+                </label>
+                <div id="modal-style-options" class="grid grid-cols-2 gap-2.5"></div>
+                <p id="modal-style-error" class="hidden text-xs font-bold text-rose-600 mt-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Please choose Spicy or Crispy before adding to cart.</span>
+                </p>
+            </div>
+
             <!-- Addons Checklist -->
             <div id="modal-addons-section" class="mb-4">
                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
@@ -689,7 +701,63 @@
     </footer>
 
     <!-- Global Cart Drawer & Modal Scripts -->
-    <script src="{% static 'js/cart.js' %}"></script>
+    <script src="{% static 'js/cart.js' %}?v=20261103_3"></script>
+    <script>
+        if (typeof window.selectCardStyle !== 'function') {
+            window.selectCardStyle = function (itemId, styleValue, btnElem, evt) {
+                if (evt && typeof evt.stopPropagation === 'function') evt.stopPropagation();
+                if (!btnElem) return;
+                const group = btnElem.closest('[data-style-selector-for]');
+                if (group) {
+                    group.dataset.selectedStyle = styleValue;
+                    group.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-50/70', 'p-1.5', 'rounded-xl');
+                    const errElem = group.querySelector('[data-style-error]');
+                    if (errElem) errElem.classList.add('hidden');
+                    const labelElem = group.querySelector('[data-style-label]');
+                    if (labelElem) {
+                        labelElem.innerHTML = 'Option: <span class="text-emerald-600 font-extrabold">' + styleValue + ' ✓</span>';
+                    }
+                    group.querySelectorAll('.card-style-btn').forEach(function (b) {
+                        b.classList.remove('bg-byte-maroon', 'text-white', 'border-byte-maroon', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+                        b.classList.add('bg-white', 'text-gray-700', 'border-gray-200', 'hover:border-byte-maroon/50', 'hover:text-byte-maroon');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                }
+                btnElem.classList.remove('bg-white', 'text-gray-700', 'border-gray-200', 'hover:border-byte-maroon/50', 'hover:text-byte-maroon');
+                btnElem.classList.add('bg-byte-maroon', 'text-white', 'border-byte-maroon', 'shadow-sm', 'ring-2', 'ring-byte-maroon/20');
+                btnElem.setAttribute('aria-pressed', 'true');
+            };
+        }
+        if (typeof window.addCardItemToCart !== 'function') {
+            window.addCardItemToCart = function (itemId, triggerBtn, evt) {
+                if (evt && typeof evt.stopPropagation === 'function') evt.stopPropagation();
+                let instructions = '';
+                let selectedStyle = '';
+                if (triggerBtn) {
+                    const card = triggerBtn.closest('[data-item-card]') || triggerBtn.closest('.group') || triggerBtn.closest('.menu-card');
+                    if (card) {
+                        const selector = card.querySelector('[data-style-selector-for="' + itemId + '"]') || card.querySelector('[data-style-selector-for]');
+                        if (selector) {
+                            selectedStyle = (selector.dataset.selectedStyle || '').trim();
+                            if (!selectedStyle) {
+                                selector.classList.add('ring-2', 'ring-rose-500', 'bg-rose-50/70', 'p-1.5', 'rounded-xl', 'transition-all');
+                                const errElem = selector.querySelector('[data-style-error]');
+                                if (errElem) errElem.classList.remove('hidden');
+                                if (typeof window.showToast === 'function') {
+                                    window.showToast('Please choose Spicy or Crispy option before adding to cart!', 'error');
+                                }
+                                return;
+                            }
+                            instructions = 'Style: ' + selectedStyle;
+                        }
+                    }
+                }
+                if (typeof window.addToCart === 'function') {
+                    window.addToCart(itemId, 1, instructions, [], triggerBtn, selectedStyle);
+                }
+            };
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

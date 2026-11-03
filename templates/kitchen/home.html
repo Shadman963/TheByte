@@ -135,7 +135,7 @@
                         {% for pass_num in "12" %}
                         <div class="flex items-stretch shrink-0" {% if pass_num == "2" %}aria-hidden="true"{% endif %}>
                             {% for item in offered_slider_items %}
-                            <div class="w-64 sm:w-72 shrink-0 mr-4 sm:mr-5 bg-white text-gray-800 rounded-2xl overflow-hidden shadow-lg border border-byte-amber/30 hover:border-byte-amber transition-all duration-300 flex flex-col justify-between group">
+                            <div class="w-64 sm:w-72 shrink-0 mr-4 sm:mr-5 bg-white text-gray-800 rounded-2xl overflow-hidden shadow-lg border border-byte-amber/30 hover:border-byte-amber transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                                 <div>
                                     <div class="relative h-36 sm:h-40 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
                                         {% if item.image %}
@@ -152,7 +152,7 @@
                                             </span>
                                             {% if item.is_frozen %}
                                             <span class="px-1.5 py-0.5 rounded-md bg-cyan-700 text-white text-[10px] font-black uppercase tracking-wider shadow">
-                                                <i class="fa-solid fa-snowflake"></i> Frozen
+                                                <i class="fa-solid fa-snowflake"></i> Ready to Fry
                                             </span>
                                             {% endif %}
                                         </div>
@@ -180,9 +180,29 @@
                                             {{ item.name }}
                                         </h3>
 
-                                        <p class="text-[11px] text-gray-500 line-clamp-2 leading-relaxed break-words">
-                                            {{ item.tagline|default:item.description }}
+                                        <p class="item-description text-[11px] text-gray-600 leading-relaxed break-words whitespace-normal cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                                            {{ item.description|default:item.tagline }}
                                         </p>
+
+                                        {% if item.has_style_options %}
+                                        <div class="pt-1.5" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                                            <span class="block text-[9px] font-bold uppercase tracking-wider text-gray-500 mb-1" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                                            <div class="grid grid-cols-2 gap-1.5" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                                <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[32px] px-2 py-1 rounded-xl border-2 text-[10px] font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                                    <i class="fa-solid fa-pepper-hot text-[9px] text-rose-500 transition-colors" data-style-icon></i>
+                                                    <span>Spicy</span>
+                                                </button>
+                                                <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[32px] px-2 py-1 rounded-xl border-2 text-[10px] font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                                    <i class="fa-solid fa-drumstick-bite text-[9px] text-amber-500 transition-colors" data-style-icon></i>
+                                                    <span>Crispy</span>
+                                                </button>
+                                            </div>
+                                            <p class="hidden text-[9px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                                <i class="fa-solid fa-circle-exclamation"></i>
+                                                <span>Select Spicy or Crispy</span>
+                                            </p>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
 
@@ -197,10 +217,10 @@
                                     </div>
 
                                     <div class="flex items-center gap-1.5 shrink-0">
-                                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="Customize Options" aria-label="Customize {{ item.name }}">
                                             <i class="fa-solid fa-sliders text-xs"></i>
                                         </button>
-                                        <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1">
+                                        <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow flex items-center gap-1 cursor-pointer select-none touch-manipulation">
                                             <i class="fa-solid fa-plus text-[10px]"></i>
                                             <span>Add</span>
                                         </button>
@@ -218,119 +238,8 @@
     </div>
 </section>
 
-<!-- RESTRUCTURED KITCHEN SHOWCASE SECTIONS: 1) LATEST OFFERS, 2) STUDENT COMBO, 3) READY TO FRY -->
+<!-- RESTRUCTURED KITCHEN SHOWCASE SECTIONS: STUDENT COMBO & READY TO FRY -->
 <div id="kitchen-showcases" class="bg-byte-cream/50 divide-y divide-byte-maroon/10">
-
-    <!-- SECTION A: LATEST OFFERS -->
-    <section id="showcase-latest-offers" class="py-10 sm:py-16">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-10">
-                <div class="min-w-0">
-                    <span class="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest text-rose-600 mb-1.5">
-                        <i class="fa-solid fa-tags"></i>
-                        <span>Promotional Deals &amp; Discounts</span>
-                    </span>
-                    <h2 class="font-display responsive-section-title font-extrabold text-byte-maroon uppercase tracking-wide break-words">
-                        Latest Offers
-                    </h2>
-                    <p class="text-xs sm:text-sm text-gray-600 mt-1 max-w-2xl break-words">
-                        Highlighted promotional items and discounted kitchen favorites freshly prepared for maximum value.
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2 shrink-0">
-                    <button type="button" onclick="openLatestOffersModal()" class="px-4 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
-                        <i class="fa-solid fa-Layer-group"></i>
-                        <span>Quick Offers Modal</span>
-                    </button>
-                    <a href="{% url 'menu' %}?offers=true" class="px-4 py-2.5 rounded-full bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
-                        <span>View All Offers</span>
-                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                {% for item in latest_offers_items %}
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-rose-100 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% elif item.static_image %}
-                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% else %}
-                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            {% endif %}
-
-                            <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-                                <span class="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
-                                    {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}★ Special Offer{% endif %}
-                                </span>
-                                {% if item.is_frozen %}
-                                <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
-                                    <i class="fa-solid fa-snowflake"></i> Frozen
-                                </span>
-                                {% endif %}
-                            </div>
-
-                            <div class="absolute bottom-1.5 left-2 right-2 w-fit max-w-[calc(100%-1rem)] bg-black/70 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded whitespace-normal break-words leading-snug">
-                                <i class="fa-solid fa-scale-balanced mr-1"></i>{{ item.portion_size }}
-                            </div>
-                        </div>
-
-                        <div class="p-3.5 sm:p-4 space-y-1.5 sm:space-y-2">
-                            <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-xs">
-                                <span class="text-byte-amber font-extrabold uppercase tracking-wider break-words whitespace-normal">{{ item.category.name }}</span>
-                                {% if item.spice_level == 'hot' %}
-                                <span class="text-rose-600 font-bold flex items-center gap-0.5 shrink-0">
-                                    <i class="fa-solid fa-pepper-hot"></i><span>Spicy</span>
-                                </span>
-                                {% elif item.spice_level == 'medium' %}
-                                <span class="text-amber-600 font-bold flex items-center gap-0.5 shrink-0">
-                                    <i class="fa-solid fa-pepper-hot"></i><span>Medium</span>
-                                </span>
-                                {% endif %}
-                            </div>
-
-                            <h3 class="font-display font-bold text-base sm:text-lg text-byte-maroon group-hover:text-byte-amber transition leading-snug cursor-pointer break-words whitespace-normal" onclick="openItemModal({{ item.id }})">
-                                {{ item.name }}
-                            </h3>
-
-                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
-                                {{ item.description }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="p-3.5 sm:p-4 pt-2.5 sm:pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 mt-1 sm:mt-2">
-                        <div class="min-w-0">
-                            {% if item.has_discount %}
-                            <span class="text-[10px] sm:text-xs text-gray-400 line-through block leading-none">৳{{ item.price|floatformat:0 }}</span>
-                            <span class="font-extrabold text-base sm:text-lg text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
-                            {% else %}
-                            <span class="font-extrabold text-base sm:text-lg text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
-                                <i class="fa-solid fa-sliders text-xs"></i>
-                            </button>
-                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
-                                <i class="fa-solid fa-plus text-[10px]"></i>
-                                <span>Add</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-span-full bg-white rounded-2xl p-6 text-center border border-gray-200 text-gray-500 text-sm">
-                    Check back soon for new promotional items!
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
 
     <!-- SECTION B: STUDENT COMBO -->
     <section id="showcase-student-combo" class="py-10 sm:py-16 bg-white">
@@ -356,7 +265,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {% for item in student_combo_items %}
-                <div class="bg-byte-creamLight rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-byte-maroon/10 transition-all duration-300 flex flex-col justify-between group">
+                <div class="bg-byte-creamLight rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-byte-maroon/10 transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                     <div>
                         <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
                             {% if item.image %}
@@ -401,9 +310,29 @@
                                 {{ item.name }}
                             </h3>
 
-                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
-                                {{ item.description }}
+                            <p class="item-description text-xs text-gray-600 leading-relaxed break-words whitespace-normal cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                                {{ item.description|default:item.tagline }}
                             </p>
+
+                            {% if item.has_style_options %}
+                            <div class="pt-2" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                                <div class="grid grid-cols-2 gap-2" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                    <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-pepper-hot text-[11px] text-rose-500 transition-colors" data-style-icon></i>
+                                        <span>Spicy</span>
+                                    </button>
+                                    <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-drumstick-bite text-[11px] text-amber-500 transition-colors" data-style-icon></i>
+                                        <span>Crispy</span>
+                                    </button>
+                                </div>
+                                <p class="hidden text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>Please select Spicy or Crispy first</span>
+                                </p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -418,10 +347,10 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="Customize Options" aria-label="Customize {{ item.name }}">
                                 <i class="fa-solid fa-sliders text-xs"></i>
                             </button>
-                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                            <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow flex items-center gap-1.5 cursor-pointer select-none touch-manipulation">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span>Add</span>
                             </button>
@@ -450,18 +379,19 @@
                         Ready to Fry
                     </h2>
                     <p class="text-xs sm:text-sm text-byte-cream/85 mt-1 max-w-2xl break-words">
-                        Stock your freezer with our marinated wings, seasoned meatballs, flaky samosas, and crispy spring rolls—ready in 5 minutes at home!
+                        Stock your freezer with our marinated chicken fry, restaurant-style french fries, and seasoned chicken strips—ready in minutes at home!
                     </p>
                 </div>
-                <a href="{% url 'menu' %}?frozen=true" class="w-fit px-5 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs transition shadow-lg flex items-center gap-1.5 shrink-0">
+                <a href="{% url 'menu' %}?category=frozen-items" class="w-fit px-5 py-2.5 rounded-full bg-byte-amber hover:bg-byte-amberDark text-white font-bold text-xs transition shadow-lg flex items-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-snowflake"></i>
-                    <span>Order Frozen Packs</span>
+                    <span>View All Frozen Items</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {% for item in ready_to_fry_items %}
-                <div class="bg-white text-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-white/15 transition-all duration-300 flex flex-col justify-between group">
+                <div class="bg-white text-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-white/15 transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                     <div>
                         <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
                             {% if item.image %}
@@ -506,9 +436,29 @@
                                 {{ item.name }}
                             </h3>
 
-                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
-                                {{ item.description }}
+                            <p class="item-description text-xs text-gray-600 leading-relaxed break-words whitespace-normal cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                                {{ item.description|default:item.tagline }}
                             </p>
+
+                            {% if item.has_style_options %}
+                            <div class="pt-2" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                                <div class="grid grid-cols-2 gap-2" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                    <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-pepper-hot text-[11px] text-rose-500 transition-colors" data-style-icon></i>
+                                        <span>Spicy</span>
+                                    </button>
+                                    <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-drumstick-bite text-[11px] text-amber-500 transition-colors" data-style-icon></i>
+                                        <span>Crispy</span>
+                                    </button>
+                                </div>
+                                <p class="hidden text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>Please select Spicy or Crispy first</span>
+                                </p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -523,10 +473,10 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="Customize Options" aria-label="Customize {{ item.name }}">
                                 <i class="fa-solid fa-sliders text-xs"></i>
                             </button>
-                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                            <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow flex items-center gap-1.5 cursor-pointer select-none touch-manipulation">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span>Add</span>
                             </button>
@@ -538,6 +488,14 @@
                     Ready-to-fry frozen packs will be restocked shortly!
                 </div>
                 {% endfor %}
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="{% url 'menu' %}?category=frozen-items" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs sm:text-sm tracking-wide transition shadow">
+                    <i class="fa-solid fa-snowflake text-cyan-300"></i>
+                    <span>View All Frozen Items</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -574,7 +532,7 @@
         <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {% for cat in categories %}
                 {% for item in cat.items.all %}
-                <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col justify-between group" data-category="{{ cat.slug }}">
+                <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col justify-between group" data-category="{{ cat.slug }}" data-item-card="{{ item.id }}">
                     
                     <div>
                         <!-- Food Photo -->
@@ -596,7 +554,7 @@
                                 {% endif %}
                                 {% if item.is_frozen %}
                                 <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
-                                    <i class="fa-solid fa-snowflake"></i> Frozen
+                                    <i class="fa-solid fa-snowflake"></i> Ready to Fry
                                 </span>
                                 {% endif %}
                                 {% if item.is_vegetarian %}
@@ -636,9 +594,29 @@
                                 {{ item.name }}
                             </h3>
 
-                            <p class="text-xs text-gray-500 leading-relaxed break-words whitespace-normal">
-                                {{ item.description }}
+                            <p class="item-description text-xs text-gray-600 leading-relaxed break-words whitespace-normal cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                                {{ item.description|default:item.tagline }}
                             </p>
+
+                            {% if item.has_style_options %}
+                            <div class="pt-2" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                                <div class="grid grid-cols-2 gap-2" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                    <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-pepper-hot text-[11px] text-rose-500 transition-colors" data-style-icon></i>
+                                        <span>Spicy</span>
+                                    </button>
+                                    <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                        <i class="fa-solid fa-drumstick-bite text-[11px] text-amber-500 transition-colors" data-style-icon></i>
+                                        <span>Crispy</span>
+                                    </button>
+                                </div>
+                                <p class="hidden text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>Please select Spicy or Crispy first</span>
+                                </p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -654,10 +632,10 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                            <button type="button" onclick="openItemModal({{ item.id }})" class="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="Customize Options" aria-label="Customize {{ item.name }}">
                                 <i class="fa-solid fa-sliders text-xs"></i>
                             </button>
-                            <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1.5">
+                            <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3.5 py-2.5 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow flex items-center gap-1.5 cursor-pointer select-none touch-manipulation">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span>Add</span>
                             </button>
@@ -939,33 +917,62 @@
                 </h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {% for item in latest_offers_items %}
-                    <div class="p-3 rounded-2xl bg-gray-50 border border-gray-200 hover:border-byte-maroon/30 transition flex items-center justify-between gap-3">
-                        <div class="w-14 h-14 rounded-xl bg-gray-200 overflow-hidden shrink-0">
-                            {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
-                            {% elif item.static_image %}
-                                <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
-                            {% else %}
-                                <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
-                            {% endif %}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black uppercase">
-                                {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}Featured Deal{% endif %}
-                            </span>
-                            <h5 class="font-display font-bold text-sm text-byte-maroon mt-0.5 break-words">{{ item.name }}</h5>
-                            <div class="flex items-center gap-1.5 mt-0.5">
-                                {% if item.has_discount %}
-                                <span class="text-[11px] text-gray-400 line-through">৳{{ item.price|floatformat:0 }}</span>
-                                <span class="text-xs font-extrabold text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
+                    <div class="p-3 rounded-2xl bg-gray-50 border border-gray-200 hover:border-byte-maroon/30 transition flex flex-col justify-between gap-2.5 group" data-item-card="{{ item.id }}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="w-14 h-14 rounded-xl bg-gray-200 overflow-hidden shrink-0 cursor-pointer" onclick="openItemModal({{ item.id }})">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                                {% elif item.static_image %}
+                                    <img src="{% static item.static_image %}" alt="{{ item.name }}" class="w-full h-full object-cover">
                                 {% else %}
-                                <span class="text-xs font-extrabold text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                                    <img src="{% static 'images/hero_banner.png' %}" alt="{{ item.name }}" class="w-full h-full object-cover">
                                 {% endif %}
                             </div>
+                            <div class="min-w-0 flex-1">
+                                <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black uppercase">
+                                    {% if item.has_discount %}-{{ item.discount_percent }}% OFF{% else %}Featured Deal{% endif %}
+                                </span>
+                                <h5 class="font-display font-bold text-sm text-byte-maroon mt-0.5 break-words cursor-pointer hover:text-byte-amber transition" onclick="openItemModal({{ item.id }})">{{ item.name }}</h5>
+                                <p class="item-description text-[11px] text-gray-600 leading-relaxed break-words whitespace-normal mt-0.5 cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                                    {{ item.description|default:item.tagline }}
+                                </p>
+                                <div class="flex items-center gap-1.5 mt-1">
+                                    {% if item.has_discount %}
+                                    <span class="text-[11px] text-gray-400 line-through">৳{{ item.price|floatformat:0 }}</span>
+                                    <span class="text-xs font-extrabold text-rose-600">৳{{ item.discount_price|floatformat:0 }}</span>
+                                    {% else %}
+                                    <span class="text-xs font-extrabold text-byte-maroon">৳{{ item.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                <button type="button" onclick="openItemModal({{ item.id }})" class="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="View Description & Customize" aria-label="View Description & Customize {{ item.name }}">
+                                    <i class="fa-solid fa-sliders text-[10px]"></i>
+                                </button>
+                                <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow shrink-0 cursor-pointer select-none touch-manipulation">
+                                    + Add
+                                </button>
+                            </div>
                         </div>
-                        <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3 py-2 rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow shrink-0">
-                            + Add
-                        </button>
+                        {% if item.has_style_options %}
+                        <div class="pt-1 border-t border-gray-200/70" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                            <span class="block text-[9px] font-bold uppercase tracking-wider text-gray-500 mb-1" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                            <div class="grid grid-cols-2 gap-1.5" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[32px] px-2 py-1 rounded-lg border-2 text-[10px] font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                    <i class="fa-solid fa-pepper-hot text-[9px] text-rose-500 transition-colors" data-style-icon></i>
+                                    <span>Spicy</span>
+                                </button>
+                                <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[32px] px-2 py-1 rounded-lg border-2 text-[10px] font-bold transition-all duration-200 flex items-center justify-center gap-1 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                    <i class="fa-solid fa-drumstick-bite text-[9px] text-amber-500 transition-colors" data-style-icon></i>
+                                    <span>Crispy</span>
+                                </button>
+                            </div>
+                            <p class="hidden text-[9px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>Please select Spicy or Crispy first</span>
+                            </p>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>

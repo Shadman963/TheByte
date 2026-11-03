@@ -25,7 +25,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-3 text-[11px] sm:text-xs font-bold text-gray-600">
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 inline-block shrink-0"></span> <span>Vegetarian Available</span></span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-cyan-600 inline-block shrink-0"></span> <span>Ready-To-Fry Frozen</span></span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-cyan-600 inline-block shrink-0"></span> <span>Ready to Fry</span></span>
                 </div>
             </div>
         </div>
@@ -73,13 +73,10 @@
                     <i class="fa-solid fa-tags mr-1"></i> Latest Offers
                 </a>
                 {% for cat in categories %}
-                <a href="{% url 'menu' %}?category={{ cat.slug }}" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if selected_category_slug == cat.slug %}bg-byte-maroon text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
-                    {{ cat.name }}
+                <a href="{% url 'menu' %}?category={{ cat.slug }}" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if selected_category_slug == cat.slug %}{% if cat.slug == 'frozen-items' %}bg-cyan-700 text-white{% else %}bg-byte-maroon text-white{% endif %}{% else %}{% if cat.slug == 'frozen-items' %}bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}{% endif %}">
+                    {% if cat.slug == 'frozen-items' %}<i class="fa-solid fa-snowflake mr-1"></i> {% endif %}{{ cat.name }}
                 </a>
                 {% endfor %}
-                <a href="{% url 'menu' %}?frozen=true" class="whitespace-normal text-left px-3 py-1.5 rounded-full text-xs font-bold transition {% if frozen_filter %}bg-cyan-700 text-white{% else %}bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100{% endif %}">
-                    <i class="fa-solid fa-snowflake mr-1"></i> Ready to Fry
-                </a>
             </div>
         </div>
 
@@ -87,7 +84,7 @@
         {% if items %}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {% for item in items %}
-            <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col justify-between group">
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col justify-between group" data-item-card="{{ item.id }}">
                 <div>
                     <!-- Photo -->
                     <div class="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer" onclick="openItemModal({{ item.id }})">
@@ -107,7 +104,7 @@
                             {% endif %}
                             {% if item.is_frozen %}
                             <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-cyan-700 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow">
-                                <i class="fa-solid fa-snowflake"></i> Frozen
+                                <i class="fa-solid fa-snowflake"></i> Ready to Fry
                             </span>
                             {% endif %}
                             {% if item.is_vegetarian %}
@@ -147,9 +144,29 @@
                             {{ item.name }}
                         </h3>
 
-                        <p class="text-xs text-gray-500 leading-relaxed break-words">
-                            {{ item.description }}
+                        <p class="item-description text-xs text-gray-600 leading-relaxed break-words whitespace-normal cursor-pointer hover:text-gray-900 transition" onclick="openItemModal({{ item.id }})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItemModal({{ item.id }});}" aria-label="Description for {{ item.name }}: {{ item.description|default:item.tagline }}">
+                            {{ item.description|default:item.tagline }}
                         </p>
+
+                        {% if item.has_style_options %}
+                        <div class="pt-2" data-style-selector-for="{{ item.id }}" data-selected-style="" data-requires-style="true">
+                            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5" data-style-label>Choose Option: <span class="text-rose-600 font-extrabold">*Required</span></span>
+                            <div class="grid grid-cols-2 gap-2" role="group" aria-label="Choose Spicy or Crispy for {{ item.name }}">
+                                <button type="button" data-style-option="Spicy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Spicy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                    <i class="fa-solid fa-pepper-hot text-[11px] text-rose-500 transition-colors" data-style-icon></i>
+                                    <span>Spicy</span>
+                                </button>
+                                <button type="button" data-style-option="Crispy" data-item-id="{{ item.id }}" onclick="selectCardStyle({{ item.id }}, 'Crispy', this, event)" aria-pressed="false" class="card-style-btn w-full min-h-[36px] px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white text-gray-700 border-gray-200 hover:border-byte-maroon/50 hover:text-byte-maroon active:scale-95 cursor-pointer select-none touch-manipulation">
+                                    <i class="fa-solid fa-drumstick-bite text-[11px] text-amber-500 transition-colors" data-style-icon></i>
+                                    <span>Crispy</span>
+                                </button>
+                            </div>
+                            <p class="hidden text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1" data-style-error>
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>Please select Spicy or Crispy first</span>
+                            </p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -165,10 +182,10 @@
                     </div>
 
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition" title="Customize Options" aria-label="Customize {{ item.name }}">
+                        <button type="button" onclick="openItemModal({{ item.id }})" class="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 transition cursor-pointer" title="Customize Options" aria-label="Customize {{ item.name }}">
                             <i class="fa-solid fa-sliders text-xs"></i>
                         </button>
-                        <button type="button" onclick="addToCart({{ item.id }}, 1, '', [], this)" class="px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-byte-maroon hover:bg-byte-maroonDark text-white font-bold text-xs transition shadow flex items-center gap-1">
+                        <button type="button" onclick="addCardItemToCart({{ item.id }}, this, event)" class="px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-byte-maroon hover:bg-byte-maroonDark active:scale-95 text-white font-bold text-xs transition shadow flex items-center gap-1 cursor-pointer select-none touch-manipulation">
                             <i class="fa-solid fa-plus text-[10px]"></i>
                             <span>Add</span>
                         </button>

@@ -81,11 +81,21 @@ def home_view(request):
         for item in budget_items[:4 - len(student_combo_items)]:
             student_combo_items.append(item)
 
-    # 3. Ready to Fry (frozen/pre-packaged items ready for home frying)
+    # 3. Ready to Fry (frozen/pre-packaged items ready for home frying: top 3 orderly)
     ready_to_fry_qs = available_items.filter(
         Q(is_frozen=True) | Q(category__slug__in=['frozen-items', 'ready-to-fry'])
     )
-    ready_to_fry_items = list(ready_to_fry_qs[:4])
+    preferred_frozen_slugs = ['frozen-chicken-fry', 'frozen-french-fries', 'frozen-chicken-strips']
+    frozen_by_slug = {item.slug: item for item in ready_to_fry_qs}
+    ready_to_fry_items = []
+    for slug in preferred_frozen_slugs:
+        if slug in frozen_by_slug:
+            ready_to_fry_items.append(frozen_by_slug[slug])
+    if len(ready_to_fry_items) < 3:
+        existing_frozen_ids = {item.id for item in ready_to_fry_items}
+        for item in ready_to_fry_qs.exclude(id__in=existing_frozen_ids).order_by('order', 'name')[:3 - len(ready_to_fry_items)]:
+            ready_to_fry_items.append(item)
+    ready_to_fry_items = ready_to_fry_items[:3]
 
     reviews = CustomerReview.objects.filter(is_approved=True)[:6]
     global_addons = MenuItemAddon.objects.filter(item=None, is_available=True)
@@ -122,7 +132,16 @@ def menu_view(request):
     offers = request.GET.get('offers')
 
     current_category = None
-    if category_slug:
+    if category_slug in ('frozen-items', 'ready-to-fry') or frozen == 'true':
+        current_category = Category.objects.filter(slug__in=['frozen-items', 'ready-to-fry']).first()
+        items = items.filter(
+            Q(is_frozen=True)
+            | Q(category__slug__in=['frozen-items', 'ready-to-fry'])
+            | (Q(category=current_category) if current_category else Q())
+        )
+        if current_category:
+            category_slug = current_category.slug
+    elif category_slug:
         current_category = Category.objects.filter(slug=category_slug).first()
         if current_category:
             items = items.filter(category=current_category)
@@ -134,9 +153,6 @@ def menu_view(request):
         items = items.filter(is_vegetarian=True)
     elif diet == 'nonveg':
         items = items.filter(is_vegetarian=False)
-
-    if frozen == 'true':
-        items = items.filter(is_frozen=True)
 
     if offers == 'true':
         items = items.filter(discount_price__isnull=False)
@@ -168,7 +184,7 @@ def item_detail_api(request, item_id):
         'name': item.name,
         'category': item.category.name,
         'tagline': item.tagline,
-        'description': item.description,
+        'description': item.description or item.tagline or f"Freshly prepared {item.name} from The BYTE Cloud Kitchen.",
         'price': float(item.price),
         'discount_price': float(item.discount_price) if item.discount_price else None,
         'final_price': float(item.final_price),
@@ -176,6 +192,8 @@ def item_detail_api(request, item_id):
         'is_vegetarian': item.is_vegetarian,
         'is_frozen': item.is_frozen,
         'spice_level': item.get_spice_level_display(),
+        'has_style_options': item.has_style_options,
+        'style_options': item.style_options,
         'image': item.image.url if item.image else (f"/static/{item.static_image}" if item.static_image else ''),
         'addons': addons + global_addons,
     }
@@ -244,15 +262,23 @@ def cart_add_api(request):
             item_id = payload.get('item_id')
             quantity = payload.get('quantity', 1)
             instructions = payload.get('special_instructions', '')
+            style_option = payload.get('style_option', '')
             addon_ids = payload.get('addon_ids', [])
         else:
             item_id = request.POST.get('item_id')
             quantity = request.POST.get('quantity', 1)
             instructions = request.POST.get('special_instructions', '')
+            style_option = request.POST.get('style_option', '')
             addon_ids = request.POST.getlist('addon_ids')
 
         addon_ids = [int(a) for a in addon_ids if str(a).isdigit()]
-        success, message = cart.add(item_id, quantity=quantity, special_instructions=instructions, addon_ids=addon_ids)
+        success, message = cart.add(
+            item_id,
+            quantity=quantity,
+            special_instructions=instructions,
+            addon_ids=addon_ids,
+            style_option=style_option,
+        )
 
         if not success:
             if not is_ajax_request(request):
@@ -985,6 +1011,7 @@ def staff_update_item_api(request, item_id):
         payload = json.loads(request.body) if request.content_type == 'application/json' else request.POST
         price = payload.get('price')
         discount_price = payload.get('discount_price')
+        description = payload.get('description')
         is_available = payload.get('is_available')
 
         if price is not None:
@@ -994,6 +1021,8 @@ def staff_update_item_api(request, item_id):
                 item.discount_price = None
             else:
                 item.discount_price = Decimal(str(discount_price))
+        if description is not None:
+            item.description = str(description).strip()
         if is_available is not None:
             item.is_available = bool(is_available)
 
@@ -1002,6 +1031,7 @@ def staff_update_item_api(request, item_id):
             'success': True,
             'item_id': item.id,
             'name': item.name,
+            'description': item.description,
             'price': float(item.price),
             'discount_price': float(item.discount_price) if item.discount_price else None,
             'is_available': item.is_available
@@ -1020,6 +1050,23 @@ def staff_create_item_view(request):
     else:
         messages.error(request, "Failed to create item. Please check the form data.")
     return redirect('staff_dashboard')
+
+
+@user_passes_test(is_kitchen_staff)
+@require_POST
+def staff_delete_item_api(request, item_id):
+    item = get_object_or_404(MenuItem, id=item_id)
+    item_name = item.name
+    item.delete()
+    if not is_ajax_request(request):
+        messages.success(request, f"Menu item '{item_name}' removed from kitchen menu.")
+        return redirect('staff_dashboard')
+    return JsonResponse({
+        'success': True,
+        'item_id': item_id,
+        'name': item_name,
+        'message': f"'{item_name}' removed from kitchen menu."
+    })
 
 
 @user_passes_test(is_kitchen_staff)

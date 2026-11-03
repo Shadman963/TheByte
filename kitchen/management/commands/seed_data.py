@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 'static_banner': 'images/menu/chicken_fry.webp'
             },
             {
-                'name': 'Frozen Items',
+                'name': 'Ready to Fry',
                 'slug': 'frozen-items',
                 'order': 2,
                 'description': 'Convenient, pre-portioned, seasoned treats ready to fry at home anytime.',
@@ -90,12 +90,12 @@ class Command(BaseCommand):
                 'category': categories['fries'],
                 'name': 'Chicken Fry',
                 'slug': 'chicken-fry',
-                'tagline': 'Spicy crunch on outside, juicy inside',
-                'description': 'Crispy and spicy chicken pieces, perfectly fried for a juicy inside and a flavorful kick outside.',
+                'tagline': 'Available in Spicy & Crispy options',
+                'description': 'Crispy and spicy chicken pieces, perfectly fried for a juicy inside and a flavorful kick outside. Choose your preferred style: Spicy or Crispy.',
                 'price': 130.00,
                 'discount_price': 110.00,
                 'static_image': 'images/menu/chicken_fry.webp',
-                'portion_size': '2 Pcs Crispy Chicken',
+                'portion_size': '2 Pcs Chicken Fry',
                 'is_available': True,
                 'is_featured': True,
                 'is_vegetarian': False,
@@ -105,14 +105,14 @@ class Command(BaseCommand):
             },
             {
                 'category': categories['fries'],
-                'name': 'Chicken Tender',
-                'slug': 'chicken-tender',
-                'tagline': 'Golden crispy boneless chicken strips',
-                'description': 'Tender, juicy boneless chicken strips coated in a seasoned golden crispy batter, served with dipping sauce.',
+                'name': 'Chicken Strips',
+                'slug': 'chicken-strips',
+                'tagline': 'Golden boneless chicken strips (Spicy / Crispy)',
+                'description': 'Tender, juicy boneless chicken strips coated in a seasoned golden batter, served with dipping sauce. Available in Spicy or Crispy style.',
                 'price': 150.00,
                 'discount_price': 135.00,
                 'static_image': 'images/menu/chicken_tender.webp',
-                'portion_size': '4 Pcs Crispy Tenders',
+                'portion_size': '4 Pcs Chicken Strips',
                 'is_available': True,
                 'is_featured': True,
                 'is_vegetarian': False,
@@ -122,37 +122,20 @@ class Command(BaseCommand):
             },
             {
                 'category': categories['fries'],
-                'name': 'Crispy Wings',
-                'slug': 'crispy-wings',
-                'tagline': 'Extra crunchy golden fried chicken wings',
-                'description': 'Juicy chicken wings double-coated and fried to a golden, shattering crunch.',
+                'name': 'Chicken Wings',
+                'slug': 'chicken-wings',
+                'tagline': 'Juicy fried chicken wings (Spicy / Crispy)',
+                'description': 'Juicy chicken wings fried to perfection—choose between our fiery Spicy blend or golden shattering Crispy coating.',
                 'price': 160.00,
                 'discount_price': 140.00,
                 'static_image': 'images/menu/crispy_wings.jpeg',
-                'portion_size': '6 Pcs Crispy Wings',
+                'portion_size': '6 Pcs Chicken Wings',
                 'is_available': True,
                 'is_featured': True,
                 'is_vegetarian': False,
                 'is_frozen': False,
                 'spice_level': 'medium',
                 'order': 3
-            },
-            {
-                'category': categories['fries'],
-                'name': 'Spicy Wings',
-                'slug': 'spicy-wings',
-                'tagline': 'Fiery glazed & spiced hot wings',
-                'description': 'Crispy chicken wings tossed in our signature fiery spice blend for a bold, mouthwatering kick.',
-                'price': 170.00,
-                'discount_price': None,
-                'static_image': 'images/menu/spicy_wings.jpg',
-                'portion_size': '6 Pcs Spicy Wings',
-                'is_available': True,
-                'is_featured': True,
-                'is_vegetarian': False,
-                'is_frozen': False,
-                'spice_level': 'hot',
-                'order': 4
             },
             {
                 'category': categories['fries'],
@@ -169,7 +152,7 @@ class Command(BaseCommand):
                 'is_vegetarian': False,
                 'is_frozen': False,
                 'spice_level': 'medium',
-                'order': 5
+                'order': 4
             },
             {
                 'category': categories['fries'],
@@ -186,7 +169,7 @@ class Command(BaseCommand):
                 'is_vegetarian': True,
                 'is_frozen': False,
                 'spice_level': 'none',
-                'order': 6
+                'order': 5
             },
             {
                 'category': categories['fries'],
@@ -203,30 +186,47 @@ class Command(BaseCommand):
                 'is_vegetarian': False,
                 'is_frozen': False,
                 'spice_level': 'medium',
-                'order': 7
+                'order': 6
             },
             {
                 'category': categories['fries'],
                 'name': 'Spring Roll',
                 'slug': 'spring-roll',
-                'tagline': 'Crispy golden rolls with savory filling',
-                'description': 'Crunchy golden rolls packed with seasoned vegetables and savory filling, fried fresh to order.',
+                'tagline': 'Crispy golden rolls with savory chicken filling',
+                'description': 'Crunchy golden rolls packed with seasoned chicken and savory filling, fried fresh to order.',
                 'price': 80.00,
                 'discount_price': None,
                 'static_image': 'images/menu/spring_roll.avif',
                 'portion_size': '4 Pcs Fresh Spring Rolls',
                 'is_available': True,
                 'is_featured': False,
-                'is_vegetarian': True,
+                'is_vegetarian': False,
                 'is_frozen': False,
                 'spice_level': 'mild',
-                'order': 8
+                'order': 7
             },
 
-            # Frozen Items
+            # Frozen Items (without "Frozen" in item names, ordered: Chicken Fry, French Fries, Chicken Strips, ...)
             {
                 'category': categories['frozen-items'],
-                'name': 'Frozen French Fries',
+                'name': 'Chicken Fry',
+                'slug': 'frozen-chicken-fry',
+                'tagline': 'Marinated chicken pieces ready to fry (Spicy / Crispy)',
+                'description': 'Pre-marinated tender chicken pieces coated in our signature blend, frozen and ready to fry at home for crispy, juicy chicken anytime.',
+                'price': 260.00,
+                'discount_price': 230.00,
+                'static_image': 'images/menu/frozen_chicken_fry.jpg',
+                'portion_size': '1 Pack (6 Pieces)',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': True,
+                'spice_level': 'hot',
+                'order': 1
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'French Fries',
                 'slug': 'frozen-french-fries',
                 'tagline': 'Pre-cut restaurant quality potatoes',
                 'description': 'Frozen potato sticks, coated and ready to fry at home for golden, crispy, and perfectly seasoned fries.',
@@ -239,11 +239,45 @@ class Command(BaseCommand):
                 'is_vegetarian': True,
                 'is_frozen': True,
                 'spice_level': 'none',
-                'order': 1
+                'order': 2
             },
             {
                 'category': categories['frozen-items'],
-                'name': 'Frozen Meatballs',
+                'name': 'Chicken Strips',
+                'slug': 'frozen-chicken-strips',
+                'tagline': 'Seasoned boneless chicken strips ready to cook (Spicy / Crispy)',
+                'description': 'Marinated boneless chicken breast strips seasoned with herbs and spices, frozen and ready to bread, pan-sear, or fry at home in minutes.',
+                'price': 250.00,
+                'discount_price': 220.00,
+                'static_image': 'images/menu/frozen_chicken_strips.jpg',
+                'portion_size': '1 Pack (10 Strips)',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': True,
+                'spice_level': 'medium',
+                'order': 3
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'Chicken Wings',
+                'slug': 'frozen-wings',
+                'tagline': 'Signature secret recipe marinated wings (Spicy / Crispy)',
+                'description': 'Tender chicken wings soaked in our special house marinade, frozen and ready to fry or bake to juicy perfection.',
+                'price': 280.00,
+                'discount_price': 250.00,
+                'static_image': 'images/menu/frozen_wings.jpg',
+                'portion_size': '1 Pack (8 Jumbo Wings)',
+                'is_available': True,
+                'is_featured': True,
+                'is_vegetarian': False,
+                'is_frozen': True,
+                'spice_level': 'hot',
+                'order': 4
+            },
+            {
+                'category': categories['frozen-items'],
+                'name': 'Meatballs',
                 'slug': 'frozen-meatballs',
                 'tagline': 'Ready-to-cook seasoned meatballs',
                 'description': 'Pre-seasoned, tender frozen meatballs ready to fry or pan-sear at home in minutes.',
@@ -256,11 +290,11 @@ class Command(BaseCommand):
                 'is_vegetarian': False,
                 'is_frozen': True,
                 'spice_level': 'medium',
-                'order': 2
+                'order': 5
             },
             {
                 'category': categories['frozen-items'],
-                'name': 'Frozen Samosa',
+                'name': 'Samosa',
                 'slug': 'frozen-samosa',
                 'tagline': 'Traditional triangular spiced snack',
                 'description': 'Frozen samosas filled with spiced savory filling—ready to fry at home for a hot, crispy treat.',
@@ -273,41 +307,24 @@ class Command(BaseCommand):
                 'is_vegetarian': False,
                 'is_frozen': True,
                 'spice_level': 'medium',
-                'order': 3
+                'order': 6
             },
             {
                 'category': categories['frozen-items'],
-                'name': 'Frozen Spring Roll',
+                'name': 'Spring Roll',
                 'slug': 'frozen-spring-roll',
-                'tagline': 'Ready-to-fry appetizer snack',
-                'description': 'Frozen spring rolls, packed with fresh vegetables and spices ready to fry at home for a hot, crispy snack.',
+                'tagline': 'Ready-to-fry non-veg appetizer snack',
+                'description': 'Frozen spring rolls, packed with seasoned chicken and spices ready to fry at home for a hot, crispy snack.',
                 'price': 180.00,
                 'discount_price': None,
                 'static_image': 'images/menu/frozen_spring_roll.jfif',
                 'portion_size': '1 Pack (10 Pieces)',
                 'is_available': True,
                 'is_featured': False,
-                'is_vegetarian': True,
-                'is_frozen': True,
-                'spice_level': 'mild',
-                'order': 4
-            },
-            {
-                'category': categories['frozen-items'],
-                'name': 'Frozen Wings',
-                'slug': 'frozen-wings',
-                'tagline': 'Signature secret recipe marinated wings',
-                'description': 'Tender chicken wings soaked in our special house marinade, frozen and ready to fry or bake to juicy perfection.',
-                'price': 280.00,
-                'discount_price': 250.00,
-                'static_image': 'images/menu/frozen_wings.jpg',
-                'portion_size': '1 Pack (8 Jumbo Wings)',
-                'is_available': True,
-                'is_featured': True,
                 'is_vegetarian': False,
                 'is_frozen': True,
-                'spice_level': 'hot',
-                'order': 5
+                'spice_level': 'mild',
+                'order': 7
             },
 
             # Meal Combos

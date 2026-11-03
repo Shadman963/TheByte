@@ -42,6 +42,7 @@ urlpatterns = [
     path('api/staff/order/<int:order_id>/payment-status/', views.staff_update_payment_status_api, name='staff_update_payment_status_api'),
     path('api/staff/item/<int:item_id>/toggle/', views.staff_toggle_item_api, name='staff_toggle_item_api'),
     path('api/staff/item/<int:item_id>/update/', views.staff_update_item_api, name='staff_update_item_api'),
+    path('api/staff/item/<int:item_id>/delete/', views.staff_delete_item_api, name='staff_delete_item_api'),
     path('staff/item/create/', views.staff_create_item_view, name='staff_create_item'),
     path('staff/settings/update/', views.staff_update_settings_view, name='staff_update_settings'),
     path('staff/order/<str:order_number>/kot/', views.staff_kot_view, name='staff_kot'),

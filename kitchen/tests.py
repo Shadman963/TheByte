@@ -245,6 +245,23 @@ class KitchenTests(TestCase):
         self.assertEqual(res_kot.status_code, 200)
         self.assertContains(res_kot, f"ORDER #{order.order_number}")
 
+        # 7. Staff creates and removes a menu item (e.g. Biriyani) from the Staff Portal
+        biriyani_item = MenuItem.objects.create(
+            category=self.cat_rice,
+            name="Biriyani",
+            slug="biriyani",
+            description="Added from staff portal",
+            price=250.00,
+            is_available=True
+        )
+        res_del = self.client.post(
+            reverse('staff_delete_item_api', kwargs={'item_id': biriyani_item.id}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_del.status_code, 200)
+        self.assertTrue(res_del.json()['success'])
+        self.assertFalse(MenuItem.objects.filter(id=biriyani_item.id).exists())
+
     def test_free_delivery_progress_calculation(self):
         cart_client = Client()
         # Item price 150, free delivery above 500
@@ -524,24 +541,22 @@ class KitchenTests(TestCase):
         self.assertIn('offersMarqueeScroll', html)
         self.assertNotIn('Crispy Platter &amp; Wing Deals', html)
         self.assertIn('id="latest-offers-modal"', html)
-        self.assertIn('id="showcase-latest-offers"', html)
+        self.assertNotIn('id="showcase-latest-offers"', html)
         self.assertIn('id="showcase-student-combo"', html)
         self.assertIn('id="showcase-ready-to-fry"', html)
         self.assertIn('id="story"', html)
         self.assertIn('id="reviews"', html)
 
         # Verify section ordering:
-        # latest-offers -> showcase-latest-offers -> showcase-student-combo -> showcase-ready-to-fry -> menu-catalog -> story -> reviews
+        # latest-offers -> showcase-student-combo -> showcase-ready-to-fry -> menu-catalog -> story -> reviews
         idx_offers_banner = html.index('id="latest-offers"')
-        idx_showcase_offers = html.index('id="showcase-latest-offers"')
         idx_showcase_combo = html.index('id="showcase-student-combo"')
         idx_showcase_fry = html.index('id="showcase-ready-to-fry"')
         idx_catalog = html.index('id="menu-catalog"')
         idx_story = html.index('id="story"')
         idx_reviews = html.index('id="reviews"')
 
-        self.assertLess(idx_offers_banner, idx_showcase_offers)
-        self.assertLess(idx_showcase_offers, idx_showcase_combo)
+        self.assertLess(idx_offers_banner, idx_showcase_combo)
         self.assertLess(idx_showcase_combo, idx_showcase_fry)
         self.assertLess(idx_showcase_fry, idx_catalog)
         self.assertLess(idx_catalog, idx_story)
@@ -719,3 +734,126 @@ class KitchenTests(TestCase):
         self.assertNotContains(response, '<!-- CTA Action Buttons -->')
         self.assertNotContains(response, '<!-- LIVE ORDER TRACKING QUICK LOOKUP WIDGET -->')
         self.assertNotContains(response, 'Enter Order Number (e.g. BYTE-82194)')
+
+    def test_frozen_section_items_and_style_options_and_spring_roll_nonveg(self):
+        from django.core.management import call_command
+        call_command('seed_data')
+
+        # 1. Verify Ready to Fry menu category replaces "Frozen Items" and has no "Frozen" in item names
+        frozen_cat = Category.objects.get(slug='frozen-items')
+        self.assertEqual(frozen_cat.name, 'Ready to Fry')
+        self.assertFalse(Category.objects.filter(name__iexact='Frozen Items').exists())
+        frozen_items = list(frozen_cat.items.all())
+        self.assertGreaterEqual(len(frozen_items), 3)
+        for f_item in frozen_items:
+            self.assertNotIn('frozen', f_item.name.lower())
+
+        # 2. Verify homepage frozen section has exactly 3 items orderly:
+        #    (Chicken Fry, French Fries, Chicken Strips) and View All Frozen Items link
+        res_home = self.client.get(reverse('home'))
+        self.assertEqual(res_home.status_code, 200)
+        ready_to_fry_items = res_home.context['ready_to_fry_items']
+        self.assertEqual(len(ready_to_fry_items), 3)
+        self.assertEqual(
+            [it.slug for it in ready_to_fry_items],
+            ['frozen-chicken-fry', 'frozen-french-fries', 'frozen-chicken-strips']
+        )
+        self.assertEqual(
+            [it.name for it in ready_to_fry_items],
+            ['Chicken Fry', 'French Fries', 'Chicken Strips']
+        )
+        self.assertContains(res_home, 'View All Frozen Items')
+
+        # 3. Verify Spring Roll (live & frozen) is set to non-veg (is_vegetarian=False)
+        spring_rolls = MenuItem.objects.filter(slug__in=['spring-roll', 'frozen-spring-roll'])
+        self.assertEqual(spring_rolls.count(), 2)
+        for sr in spring_rolls:
+            self.assertFalse(sr.is_vegetarian)
+
+        # 4. Verify Spicy & Crispy options exist for Chicken Strips, Chicken Wings, Chicken Fry (both live and frozen)
+        style_slugs = [
+            'chicken-fry', 'chicken-strips', 'chicken-wings',
+            'frozen-chicken-fry', 'frozen-chicken-strips', 'frozen-wings',
+        ]
+        for slug in style_slugs:
+            item = MenuItem.objects.get(slug=slug)
+            self.assertTrue(item.has_style_options, f"{slug} should have style options")
+            self.assertEqual(item.style_options, ['Spicy', 'Crispy'])
+            res_detail = self.client.get(reverse('item_detail_api', kwargs={'item_id': item.id}))
+            self.assertEqual(res_detail.status_code, 200)
+            detail_json = res_detail.json()
+            self.assertTrue(detail_json['has_style_options'])
+            self.assertEqual(detail_json['style_options'], ['Spicy', 'Crispy'])
+
+        # 5. Verify mandatory option selection before adding chicken items to cart
+        chicken_fry = MenuItem.objects.get(slug='chicken-fry')
+        res_missing_opt = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': chicken_fry.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_missing_opt.status_code, 400)
+        self.assertFalse(res_missing_opt.json()['success'])
+        self.assertIn('Please choose an option', res_missing_opt.json()['message'])
+
+        # 6. Verify adding with 'Crispy' option succeeds
+        res_crispy = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': chicken_fry.id, 'quantity': 1, 'style_option': 'Crispy'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_crispy.status_code, 200)
+        crispy_data = res_crispy.json()
+        self.assertTrue(crispy_data['success'])
+        self.assertEqual(crispy_data['cart_count'], 1)
+        self.assertIn('Style: Crispy', crispy_data['items'][0]['special_instructions'])
+
+        # 7. Verify adding with 'Spicy' option succeeds as a separate cart entry
+        res_spicy = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': chicken_fry.id, 'quantity': 1, 'style_option': 'Spicy'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_spicy.status_code, 200)
+        spicy_data = res_spicy.json()
+        self.assertTrue(spicy_data['success'])
+        self.assertEqual(spicy_data['cart_count'], 2)
+        self.assertEqual(len(spicy_data['items']), 2)
+
+        # 8. Verify non-option items (e.g. French Fries) add directly without requiring style_option
+        french_fries = MenuItem.objects.get(slug='french-fries')
+        res_fries = self.client.post(
+            reverse('cart_add_api'),
+            data=json.dumps({'item_id': french_fries.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+        self.assertEqual(res_fries.status_code, 200)
+        self.assertTrue(res_fries.json()['success'])
+        self.assertEqual(res_fries.json()['cart_count'], 3)
+
+        # 9. Verify home and menu pages render unselected initial state for style options,
+        #    only 'Ready to Fry' in menu categories (no 'Frozen Items' category),
+        #    and accessible descriptions for all items.
+        res_menu_page = self.client.get(reverse('menu'))
+        self.assertEqual(res_menu_page.status_code, 200)
+        menu_html = res_menu_page.content.decode('utf-8')
+        self.assertNotIn('>Frozen Items<', menu_html)
+        self.assertIn('Ready to Fry', menu_html)
+
+        for item in MenuItem.objects.filter(is_available=True):
+            self.assertTrue(bool((item.description or '').strip()), f"{item.slug} must have a description")
+            self.assertIn(item.description, menu_html)
+            res_api = self.client.get(reverse('item_detail_api', kwargs={'item_id': item.id}))
+            self.assertEqual(res_api.status_code, 200)
+            self.assertEqual(res_api.json()['description'], item.description)
+
+        for page_name in ['home', 'menu']:
+            res_page = self.client.get(reverse(page_name))
+            self.assertEqual(res_page.status_code, 200)
+            page_html = res_page.content.decode('utf-8')
+            self.assertIn('data-selected-style=""', page_html)
+            self.assertIn('data-requires-style="true"', page_html)
+            self.assertNotIn('data-selected-style="Spicy"', page_html)
+            self.assertIn('class="item-description', page_html)
+
+
